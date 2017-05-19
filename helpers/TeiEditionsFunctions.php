@@ -43,21 +43,38 @@ function replace_urls($str, $file_map) {
     return $str;
 }
 
-function replace_urls_xml($doc, $map) {
-    $xsl = implode(array('http://localhost',
-        'omeka', 'plugins', 'TeiEditions', 'teibp', 'content', 'replace-urls.xsl'), '/');
+function prettify_tei($path, $img_map) {
+    $teipb = dirname(dirname(__FILE__)) . '/teibp/content/teibp.xsl';
+
     $xsldoc = new DOMDocument();
-    $xsldoc->loadXML(file_get_contents($xsl));
+    $xsldoc->load($teipb);
+    $xsldoc->documentURI = $teipb;
+
+    $xmldoc = new DOMDocument();
+    $xmldoc->loadXML(file_get_contents($path));
+    $xmldoc->documentURI = $path;
+
+    // NB: Suppress annoying warnings here...
+    $xmldoc = replace_urls_xml($xmldoc, $img_map);
+
+    $proc = new XSLTProcessor;
+    $proc->importStylesheet($xsldoc);
+    return $proc->transformToXml($xmldoc);
+}
+
+function replace_urls_xml($doc, $map) {
+    $filename = dirname(dirname(__FILE__)) . "/teibp/content/replace-urls.xsl";
+    $xsldoc = new DOMDocument();
+    $xsldoc->loadXML(file_get_contents($filename));
+
     foreach ($xsldoc->getElementsByTagName('url-lookup') as $elem) {
         foreach ($map as $name => $path) {
             $kv = $xsldoc->createElement('entry');
             $kv->setAttribute('key', $name);
             $kv->appendChild($xsldoc->createTextNode($path));
             $elem->appendChild($kv);
-            error_log("Appending " . $name . ' => ' . $path);
         }
     }
-    error_log($xsldoc->saveXML());
 
     $proc = new XSLTProcessor();
     $proc->registerPHPFunctions('basename');

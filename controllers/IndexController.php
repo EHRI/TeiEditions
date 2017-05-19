@@ -34,48 +34,26 @@ class TeiEditions_IndexController extends Omeka_Controller_AbstractActionControl
         $editionId = $this->_getParam('id');
         $edition = $this->_helper->db->getTable('TeiEdition')->find($editionId);
 
-        $teipb = implode(array('http://localhost',
-            'omeka', 'plugins', 'TeiEditions', 'teibp', 'content', 'teibp.xsl'), '/');
+        $files = $edition->getItem()->getFiles();
 
-        $xsldoc = new DOMDocument();
-
-        $xsldoc->loadXML(file_get_contents($teipb));
-        $xsldoc->documentURI = $teipb;
-
-
-        $file_map = [];
-        foreach ($edition->getItem()->getFiles() as $file) {
-            $file_map[basename($file->original_filename)] = $file->getWebPath();
+        $file_url_map = array();
+        foreach ($files as $file) {
+            $file_url_map[basename($file->original_filename)] = $file->getWebPath();
         }
 
         $xml = "";
-        foreach ($edition->getItem()->getFiles() as $file) {
-
+        foreach ($files as $file) {
             $path = $file->getWebPath();
-
             if (endswith($path, ".xml")) {
-                $xmldoc = new DOMDocument();
-                $xmldoc->loadXML(file_get_contents($path));
-                $xmldoc->documentURI = $path;
-
-                $xmldoc = replace_urls_xml($xmldoc, $file_map);
-
-                $proc = new XSLTProcessor;
-                $proc->importStylesheet($xsldoc);
-                $xml .= $proc->transformToXml($xmldoc);
-
-                file_put_contents("/home/michaelb/dev/php/TeiEditions/debug/debug.html", $xml);
-
+                $xml .= @prettify_tei($path, $file_url_map);
                 break;
             }
         }
 
-
         // Set the page object to the view.
         $this->view->assign(array(
             'tei_edition' => $edition,
-            'xml' => $xml,
-            'xsl' => $teipb
+            'xml' => $xml
         ));
     }
 

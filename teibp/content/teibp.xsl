@@ -64,19 +64,7 @@
 	<xsl:key name="ids" match="//*" use="@xml:id"/>
 
 	<xsl:template match="/" name="htmlShell" priority="99">
-		<html>
-			<xsl:call-template name="htmlHead"/>
-			<body>
-				<xsl:if test="$includeToolbox = true()">
-					<xsl:call-template name="teibpToolbox"/>
-				</xsl:if>
-				<div id="tei_wrapper">
-					<xsl:apply-templates/>
-				</div>
-				<xsl:copy-of select="$htmlFooter"/>
-				<script type="text/javascript" src="{$teibpJS}"></script>
-			</body>
-		</html>
+		<xsl:apply-templates/>
 	</xsl:template>
 	
 	<xd:doc>
@@ -183,6 +171,20 @@
   </xsl:template>
 
 	<xd:doc>
+		<xd:desc>
+			<xd:p>Transforms TEI placeName element with ref to a (link) element.</xd:p>
+		</xd:desc>
+	</xd:doc>
+	<xsl:template match="tei:placeName|tei:term|tei:persName[@ref]" priority="99">
+		<a href="{@ref}">
+			<xsl:apply-templates select="@*"/>
+			<xsl:call-template name="rendition"/>
+			<xsl:apply-templates select="node()"/>
+		</a>
+	</xsl:template>
+
+
+	<xd:doc>
     <xd:desc>
       <xd:p>Transforms TEI ptr element to html a (link) element.</xd:p>
     </xd:desc>
@@ -212,7 +214,7 @@
     </xsl:copy>
   </xsl:template>
 	
-	<!--
+
 	<xd:doc xmlns:xd="http://www.oxygenxml.com/ns/doc/xsl">
 		<xd:desc>
 			<xd:p>Transforms TEI figure/head to HTML figcaption</xd:p>
@@ -221,7 +223,6 @@
 	<xsl:template match="tei:figure/tei:head">
 		<figcaption><xsl:apply-templates/></figcaption>
 	</xsl:template>
-	-->
     <!--
 	<xd:doc xmlns:xd="http://www.oxygenxml.com/ns/doc/xsl">
 		<xd:desc>
@@ -240,7 +241,7 @@
 		</xsl:element>
 	</xsl:template>
 	-->
-	
+
 	<xsl:template name="addID">
 		<xsl:if test="not(ancestor::eg:egXML)">
 			<xsl:attribute name="id">
