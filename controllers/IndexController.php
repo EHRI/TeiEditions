@@ -58,12 +58,13 @@ class TeiEditions_IndexController extends Omeka_Controller_AbstractActionControl
                 $xmldoc->loadXML(file_get_contents($path));
                 $xmldoc->documentURI = $path;
 
-                error_log("REPLACING!");
                 $xmldoc = replace_urls_xml($xmldoc, $file_map);
 
                 $proc = new XSLTProcessor;
                 $proc->importStylesheet($xsldoc);
                 $xml .= $proc->transformToXml($xmldoc);
+
+                file_put_contents("/home/michaelb/dev/php/TeiEditions/debug/debug.html", $xml);
 
                 break;
             }

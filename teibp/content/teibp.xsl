@@ -25,7 +25,7 @@
 	<xsl:output encoding="UTF-8" method="xml" omit-xml-declaration="yes"/>
 	
 	<xsl:param name="teibpHome" select="'http://dcl.slis.indiana.edu/teibp/'"/>
-	<xsl:param name="inlineCSS" select="false()"/>
+	<xsl:param name="inlineCSS" select="true()"/>
 	<xsl:param name="includeToolbox" select="true()"/>
 	<xsl:param name="includeAnalytics" select="true()"/>
 	<xsl:param name="displayPageBreaks" select="true()"/>
@@ -300,6 +300,10 @@
 		<head>
 			<meta charset="UTF-8"/>
 
+			<!-- FIXME: Mysterious problem with rendering here... some of these
+			elements seem to eat whatever follows due to tag-closing issues... -->
+			<link id="maincss" rel="stylesheet" type="text/css" href="{$teibpCSS}"/>
+			<link id="customcss" rel="stylesheet" type="text/css" href="{$customCSS}"/>
 			<script src="{$lessJS}"></script>
 
 			<xsl:call-template name="tagUsage2style"/>
@@ -321,7 +325,7 @@
   
   <xsl:template name="tagUsage2style">
     <style type="text/css" id="tagusage-css">
-      <xsl:for-each select="//tei:namespace[@name ='http://www.tei-c.org/ns/1.0']/tei:tagUsage">
+		<xsl:for-each select="//tei:namespace[@name ='http://www.tei-c.org/ns/1.0']/tei:tagUsage">
         <xsl:value-of select="concat('&#x000a;',@gi,' { ')"/>
         <xsl:call-template name="tokenize">
           <xsl:with-param name="string" select="@render" />
