@@ -6,6 +6,8 @@
  * @license http://www.gnu.org/licenses/gpl-3.0.txt GNU GPLv3
  */
 
+include_once dirname(dirname(__FILE__)) . '/helpers/TeiEditionsFunctions.php';
+
 /**
  * The TeiEditions Edition record class.
  *
@@ -27,52 +29,37 @@ class TeiEditions_IndexController extends Omeka_Controller_AbstractActionControl
         return;
     }
 
-    function endsWith($haystack, $needle) {
-        $length = strlen($needle);
-        if ($length == 0) {
-            return true;
-        }
-
-        return (substr($haystack, -$length) === $needle);
-    }
-
-    function replaceUrls($xml, $file_map) {
-        foreach ($file_map as $key => $value) {
-            $find = "../images/$key";
-            error_log("Replacing " . $find . " with " . $value);
-            $xml = str_replace($find, $value, $xml);
-        }
-        return $xml;
-    }
-
     public function showAction()
     {
         $editionId = $this->_getParam('id');
         $edition = $this->_helper->db->getTable('TeiEdition')->find($editionId);
 
-        error_log($_SERVER['REQUEST_URI']);
         $teipb = implode(array('http://localhost',
             'omeka', 'plugins', 'TeiEditions', 'teibp', 'content', 'teibp.xsl'), '/');
 
         $xsldoc = new DOMDocument();
+
         $xsldoc->loadXML(file_get_contents($teipb));
         $xsldoc->documentURI = $teipb;
 
-        $xml = "";
 
         $file_map = [];
         foreach ($edition->getItem()->getFiles() as $file) {
             $file_map[basename($file->original_filename)] = $file->getWebPath();
         }
 
+        $xml = "";
         foreach ($edition->getItem()->getFiles() as $file) {
 
             $path = $file->getWebPath();
 
-            if ($this->endsWith($path, ".xml")) {
+            if (endswith($path, ".xml")) {
                 $xmldoc = new DOMDocument();
-                $xmldoc->loadXML($this->replaceUrls(file_get_contents($path), $file_map));
+                $xmldoc->loadXML(file_get_contents($path));
                 $xmldoc->documentURI = $path;
+
+                error_log("REPLACING!");
+                $xmldoc = replace_urls_xml($xmldoc, $file_map);
 
                 $proc = new XSLTProcessor;
                 $proc->importStylesheet($xsldoc);
