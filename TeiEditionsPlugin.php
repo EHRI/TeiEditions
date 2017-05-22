@@ -103,47 +103,20 @@ class TeiEditionsPlugin extends Omeka_Plugin_AbstractPlugin
         $acl = $args['acl'];
         
         $indexResource = new Zend_Acl_Resource('TeiEditions_Index');
-        $pageResource = new Zend_Acl_Resource('TeiEdition');
+        $pageResource = new Zend_Acl_Resource('TeiEditions');
         $acl->add($indexResource);
         $acl->add($pageResource);
 
-        $acl->allow(array('super', 'admin'), array('TeiEditions_Index', 'TeiEdition'));
-        $acl->allow(null, 'TeiEdition', 'show');
-        $acl->deny(null, 'TeiEdition', 'show-unpublished');
+        $acl->allow(array('super', 'admin'), array('TeiEditions_Index', 'TeiEditions'));
+        $acl->allow(null, 'TeiEditions', 'show');
+        $acl->deny(null, 'TeiEditions', 'show-unpublished');
     }
 
-    /**
-     * Add the routes for accessing simple pages by slug.
-     * 
-     * @param Zend_Controller_Router_Rewrite $router
-     */
     public function hookDefineRoutes($args)
     {
-        // Don't add these routes on the admin side to avoid conflicts.
-        if (is_admin_theme()) {
-            return;
-        }
-
-        $router = $args['router'];
-
-        // Add custom routes based on the page slug.
-//        $editions = get_db()->getTable('TeiEdition')->findAll();
-//        foreach ($editions as $edition) {
-//            error_log("Adding edition " . $edition->slug . " as " . $edition->id);
-//            $router->addRoute(
-//                'tei_editions_show_edition_' . $edition->id,
-//                new Zend_Controller_Router_Route(
-//                    ":controller/:slug",
-//                    array(
-//                        'module'       => 'tei-editions',
-//                        'controller'   => 'edition',
-//                        'action'       => 'show',
-//                        'id'           => $edition->id,
-//                        'slug'         => $edition->slug
-//                    )
-//                )
-//            );
-//        }
+        $args['router']->addConfig(new Zend_Config_Ini(
+            dirname(__FILE__) .'/routes.ini'
+        ));
     }
 
     /**

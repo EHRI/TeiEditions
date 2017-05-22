@@ -138,7 +138,7 @@ class TeiEdition extends Omeka_Record_AbstractRecord implements Zend_Acl_Resourc
     {
 //        if ('show' == $action) {
 //            // FIXME: This doesn't look nice!
-//            return public_url("edition/" . $this->slug);
+//            return public_url("editions/" . $this->slug);
 //        }
         return array('module' => 'tei-editions', 'controller' => 'index',
             'action' => $action, 'id' => $this->id);
@@ -158,6 +158,6 @@ class TeiEdition extends Omeka_Record_AbstractRecord implements Zend_Acl_Resourc
 
     public function getResourceId()
     {
-        return 'TeiEdition';
+        return 'TeiEditions';
     }
 }

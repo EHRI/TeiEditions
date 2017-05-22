@@ -15,19 +15,35 @@ class TeiEditions_EditionController extends Omeka_Controller_AbstractActionContr
 {
     public function showAction()
     {
-        // Get the page object from the passed ID.
-        $editionId = $this->_getParam('id');
-        $edition = $this->_helper->db->getTable('TeiEdition')->find($editionId);
+        $query = array('slug' => $this->_getParam('slug'), 'is_published' => true);
+        $editions = $this->_helper->db->getTable('TeiEdition')->findBy($query);
 
-        error_log("Rendering! " . $edition->slug);
-        
-        // Restrict access to the page when it is not published.
-//        if (!$edition->is_published
-//            && !$this->_helper->acl->isAllowed('show-unpublished')) {
-//            throw new Omeka_Controller_Exception_403;
-//        }
+        if (count($editions) == 0) {
+            throw new Omeka_Controller_Exception_404;
+        }
+
+        $edition = $editions[0];
+
+        $files = $edition->getItem()->getFiles();
+
+        $file_url_map = array();
+        foreach ($files as $file) {
+            $file_url_map[basename($file->original_filename)] = $file->getWebPath();
+        }
+
+        $xml = "";
+        foreach ($files as $file) {
+            $path = $file->getWebPath();
+            if (endswith($path, ".xml")) {
+                $xml .= @prettify_tei($path, $file_url_map);
+                break;
+            }
+        }
 
         // Set the page object to the view.
-        $this->view->tei_edition = $edition;
+        $this->view->assign(array(
+            'tei_edition' => $edition,
+            'xml' => $xml
+        ));
     }
 }
