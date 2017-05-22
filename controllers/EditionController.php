@@ -13,6 +13,17 @@
  */
 class TeiEditions_EditionController extends Omeka_Controller_AbstractActionController
 {
+
+    public function init()
+    {
+        $this->_helper->db->setDefaultModelName('TeiEdition');
+    }
+
+//    public function browseAction()
+//    {
+//
+//    }
+
     public function showAction()
     {
         $query = array('slug' => $this->_getParam('slug'), 'is_published' => true);
