@@ -19,7 +19,8 @@
  * @param $needle
  * @return bool
  */
-function endswith($haystack, $needle) {
+function endswith($haystack, $needle)
+{
     $length = strlen($needle);
     if ($length == 0) {
         return true;
@@ -35,7 +36,8 @@ function endswith($haystack, $needle) {
  * @param $file_map
  * @return mixed
  */
-function replace_urls($str, $file_map) {
+function replace_urls($str, $file_map)
+{
     foreach ($file_map as $key => $value) {
         $find = "../images/$key";
         $str = str_replace($find, $value, $str);
@@ -43,7 +45,8 @@ function replace_urls($str, $file_map) {
     return $str;
 }
 
-function prettify_tei($path, $img_map) {
+function prettify_tei($path, $img_map)
+{
     $teipb = dirname(dirname(__FILE__)) . '/teibp/content/teibp.xsl';
 
     $xsldoc = new DOMDocument();
@@ -62,7 +65,8 @@ function prettify_tei($path, $img_map) {
     return $proc->transformToXml($xmldoc);
 }
 
-function replace_urls_xml($doc, $map) {
+function replace_urls_xml($doc, $map)
+{
     $filename = dirname(dirname(__FILE__)) . "/teibp/content/replace-urls.xsl";
     $xsldoc = new DOMDocument();
     $xsldoc->loadXML(file_get_contents($filename));
@@ -82,35 +86,129 @@ function replace_urls_xml($doc, $map) {
     return $proc->transformToDoc($doc);
 }
 
-function get_tei_metadata(array $files) {
-    return array(
-        "Item Type Metadata" => array(
-            "Subjects" => array(
-                array('text' => 'Holocaust', 'html' => false),
-                array('text' => 'Germany', 'html' => false)
-            ),
-            "Persons" => array(
-                array('text' => 'Mike', 'html' => false),
-                array('text' => 'Reto', 'html' => false)
-            )
-        )
-    );
+function xpath_query(DOMXPath $doc, $xpath)
+{
+    $out = array();
+    $nodes = $doc->query($xpath);
+    _log("Running " . $xpath);
+    for ($i = 0; $i < $nodes->length; $i++) {
+        _log("Got node for " . $xpath . " -> " . $nodes->item($i)->tagName);
+        $out[] = $nodes->item($i)->textContent;
+    }
+    return $out;
 }
 
-function set_tei_metadata(Item $item, File $file) {
+/**
+ * Run xpath queries on a document.
+ *
+ * @param string $uri The uri of the document.
+ * @param array $xpaths An array of element names to XPath queries.
+ *
+ * @return array An array of element names to matched strings.
+ */
+function xpath_query_uri($uri, $xpaths)
+{
+    $out = [];
 
-    $element_sets = get_db()->getTable("ElementSet")
-        ->findBy(array('name' => 'Item Type Metadata'));
-    if (empty($element_sets)) return;
+    try {
+        $xml = new DomDocument();
+        $xml->load($uri);
+        $query = new DOMXPath($xml);
+        $query->registerNamespace("tei", "http://www.tei-c.org/ns/1.0");
 
-    $set = $element_sets[0];
-    $elements = get_db()->getTable("Element")->findBy(
-        array('element_set_id' => $set->id));
+        foreach ($xpaths as $name => $path) {
+            $out[$name] = xpath_query($query, $path);
+        }
+    } catch (Exception $e) {
+        $msg = $e->getMessage();
+        _log("Error extracting TEI data from $uri: $msg", Zend_Log::ERR);
+    }
 
-    $item->deleteElementTextsByElementId(
-        array_map(function ($e) { return $e->id; }, $elements));
+    return $out;
+}
 
-    $metadata = get_tei_metadata(array($file));
-    $item->addElementTextsByArray($metadata);
+
+/**
+ * @param File $file
+ * @return array
+ */
+function extract_metadata(File $file)
+{
+    $xpaths = array(
+        "Persons" => "/tei:TEI/tei:teiHeader/tei:profileDesc/tei:abstract/tei:persName",
+        "Subjects" => "/tei:TEI/tei:teiHeader/tei:profileDesc/tei:abstract/tei:term",
+        "Places" => "/tei:TEI/tei:teiHeader/tei:profileDesc/tei:abstract/tei:placeName",
+    );
+
+    $out = [];
+
+    foreach (xpath_query_uri($file->getWebPath('original'), $xpaths) as $elem => $data) {
+        $meta = [];
+        foreach ($data as $text) {
+            $meta[] = array('text' => $text, 'html' => false);
+        }
+        $out[$elem] = $meta;
+    }
+
+    _log("Extracted from " . $file->getWebPath() . " -> " . json_encode($out));
+
+    return $out;
+}
+
+/** @var File[] $files
+ *
+ * Returns an array like:
+ *
+ * array(
+ *   "Subjects" => array(
+ *       array('text' => 'Germany', 'html' => false)
+ *   ),
+ *   "Persons" => array(
+ *       array('text' => 'Bob', 'html' => false)
+ *   )
+ * );
+ *
+ * @return array
+ */
+function get_tei_metadata(array $files)
+{
+    $out = array();
+
+    foreach ($files as $file) {
+        if ($file->mime_type == "text/xml"
+            || $file->mime_type == "application/xml"
+            || endswith($file->original_filename, ".xml")
+        ) {
+
+            $meta = extract_metadata($file);
+            foreach ($meta as $elem => $data) {
+                if ($existing = $out[$elem]) {
+                    $out[$elem] = array_unique(array_merge($existing, $data), SORT_REGULAR);
+                } else {
+                    $out[$elem] = $data;
+                }
+            }
+        }
+    }
+
+    return $out;
+}
+
+function set_tei_metadata(Item $item)
+{
+    $item_types = get_db()->getTable("ItemType")->findBy(array('name' => 'TEI'));
+    if (empty($item_types)) {
+        _log("No TEI item type found, skipping metadata.", Zend_Log::WARN);
+        return;
+    }
+
+    $elements = get_db()->getTable('Element')->findByItemType($item_types[0]->id);
+    $ids = array_map(function ($e) {
+        return $e->id;
+    }, $elements);
+
+    $item->deleteElementTextsByElementId($ids);
+    $metadata = get_tei_metadata($item->getFiles());
+    $item->addElementTextsByArray(array('Item Type Metadata' => $metadata));
     $item->saveElementTexts();
 }

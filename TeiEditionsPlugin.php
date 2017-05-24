@@ -139,11 +139,7 @@ class TeiEditionsPlugin extends Omeka_Plugin_AbstractPlugin
     {
         if ($item = $args["record"]) {
             if ($item->getProperty('item_type_name') == "TEI") {
-                foreach ($item->getFiles() as $file) {
-                    if (endswith($file->original_filename, ".xml")) {
-                        set_tei_metadata($item, $file);
-                    }
-                }
+                set_tei_metadata($item);
             }
         }
     }

@@ -34,6 +34,7 @@ class TeiEditions_IndexController extends Omeka_Controller_AbstractActionControl
         $editionId = $this->_getParam('id');
         $edition = $this->_helper->db->getTable('TeiEdition')->find($editionId);
 
+        $teipb = dirname(dirname(__FILE__)) . '/teibp/content/teibp.xsl';
         $files = $edition->getItem()->getFiles();
 
         $file_url_map = array();
@@ -45,7 +46,7 @@ class TeiEditions_IndexController extends Omeka_Controller_AbstractActionControl
         foreach ($files as $file) {
             $path = $file->getWebPath();
             if (endswith($path, ".xml")) {
-                $xml .= @prettify_tei($path, $file_url_map);
+                $xml .= @prettify_tei($teipb, $path, $file_url_map);
                 break;
             }
         }
@@ -53,7 +54,8 @@ class TeiEditions_IndexController extends Omeka_Controller_AbstractActionControl
         // Set the page object to the view.
         $this->view->assign(array(
             'tei_edition' => $edition,
-            'xml' => $xml
+            'xml' => $xml,
+            'xsl' => $teipb
         ));
     }
 
