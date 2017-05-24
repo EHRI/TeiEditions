@@ -22,6 +22,11 @@ class TeiEditions_EditionController extends Omeka_Controller_AbstractActionContr
     public function showAction()
     {
         $item = $this->_helper->db->getTable('Item')->find($this->_getParam('id'));
+
+        if (is_null($item)) {
+            throw new Omeka_Controller_Exception_404;
+        }
+
         $files = $item->getFiles();
 
         $file_url_map = array();
