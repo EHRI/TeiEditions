@@ -17,7 +17,8 @@ class TeiEditionsPlugin extends Omeka_Plugin_AbstractPlugin
      * @var array Hooks for the plugin.
      */
     protected $_hooks = array('install', 'uninstall', 'upgrade', 'initialize',
-        'define_acl', 'define_routes', 'config_form', 'config');
+        'define_acl', 'define_routes', 'config_form', 'config',
+        'after_save_item');
 
     /**
      * @var array Filters for the plugin.
@@ -29,8 +30,7 @@ class TeiEditionsPlugin extends Omeka_Plugin_AbstractPlugin
     /**
      * @var array Options and their default values.
      */
-    protected $_options = array(
-    );
+    protected $_options = array();
 
     /**
      * Install the plugin.
@@ -95,13 +95,13 @@ class TeiEditionsPlugin extends Omeka_Plugin_AbstractPlugin
 
     /**
      * Define the ACL.
-     * 
+     *
      * @param Omeka_Acl
      */
     public function hookDefineAcl($args)
     {
         $acl = $args['acl'];
-        
+
         $indexResource = new Zend_Acl_Resource('TeiEditions_Index');
         $pageResource = new Zend_Acl_Resource('TeiEditions');
         $acl->add($indexResource);
@@ -115,7 +115,7 @@ class TeiEditionsPlugin extends Omeka_Plugin_AbstractPlugin
     public function hookDefineRoutes($args)
     {
         $args['router']->addConfig(new Zend_Config_Ini(
-            dirname(__FILE__) .'/routes.ini'
+            dirname(__FILE__) . '/routes.ini'
         ));
     }
 
@@ -135,9 +135,22 @@ class TeiEditionsPlugin extends Omeka_Plugin_AbstractPlugin
         //set_option('tei_editions_filter_page_content', (int)(boolean)$_POST['tei_editions_filter_page_content']);
     }
 
+    public function hookAfterSaveItem($args)
+    {
+        if ($item = $args["record"]) {
+            if ($item->getProperty('item_type_name') == "TEI") {
+                foreach ($item->getFiles() as $file) {
+                    if (endswith($file->original_filename, ".xml")) {
+                        set_tei_metadata($item, $file);
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * Add the Simple Pages link to the admin main navigation.
-     * 
+     *
      * @param array Navigation array.
      * @return array Filtered navigation array.
      */
@@ -154,7 +167,7 @@ class TeiEditionsPlugin extends Omeka_Plugin_AbstractPlugin
 
     /**
      * Add the pages to the public main navigation options.
-     * 
+     *
      * @param array Navigation array.
      * @return array Filtered navigation array.
      */
@@ -173,9 +186,9 @@ class TeiEditionsPlugin extends Omeka_Plugin_AbstractPlugin
 
     /**
      * Specify the default list of urls to whitelist
-     * 
-     * @param $whitelist array An associative array urls to whitelist, 
-     * where the key is a regular expression of relative urls to whitelist 
+     *
+     * @param $whitelist array An associative array urls to whitelist,
+     * where the key is a regular expression of relative urls to whitelist
      * and the value is an array of Zend_Cache front end settings
      * @return array The whitelist
      */
@@ -186,9 +199,9 @@ class TeiEditionsPlugin extends Omeka_Plugin_AbstractPlugin
 
     /**
      * Add pages to the blacklist
-     * 
-     * @param $blacklist array An associative array urls to blacklist, 
-     * where the key is a regular expression of relative urls to blacklist 
+     *
+     * @param $blacklist array An associative array urls to blacklist,
+     * where the key is a regular expression of relative urls to blacklist
      * and the value is an array of Zend_Cache front end settings
      * @param $record
      * @param $args Filter arguments. contains:
@@ -203,9 +216,9 @@ class TeiEditionsPlugin extends Omeka_Plugin_AbstractPlugin
 
     public function filterApiResources($apiResources)
     {
-       return $apiResources;
+        return $apiResources;
     }
-    
+
     public function filterApiImportOmekaAdapters($adapters, $args)
     {
         return $adapters;

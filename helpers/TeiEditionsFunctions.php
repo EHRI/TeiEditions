@@ -81,3 +81,36 @@ function replace_urls_xml($doc, $map) {
     $proc->importStylesheet($xsldoc);
     return $proc->transformToDoc($doc);
 }
+
+function get_tei_metadata(array $files) {
+    return array(
+        "Item Type Metadata" => array(
+            "Subjects" => array(
+                array('text' => 'Holocaust', 'html' => false),
+                array('text' => 'Germany', 'html' => false)
+            ),
+            "Persons" => array(
+                array('text' => 'Mike', 'html' => false),
+                array('text' => 'Reto', 'html' => false)
+            )
+        )
+    );
+}
+
+function set_tei_metadata(Item $item, File $file) {
+
+    $element_sets = get_db()->getTable("ElementSet")
+        ->findBy(array('name' => 'Item Type Metadata'));
+    if (empty($element_sets)) return;
+
+    $set = $element_sets[0];
+    $elements = get_db()->getTable("Element")->findBy(
+        array('element_set_id' => $set->id));
+
+    $item->deleteElementTextsByElementId(
+        array_map(function ($e) { return $e->id; }, $elements));
+
+    $metadata = get_tei_metadata(array($file));
+    $item->addElementTextsByArray($metadata);
+    $item->saveElementTexts();
+}
