@@ -217,7 +217,7 @@
             content: "&gt;";
         }
     </style>
-    <title><?php echo metadata('tei_edition', 'title'); ?></title>
+    <title><?php echo metadata('item', 'display_title'); ?></title>
 
     <script type="text/javascript">
       var _gaq = _gaq || [];

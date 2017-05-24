@@ -1828,6 +1828,8 @@ zone {
   /* Empty Rule Set */
 }
 /* styles for html shell and html elements in TEI (e.g.,<a> and <img>) */
+
+/** REMOVING since we are rendering our own HTML shell.
 html > body {
   margin: 0;
   padding: 0;
@@ -1863,6 +1865,8 @@ a:hover {
   color: #5f0000;
   text-decoration: underline;
 }
+*/
+
 #teibpToolbox {
   left: 56em;
   top: 25px;

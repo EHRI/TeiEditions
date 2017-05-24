@@ -16,22 +16,13 @@ class TeiEditions_EditionController extends Omeka_Controller_AbstractActionContr
 
     public function init()
     {
-        $this->_helper->db->setDefaultModelName('TeiEdition');
         $this->_fields = $this->_helper->db->getTable('SolrSearchField');
     }
 
     public function showAction()
     {
-        $query = array('slug' => $this->_getParam('slug'), 'is_published' => true);
-        $editions = $this->_helper->db->getTable('TeiEdition')->findBy($query);
-
-        if (count($editions) == 0) {
-            throw new Omeka_Controller_Exception_404;
-        }
-
-        $edition = $editions[0];
-
-        $files = $edition->getItem()->getFiles();
+        $item = $this->_helper->db->getTable('Item')->find($this->_getParam('id'));
+        $files = $item->getFiles();
 
         $file_url_map = array();
         foreach ($files as $file) {
@@ -49,7 +40,7 @@ class TeiEditions_EditionController extends Omeka_Controller_AbstractActionContr
 
         // Set the page object to the view.
         $this->view->assign(array(
-            'tei_edition' => $edition,
+            'item' => $item,
             'xml' => $xml
         ));
     }

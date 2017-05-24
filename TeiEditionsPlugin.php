@@ -17,15 +17,13 @@ class TeiEditionsPlugin extends Omeka_Plugin_AbstractPlugin
      * @var array Hooks for the plugin.
      */
     protected $_hooks = array('install', 'uninstall', 'upgrade', 'initialize',
-        'define_acl', 'define_routes', 'config_form', 'config',
+        'define_routes', 'config_form', 'config',
         'after_save_item');
 
     /**
      * @var array Filters for the plugin.
      */
-    protected $_filters = array('admin_navigation_main',
-        'public_navigation_main', 'search_record_types', 'page_caching_whitelist',
-        'page_caching_blacklist_for_record');
+    protected $_filters = array('public_navigation_main');
 
     /**
      * @var array Options and their default values.
@@ -37,30 +35,6 @@ class TeiEditionsPlugin extends Omeka_Plugin_AbstractPlugin
      */
     public function hookInstall()
     {
-        // Create the table.
-        $db = $this->_db;
-        $sql = "
-        CREATE TABLE IF NOT EXISTS `$db->TeiEdition` (
-          `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-          `item_id` int(10) unsigned NOT NULL,
-          `modified_by_user_id` int(10) unsigned NOT NULL,
-          `created_by_user_id` int(10) unsigned NOT NULL,
-          `is_published` tinyint(1) NOT NULL,
-          `title` tinytext COLLATE utf8_unicode_ci NOT NULL,
-          `slug` tinytext COLLATE utf8_unicode_ci NOT NULL,
-          `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-          `inserted` timestamp NOT NULL DEFAULT '2000-01-01 00:00:00',
-          `template` tinytext COLLATE utf8_unicode_ci NOT NULL,
-          PRIMARY KEY (`id`),
-          KEY `item_id` (`item_id`),
-          KEY `is_published` (`is_published`),
-          KEY `inserted` (`inserted`),
-          KEY `updated` (`updated`),
-          KEY `created_by_user_id` (`created_by_user_id`),
-          KEY `modified_by_user_id` (`modified_by_user_id`)
-        ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
-        $db->query($sql);
-
         $this->_installOptions();
     }
 
@@ -69,11 +43,6 @@ class TeiEditionsPlugin extends Omeka_Plugin_AbstractPlugin
      */
     public function hookUninstall()
     {
-        // Drop the table.
-        $db = $this->_db;
-        $sql = "DROP TABLE IF EXISTS `$db->TeiEdition`";
-        $db->query($sql);
-
         $this->_uninstallOptions();
     }
 
@@ -91,25 +60,6 @@ class TeiEditionsPlugin extends Omeka_Plugin_AbstractPlugin
      */
     public function hookInitialize()
     {
-    }
-
-    /**
-     * Define the ACL.
-     *
-     * @param Omeka_Acl
-     */
-    public function hookDefineAcl($args)
-    {
-        $acl = $args['acl'];
-
-        $indexResource = new Zend_Acl_Resource('TeiEditions_Index');
-        $pageResource = new Zend_Acl_Resource('TeiEditions');
-        $acl->add($indexResource);
-        $acl->add($pageResource);
-
-        $acl->allow(array('super', 'admin'), array('TeiEditions_Index', 'TeiEditions'));
-        $acl->allow(null, 'TeiEditions', 'show');
-        $acl->deny(null, 'TeiEditions', 'show-unpublished');
     }
 
     public function hookDefineRoutes($args)
@@ -144,22 +94,6 @@ class TeiEditionsPlugin extends Omeka_Plugin_AbstractPlugin
         }
     }
 
-    /**
-     * Add the Simple Pages link to the admin main navigation.
-     *
-     * @param array Navigation array.
-     * @return array Filtered navigation array.
-     */
-    public function filterAdminNavigationMain($nav)
-    {
-        $nav[] = array(
-            'label' => __('TEI Editions'),
-            'uri' => url('tei-editions'),
-            'resource' => 'TeiEditions_Index',
-            'privilege' => 'browse'
-        );
-        return $nav;
-    }
 
     /**
      * Add the pages to the public main navigation options.
@@ -169,54 +103,10 @@ class TeiEditionsPlugin extends Omeka_Plugin_AbstractPlugin
      */
     public function filterPublicNavigationMain($nav)
     {
+        array_unshift($nav, array(
+            'label' => __('Editions'),
+            'uri' => url('editions')
+        ));
         return $nav;
-    }
-
-    /**
-     * Add TeiEditionsPage as a searchable type.
-     */
-    public function filterSearchRecordTypes($recordTypes)
-    {
-        return $recordTypes;
-    }
-
-    /**
-     * Specify the default list of urls to whitelist
-     *
-     * @param $whitelist array An associative array urls to whitelist,
-     * where the key is a regular expression of relative urls to whitelist
-     * and the value is an array of Zend_Cache front end settings
-     * @return array The whitelist
-     */
-    public function filterPageCachingWhitelist($whitelist)
-    {
-        return $whitelist;
-    }
-
-    /**
-     * Add pages to the blacklist
-     *
-     * @param $blacklist array An associative array urls to blacklist,
-     * where the key is a regular expression of relative urls to blacklist
-     * and the value is an array of Zend_Cache front end settings
-     * @param $record
-     * @param $args Filter arguments. contains:
-     * - record: the record
-     * - action: the action
-     * @return array The blacklist
-     */
-    public function filterPageCachingBlacklistForRecord($blacklist, $args)
-    {
-        return $blacklist;
-    }
-
-    public function filterApiResources($apiResources)
-    {
-        return $apiResources;
-    }
-
-    public function filterApiImportOmekaAdapters($adapters, $args)
-    {
-        return $adapters;
     }
 }

@@ -86,11 +86,10 @@ function replace_urls_xml($doc, $map)
     return $proc->transformToDoc($doc);
 }
 
-function xpath_query(DOMXPath $doc, $xpath)
+function xpath_dom_query(DOMXPath $doc, $xpath)
 {
     $out = array();
     $nodes = $doc->query($xpath);
-    _log("Running " . $xpath);
     for ($i = 0; $i < $nodes->length; $i++) {
         _log("Got node for " . $xpath . " -> " . $nodes->item($i)->tagName);
         $out[] = $nodes->item($i)->textContent;
@@ -117,7 +116,7 @@ function xpath_query_uri($uri, $xpaths)
         $query->registerNamespace("tei", "http://www.tei-c.org/ns/1.0");
 
         foreach ($xpaths as $name => $path) {
-            $out[$name] = xpath_query($query, $path);
+            $out[$name] = xpath_dom_query($query, $path);
         }
     } catch (Exception $e) {
         $msg = $e->getMessage();
@@ -138,6 +137,7 @@ function extract_metadata(File $file)
         "Persons" => "/tei:TEI/tei:teiHeader/tei:profileDesc/tei:abstract/tei:persName",
         "Subjects" => "/tei:TEI/tei:teiHeader/tei:profileDesc/tei:abstract/tei:term",
         "Places" => "/tei:TEI/tei:teiHeader/tei:profileDesc/tei:abstract/tei:placeName",
+        "XML Text" => "/tei:TEI/tei:text",
     );
 
     $out = [];
