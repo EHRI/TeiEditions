@@ -41,39 +41,31 @@
 
                 <!-- Facets. -->
                 <div id="solr-facets">
-
-                    <h2><?php echo __('Limit your search'); ?></h2>
-
                     <?php foreach ($results->facet_counts->facet_fields as $name => $facets): ?>
 
-                        <!-- Does the facet have any hits? -->
-                        <?php if (count(get_object_vars($facets))): ?>
+                        <?php if (count(get_object_vars($facets)) && $name != "itemtype" && $name != "resulttype"): ?>
 
-                            <!-- Facet label. -->
-                            <?php $label = SolrSearch_Helpers_Facet::keyToLabel($name); ?>
-                            <strong><?php echo $label; ?></strong>
+                            <div class="solr-facet-class">
+                                <?php $label = SolrSearch_Helpers_Facet::keyToLabel($name); ?>
+                                <strong><?php echo $label; ?></strong>
 
-                            <ul>
-                                <!-- Facets. -->
-                                <?php foreach ($facets as $value => $count): ?>
-                                    <li class="<?php echo $value; ?>">
+                                <ul>
+                                    <?php foreach ($facets as $value => $count): ?>
+                                        <li class="<?php echo $value; ?>">
 
-                                        <!-- Facet URL. -->
-                                        <?php $url = SolrSearch_Helpers_Facet::addFacet($name, $value); ?>
+                                            <?php $url = SolrSearch_Helpers_Facet::addFacet($name, $value); ?>
 
-                                        <!-- Facet link. -->
-                                        <a href="<?php echo str_replace('solr-search', 'editions', $url); ?>"
-                                           class="facet-value">
-                                            <?php echo $value; ?>
-                                        </a>
+                                            <a href="<?php echo str_replace('solr-search', 'editions', $url); ?>"
+                                               class="facet-value">
+                                                <?php echo $value; ?>
+                                            </a>
 
-                                        <!-- Facet count. -->
-                                        (<span class="facet-count"><?php echo $count; ?></span>)
+                                            (<span class="facet-count"><?php echo $count; ?></span>)
 
-                                    </li>
-                                <?php endforeach; ?>
-                            </ul>
-
+                                        </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            </div>
                         <?php endif; ?>
 
                     <?php endforeach; ?>
