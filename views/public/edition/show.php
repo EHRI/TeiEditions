@@ -221,21 +221,33 @@
 </head>
 <body>
 
-<div class="container">
-    <div id="banner" class="nav content">
-        <div class="nav-left">
-            <h1><a href="<?php echo url("editions"); ?>">EHRI Digital Editions</a></h1>
-        </div>
-    </div>
-</div>
+<?php echo $this->partial('edition/header.php'); ?>
 
 <div id="wrapper" class="container">
     <div class="columns">
-        <section id="sidebar" class="column is-3 content">
-            <h2>Metadata</h2>
+        <section id="sidebar" class="column is-3">
+            <div class="card">
+                <header class="card-header">
+                    <div class="card-header-title">Metadata</div>
+                </header>
+                <div class="card-content">
+                    <div class="content">
+                        TODO
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="card-footer-item is-pulled-left">
+                        <a href="<?php echo $xml_url; ?>">XML</a>
+                    </div>
+                </div>
+            </div>
+
+
         </section>
-        <section id="main-content" class="column is-6 content box" role="main">
-            <?php echo $xml; ?>
+        <section id="main-content" class="column is-6" role="main">
+            <div class="content box">
+                <?php echo $xml; ?>
+            </div>
         </section>
         <section id="data" class="column content">
             <h3>Some stuff</h3>
@@ -246,16 +258,7 @@
 
 <footer class="footer">
     <div class="container">
-        <div class="content has-text-centered">
-            <p>
-                Powered by <a href="http://dcl.slis.indiana.edu/teibp/">TEI Boilerplate</a>.
-                TEI Boilerplate is licensed under a <a href="http://creativecommons.org/licenses/by/3.0/">
-                    Creative Commons Attribution 3.0 Unported License</a>.
-                <a href="http://creativecommons.org/licenses/by/3.0/">
-                    <img alt="Creative Commons License" style="border-width:0;" src="http://i.creativecommons.org/l/by/3.0/80x15.png"/>
-                </a>
-            </p>
-        </div>
+        <?php echo $this->partial('edition/footer_text.php');?>
     </div>
 </footer>
 <script type="text/javascript" src="http://localhost/omeka/plugins/TeiEditions/teibp/js/teibp.js"></script>

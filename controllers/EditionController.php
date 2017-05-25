@@ -46,7 +46,8 @@ class TeiEditions_EditionController extends Omeka_Controller_AbstractActionContr
         // Set the page object to the view.
         $this->view->assign(array(
             'item' => $item,
-            'xml' => $xml
+            'xml' => $xml,
+            'xml_url' => $path
         ));
     }
 
