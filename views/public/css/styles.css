@@ -26,3 +26,7 @@ a {
 .applied-facet-value {
     margin-left: 2px;
 }
+
+#banner {
+    margin: 20px 0;
+}

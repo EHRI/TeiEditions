@@ -222,7 +222,7 @@
 <body>
 
 <div class="container">
-    <div class="nav content">
+    <div id="banner" class="nav content">
         <div class="nav-left">
             <h1><a href="<?php echo url("editions"); ?>">EHRI Digital Editions</a></h1>
         </div>
@@ -234,7 +234,7 @@
         <section id="sidebar" class="column is-3 content">
             <h2>Metadata</h2>
         </section>
-        <section id="main-content" class="column is-6 content" role="main">
+        <section id="main-content" class="column is-6 content box" role="main">
             <?php echo $xml; ?>
         </section>
         <section id="data" class="column content">

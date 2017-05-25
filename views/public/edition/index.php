@@ -16,7 +16,7 @@
 <body>
 
 <div class="container">
-    <div class="nav content">
+    <div id="banner" class="nav content">
         <div class="nav-left">
             <h1><a href="<?php echo url("editions"); ?>">EHRI Digital Editions</a></h1>
         </div>
@@ -25,19 +25,48 @@
 
 <div id="wrapper" class="container">
     <div class="columns">
-        <section id="sidebar" class="column is-3">
+        <section id="sidebar" class="column is-3 content">
             <form action="<?php echo url(array()); ?>" method="get">
                 <div class="field has-addons">
-                    <p class="control">
+                    <div class="control">
                         <input class="input" id="id-q" name="q" type="text" value="<?php echo $q; ?>"
                                placeholder="Find an Edition"/>
-                    </p>
-                    <p class="control">
+                    </div>
+                    <div class="control">
                         <a class="button">
                             Search
                         </a>
-                    </p>
+                    </div>
                 </div>
+
+                <h3 id="num-found">
+                    <?php echo __(plural('One Edition found', '%s Editions Found', $results->response->numFound), $results->response->numFound); ?>
+                </h3>
+
+
+                <!-- Applied facets. -->
+                <div id="solr-applied-facets" class="level">
+                    <div class="level-left">
+                        <!-- Get the applied facets. -->
+                        <?php foreach (SolrSearch_Helpers_Facet::parseFacets() as $f): ?>
+                            <div class="level-item">
+
+                                <!-- Facet label. -->
+                                <div class="tag is-primary">
+                                    <?php $label = SolrSearch_Helpers_Facet::keyToLabel($f[0]); ?>
+                                    <span class="applied-facet-label"><?php echo $label; ?></span> >
+                                    <span class="applied-facet-value"><?php echo $f[1]; ?></span>
+
+                                    <!-- Remove link. -->
+                                    <?php $url = SolrSearch_Helpers_Facet::removeFacet($f[0], $f[1]); ?>
+                                    <a class="delete is-small"
+                                       href="<?php echo str_replace('solr-search', 'editions', $url); ?>"></a>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+
 
                 <!-- Facets. -->
                 <div id="solr-facets">
@@ -74,34 +103,6 @@
             </form>
         </section>
         <section id="main-content" class="column content" role="main">
-            <p id="num-found">
-                <?php echo $results->response->numFound; ?> editions
-            </p>
-
-
-            <!-- Applied facets. -->
-            <div id="solr-applied-facets" class="level">
-                <div class="level-left">
-                    <!-- Get the applied facets. -->
-                    <?php foreach (SolrSearch_Helpers_Facet::parseFacets() as $f): ?>
-                        <div class="level-item">
-
-                            <!-- Facet label. -->
-                            <div class="tag">
-                                <?php $label = SolrSearch_Helpers_Facet::keyToLabel($f[0]); ?>
-                                <span class="applied-facet-label"><?php echo $label; ?></span> >
-                                <span class="applied-facet-value"><?php echo $f[1]; ?></span>
-
-                                <!-- Remove link. -->
-                                <?php $url = SolrSearch_Helpers_Facet::removeFacet($f[0], $f[1]); ?>
-                                <a class="delete is-small"
-                                   href="<?php echo str_replace('solr-search', 'editions', $url); ?>"></a>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-            </div>
-
             <?php foreach ($results->response->docs as $doc): ?>
                 <?php $item = get_db()->getTable($doc->model)->find($doc->modelid); ?>
                 <div class="result box">
