@@ -4,10 +4,10 @@
     <link id="bulma" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.4.1/css/bulma.css"
           type="text/css"/>
     <link id="maincss" rel="stylesheet" type="text/css"
-          href="http://localhost/omeka/plugins/TeiEditions/teibp/css/teibp.css"/>
+          href="<?php echo web_path_to('teibp/css/teibp.css');?>"/>
     <link id="customcss" rel="stylesheet" type="text/css"
-          href="http://localhost/omeka/plugins/TeiEditions/teibp/css/custom.css"/>
-    <link rel="stylesheet" href="http://localhost/omeka/plugins/TeiEditions/views/public/css/styles.css"
+          href="<?php echo web_path_to('teibp/css/custom.css');?>"/>
+    <link rel="stylesheet" href="<?php echo web_path_to('css/styles.css');?>"
           type="text/css"/>
     <title><?php echo __("EHRI Digital Editions"); ?></title>
     <style>

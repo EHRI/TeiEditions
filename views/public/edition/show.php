@@ -4,10 +4,8 @@
     <link id="bulma" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.4.1/css/bulma.css"
           type="text/css"/>
     <link id="maincss" rel="stylesheet" type="text/css"
-          href="http://localhost/omeka/plugins/TeiEditions/teibp/css/teibp.css"/>
-    <link id="customcss" rel="stylesheet" type="text/css"
-          href="http://localhost/omeka/plugins/TeiEditions/teibp/css/custom.css"/>
-    <link rel="stylesheet" href="http://localhost/omeka/plugins/TeiEditions/views/public/css/styles.css"
+          href="<?php echo web_path_to('teibp/css/teibp.css'); ?>"/>
+    <link rel="stylesheet" href="<?php echo web_path_to('css/styles.css'); ?>"
           type="text/css"/>
     <style type="text/css" id="tagusage-css"></style>
     <style type="text/css">[rendition~="#b"] {
@@ -218,6 +216,10 @@
             content: "&gt;";
         }
     </style>
+    <script
+            src="https://code.jquery.com/jquery-3.2.1.min.js"
+            integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+            crossorigin="anonymous"></script>
     <title><?php echo metadata('item', 'display_title'); ?></title>
 </head>
 <body>
@@ -238,7 +240,6 @@
                                 <?php $meta = $this->metadata($item, array("Item Type Metadata", $elem),
                                     array('no_escape' => true, 'snippet' => 300)); ?>
                                 <?php if (!is_null($meta)): ?>
-                                    <?php _log("Meta: $elem: '$meta'"); ?>
                                     <dt><?php echo __($elem); ?></dt>
                                     <dd><?php echo $meta ?></dd>
                                 <?php endif; ?>
@@ -252,8 +253,6 @@
                     </div>
                 </div>
             </div>
-
-
         </section>
         <section id="main-content" class="column is-6" role="main">
             <div class="content box">
@@ -261,7 +260,26 @@
             </div>
         </section>
         <section id="data" class="column content">
-            <h3>Some stuff</h3>
+            <div class="card">
+                <header class="card-header">
+                    <div class="card-header-title">Mentioned in this Document</div>
+                </header>
+                <div class="card-content">
+                    <div class="content">
+                        <dl class="item-metadata">
+                            <?php foreach (array("Subjects", "Places", "Persons") as $elem): ?>
+                                <?php $meta = $this->metadata($item, array("Item Type Metadata", $elem),
+                                    array('no_escape' => true, 'snippet' => 300, 'all' => true, 'delimiter' => ', ')); ?>
+                                <?php if (!is_null($meta) && !empty($meta)): ?>
+                                    <dt><?php echo __($elem); ?></dt>
+                                    <dd><?php echo $meta ?></dd>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+
         </section>
     </div>
 </div>
@@ -272,6 +290,6 @@
         <?php echo $this->partial('edition/footer_text.php'); ?>
     </div>
 </footer>
-<script type="text/javascript" src="http://localhost/omeka/plugins/TeiEditions/teibp/js/teibp.js"></script>
+<script type="text/javascript" src="<?php echo web_path_to('teibp/js/teibp.js'); ?>"></script>
 </body>
 </html>

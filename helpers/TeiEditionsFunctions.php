@@ -7,7 +7,7 @@
  */
 
 /**
- * The TeiEditions Edition record class.
+ * Miscellaneous TEI functions.
  *
  * @package TeiEditions
  */
@@ -29,25 +29,9 @@ function endswith($haystack, $needle)
     return (substr($haystack, -$length) === $needle);
 }
 
-/**
- * Replace
- *
- * @param $str
- * @param $file_map
- * @return mixed
- */
-function replace_urls($str, $file_map)
-{
-    foreach ($file_map as $key => $value) {
-        $find = "../images/$key";
-        $str = str_replace($find, $value, $str);
-    }
-    return $str;
-}
-
 function prettify_tei($path, $img_map)
 {
-    $teipb = dirname(dirname(__FILE__)) . '/teibp/content/teibp.xsl';
+    $teipb = web_path_to('teibp/content/teibp.xsl');
 
     $xsldoc = new DOMDocument();
     $xsldoc->load($teipb);
@@ -67,7 +51,7 @@ function prettify_tei($path, $img_map)
 
 function replace_urls_xml($doc, $map)
 {
-    $filename = dirname(dirname(__FILE__)) . "/teibp/content/replace-urls.xsl";
+    $filename = web_path_to('teibp/content/replace-urls.xsl');
     $xsldoc = new DOMDocument();
     $xsldoc->loadXML(file_get_contents($filename));
 
@@ -133,6 +117,7 @@ function xpath_query_uri($uri, $xpaths)
  */
 function extract_metadata(File $file)
 {
+    // TODO: Configure these mappings in the database
     $xpaths = array(
         "Persons" => "/tei:TEI/tei:teiHeader/tei:profileDesc/tei:abstract/tei:persName",
         "Subjects" => "/tei:TEI/tei:teiHeader/tei:profileDesc/tei:abstract/tei:term",
@@ -187,8 +172,8 @@ function get_tei_metadata(array $files)
 
             $meta = extract_metadata($file);
             foreach ($meta as $elem => $data) {
-                if ($existing = $out[$elem]) {
-                    $out[$elem] = array_unique(array_merge($existing, $data), SORT_REGULAR);
+                if (array_key_exists($elem, $out)) {
+                    $out[$elem] = array_unique(array_merge($out[$elem], $data), SORT_REGULAR);
                 } else {
                     $out[$elem] = $data;
                 }
