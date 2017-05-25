@@ -7,7 +7,8 @@
           href="http://localhost/omeka/plugins/TeiEditions/teibp/css/teibp.css"/>
     <link id="customcss" rel="stylesheet" type="text/css"
           href="http://localhost/omeka/plugins/TeiEditions/teibp/css/custom.css"/>
-    <link rel="stylesheet" href="http://localhost/omeka/plugins/TeiEditions/views/public/css/styles.css" type="text/css"/>
+    <link rel="stylesheet" href="http://localhost/omeka/plugins/TeiEditions/views/public/css/styles.css"
+          type="text/css"/>
     <style type="text/css" id="tagusage-css"></style>
     <style type="text/css">[rendition~="#b"] {
             font-weight: bold;
@@ -232,7 +233,17 @@
                 </header>
                 <div class="card-content">
                     <div class="content">
-                        TODO
+                        <dl class="item-metadata">
+                            <?php foreach (array("Author", "Encoding Description", "Source Details", "Publisher", "Publication Date") as $elem): ?>
+                                <?php $meta = $this->metadata($item, array("Item Type Metadata", $elem),
+                                    array('no_escape' => true, 'snippet' => 300)); ?>
+                                <?php if (!is_null($meta)): ?>
+                                    <?php _log("Meta: $elem: '$meta'"); ?>
+                                    <dt><?php echo __($elem); ?></dt>
+                                    <dd><?php echo $meta ?></dd>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                        </dl>
                     </div>
                 </div>
                 <div class="card-footer">
@@ -258,7 +269,7 @@
 
 <footer class="footer">
     <div class="container">
-        <?php echo $this->partial('edition/footer_text.php');?>
+        <?php echo $this->partial('edition/footer_text.php'); ?>
     </div>
 </footer>
 <script type="text/javascript" src="http://localhost/omeka/plugins/TeiEditions/teibp/js/teibp.js"></script>

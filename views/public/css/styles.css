@@ -31,3 +31,11 @@ a {
 #banner {
     margin: 20px 0;
 }
+
+dl.item-metadata dt {
+    font-weight: bold;
+}
+
+dl.item-metadata dd {
+    margin-bottom: 10px;
+}
