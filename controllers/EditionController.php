@@ -87,7 +87,12 @@ class TeiEditions_EditionController extends Omeka_Controller_AbstractActionContr
         _log(print_r($results->response, true));
 
         // Push results to the view.
-        $this->view->results = $results;
+        $this->view->assign(array(
+            'results' => $results,
+            'q' => $this->_request->q,
+            'page' => $page,
+            'limit' => $limit
+        ));
     }
 
     /**

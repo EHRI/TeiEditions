@@ -7,7 +7,7 @@
           href="http://localhost/omeka/plugins/TeiEditions/teibp/css/teibp.css"/>
     <link id="customcss" rel="stylesheet" type="text/css"
           href="http://localhost/omeka/plugins/TeiEditions/teibp/css/custom.css"/>
-    <script src="http://localhost/omeka/plugins/TeiEditions/teibp/js/build-support/less.min.js"></script>
+    <link rel="stylesheet" href="http://localhost/omeka/plugins/TeiEditions/views/public/css/styles.css" type="text/css"/>
     <style type="text/css" id="tagusage-css"></style>
     <style type="text/css">[rendition~="#b"] {
             font-weight: bold;
@@ -218,41 +218,45 @@
         }
     </style>
     <title><?php echo metadata('item', 'display_title'); ?></title>
-
-    <script type="text/javascript">
-      var _gaq = _gaq || [];
-      //include analytics account below.
-      _gaq.push(['_setAccount', 'UA-XXXXXXXX-X']);
-      _gaq.push(['_trackPageview']);
-
-      (function () {
-        var ga = document.createElement('script');
-        ga.type = 'text/javascript';
-        ga.async = true;
-        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-        var s = document.getElementsByTagName('script')[0];
-        s.parentNode.insertBefore(ga, s);
-      })();
-    </script>
 </head>
 <body>
 
-<div class="columns">
-    <section id="sidebar" class="column is-3">
-        Sidebar
-    </section>
-    <section id="main-content" class="column is-6" role="main">
-        <?php echo $xml; ?>
-    </section>
-    <section id="data" class="column">
-        <h3>Some stuff</h3>
-    </section>
+<div class="container">
+    <div class="nav content">
+        <div class="nav-left">
+            <h1><a href="<?php echo url("editions"); ?>">EHRI Digital Editions</a></h1>
+        </div>
+    </div>
 </div>
-<footer> Powered by <a href="http://dcl.slis.indiana.edu/teibp/">TEI Boilerplate</a>. TEI Boilerplate is licensed under
-    a <a href="http://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution 3.0
-        Unported License</a>. <a href="http://creativecommons.org/licenses/by/3.0/"><img alt="Creative Commons License"
-                                                                                         style="border-width:0;"
-                                                                                         src="http://i.creativecommons.org/l/by/3.0/80x15.png"/></a>
+
+<div id="wrapper" class="container">
+    <div class="columns">
+        <section id="sidebar" class="column is-3 content">
+            <h2>Metadata</h2>
+        </section>
+        <section id="main-content" class="column is-6 content" role="main">
+            <?php echo $xml; ?>
+        </section>
+        <section id="data" class="column content">
+            <h3>Some stuff</h3>
+        </section>
+    </div>
+</div>
+
+
+<footer class="footer">
+    <div class="container">
+        <div class="content has-text-centered">
+            <p>
+                Powered by <a href="http://dcl.slis.indiana.edu/teibp/">TEI Boilerplate</a>.
+                TEI Boilerplate is licensed under a <a href="http://creativecommons.org/licenses/by/3.0/">
+                    Creative Commons Attribution 3.0 Unported License</a>.
+                <a href="http://creativecommons.org/licenses/by/3.0/">
+                    <img alt="Creative Commons License" style="border-width:0;" src="http://i.creativecommons.org/l/by/3.0/80x15.png"/>
+                </a>
+            </p>
+        </div>
+    </div>
 </footer>
 <script type="text/javascript" src="http://localhost/omeka/plugins/TeiEditions/teibp/js/teibp.js"></script>
 </body>
