@@ -23,7 +23,10 @@ class TeiEditionsPlugin extends Omeka_Plugin_AbstractPlugin
     /**
      * @var array Filters for the plugin.
      */
-    protected $_filters = array('public_navigation_main');
+    protected $_filters = array(
+        'admin_navigation_main',
+        'public_navigation_main'
+    );
 
     /**
      * @var array Options and their default values.
@@ -35,6 +38,46 @@ class TeiEditionsPlugin extends Omeka_Plugin_AbstractPlugin
      */
     public function hookInstall()
     {
+        /*
+         * TODO: Need to create TEI item type and
+         *  add associations for new Elements:
+         *
+         *   Author
+         *       The TEI author.
+         *   Source Details
+         *       Details about the document source.
+         *   Encoding Description
+         *       A description of the encoding process.
+         *   Publisher
+         *       The TEI publisher.
+         *   Publication Date
+         *       The TEI's date of publication.
+         *   Subjects
+         *       Subjects mentioned in this text.
+         *   Places
+         *       Places mentioned in this text.
+         *   Persons
+         *       People mentioned in this text.
+         *   XML Text
+         *       The body text of the TEI document.
+         *
+         * Also:
+         *
+         *  - ensure that file types 'xml' are allowed
+         *  - ensure that mimetypes 'application/xml' is allowed
+         *
+         */
+        $this->_db->query(<<<SQL
+        CREATE TABLE IF NOT EXISTS {$this->_db->prefix}tei_editions_field_mappings (
+            id          int(10) unsigned NOT NULL auto_increment,
+            element_id  int(10) unsigned NOT NULL,
+            path        tinytext collate utf8_unicode_ci NOT NULL,
+            PRIMARY KEY (id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+SQL
+        );
+
+
         $this->_installOptions();
     }
 
@@ -43,6 +86,9 @@ class TeiEditionsPlugin extends Omeka_Plugin_AbstractPlugin
      */
     public function hookUninstall()
     {
+        $this->_db->query(
+            "DROP TABLE IF EXISTS {$this->_db->prefix}tei_editions_field_mappings");
+
         $this->_uninstallOptions();
     }
 
@@ -94,6 +140,20 @@ class TeiEditionsPlugin extends Omeka_Plugin_AbstractPlugin
         }
     }
 
+    /**
+     * Add a link to the administrative navigation bar.
+     *
+     * @param string $nav The array of label/URI pairs.
+     * @return array
+     */
+    public function filterAdminNavigationMain($nav)
+    {
+        $nav[] = array(
+            'label' => __('Editions'),
+            'uri' => url('editions/fields')
+        );
+        return $nav;
+    }
 
     /**
      * Add the pages to the public main navigation options.
