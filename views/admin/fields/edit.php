@@ -40,6 +40,21 @@
                         <input name="mapping[0][path]" type="text"/>
                     </td>
                 </tr>
+
+
+                <?php $itemType = get_db()->getTable("ItemType")->findBySql("name = ?", array('name' => 'TEI'), true) ?>
+                <?php $elems = is_null($itemType) ? array() : get_db()->getTable('Element')
+                    ->findByItemType($itemType->id); ?>
+
+                <? foreach ($elems as $elem): ?>
+                    <tr>
+                        <td><input type="hidden" name=""><?php echo $elem->name ?></td>
+                        <td><input type="text" name="" value=""></td>
+                    </tr>
+
+                <? endforeach ?>
+
+
                 </tbody>
 
             </table>

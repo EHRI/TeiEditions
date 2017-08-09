@@ -11,13 +11,21 @@
  *
  * @package TeiEditions
  */
-class TeiEditions_AdminController extends Omeka_Controller_AbstractActionController
+class TeiEditions_FieldsController extends Omeka_Controller_AbstractActionController
 {
 
     /**
      * Display the "Field Configuration" form.
      */
-    public function fieldsAction()
+    public function editAction()
+    {
+
+    }
+
+    /**
+     * Display the "Field Configuration" form.
+     */
+    public function indexAction()
     {
 
     }
