@@ -13,6 +13,14 @@ class TeiEditionsFieldMapping extends Omeka_Record_AbstractRecord implements Zen
      */
     public $path;
 
+
+    protected function _validate()
+    {
+        if (!@xpath_is_valid($this->path)) {
+            $this->addError('path', __('Invalid XPath query.'));
+        }
+    }
+
     public function hasElement()
     {
         return is_null($this->element_id);

@@ -115,6 +115,12 @@ function xpath_query_uri($uri, $xpaths)
 }
 
 
+function xpath_is_valid($path) {
+    $xpath = new DOMXPath(new DOMDocument);
+    $check = $xpath->evaluate($path);
+    return $check !== false;
+}
+
 /**
  * @param File $file
  * @return array
