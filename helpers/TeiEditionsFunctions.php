@@ -76,7 +76,7 @@ function xpath_dom_query(DOMXPath $doc, $xpath)
     $nodes = $doc->query($xpath);
     for ($i = 0; $i < $nodes->length; $i++) {
         _log("Got node for " . $xpath . " -> " . $nodes->item($i)->tagName);
-        $out[] = $nodes->item($i)->textContent;
+        $out[] = trim($nodes->item($i)->textContent);
     }
     return $out;
 }
@@ -85,7 +85,7 @@ function xpath_dom_query(DOMXPath $doc, $xpath)
  * Run xpath queries on a document.
  *
  * @param string $uri The uri of the document.
- * @param array $xpaths An array of element names to XPath queries.
+ * @param array $xpaths A mapping element names to an array of XPath queries.
  *
  * @return array An array of element names to matched strings.
  */
@@ -99,8 +99,12 @@ function xpath_query_uri($uri, $xpaths)
         $query = new DOMXPath($xml);
         $query->registerNamespace("tei", "http://www.tei-c.org/ns/1.0");
 
-        foreach ($xpaths as $name => $path) {
-            $out[$name] = xpath_dom_query($query, $path);
+        foreach ($xpaths as $name => $paths) {
+            $all = array();
+            foreach ($paths as $path) {
+                $all = array_merge($all, xpath_dom_query($query, $path));
+            }
+            $out[$name] = $all;
         }
     } catch (Exception $e) {
         $msg = $e->getMessage();
@@ -207,7 +211,11 @@ function tei_editions_get_field_mappings()
 {
     $mappings = array();
     foreach (get_db()->getTable("TeiEditionsFieldMapping")->findAll() as $mapping) {
-        $mappings[$mapping->getElementName()] = $mapping->path;
+        $name = $mapping->getElementName();
+        if (!array_key_exists($name, $mappings)) {
+            $mappings[$name] = array();
+        }
+        $mappings[$name][] = $mapping->path;
     }
     return $mappings;
 }
