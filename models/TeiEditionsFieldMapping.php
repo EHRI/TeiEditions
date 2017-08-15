@@ -1,14 +1,7 @@
 <?php
 
-/**
- * @package     omeka
- * @subpackage  solr-search
- * @copyright   2012 Rector and Board of Visitors, University of Virginia
- * @license     http://www.apache.org/licenses/LICENSE-2.0.html
- */
 
-
-class TeiEditionsFieldMapping extends Omeka_Record_AbstractRecord
+class TeiEditionsFieldMapping extends Omeka_Record_AbstractRecord implements Zend_Acl_Resource_Interface
 {
     /**
      * The id of the parent element [integer].
@@ -20,6 +13,11 @@ class TeiEditionsFieldMapping extends Omeka_Record_AbstractRecord
      */
     public $path;
 
+    public function hasElement()
+    {
+        return is_null($this->element_id);
+    }
+
     /**
      * Get the parent element.
      *
@@ -27,11 +25,22 @@ class TeiEditionsFieldMapping extends Omeka_Record_AbstractRecord
      */
     public function getElement()
     {
-        return is_null($this->element_id)
+        return $this->hasElement()
             ? false
             : $this->getTable('Element')->find($this->element_id);
     }
 
+    /**
+     * Get the element name.
+     *
+     * @return false|string.
+     */
+    public function getElementName()
+    {
+        return $this->hasElement()
+            ? false
+            : $this->getTable('Element')->find($this->element_id)->name;
+    }
 
     /**
      * Get the parent element set.
@@ -40,55 +49,19 @@ class TeiEditionsFieldMapping extends Omeka_Record_AbstractRecord
      */
     public function getElementSet()
     {
-        return is_null($this->element_id)
+        return $this->hasElement()
             ? false
             : $this->getElement()->getElementSet();
     }
 
-
-    /**
-     * Get the name of the parent element set.
-     *
-     * @return string The element set name.
-     */
-    public function getElementSetName()
+    public function getRecordUrl($action = 'show')
     {
-        if (!$this->hasElement()) return __('Omeka Categories');
-        else return $this->getElementSet()->name;
+        return array('module' => 'tei-editions', 'controller' => 'fields',
+            'action' => $action, 'id' => $this->id);
     }
 
-
-    /**
-     * Return the original label for the field.
-     *
-     * @return string|null
-     **/
-    public function getOriginalLabel()
+    public function getResourceId()
     {
-        switch ($this->slug) {
-
-            case 'tag':         return __('Tag');
-            case 'collection':  return __('Collection');
-            case 'itemtype':    return __('Item Type');
-            case 'resulttype':  return __('Result Type');
-            case 'featured':    return __('Featured');
-
-            default: return $this->getElement()->name;
-
-        }
+        return 'TeiEditions_FieldMapping';
     }
-
-
-    /**
-     * If the label is empty, revert to the original label.
-     *
-     * @return string The facet label.
-     */
-    public function beforeSave()
-    {
-        $label = trim($this->label);
-        if (empty($label)) $this->label = $this->getOriginalLabel();
-    }
-
-
 }

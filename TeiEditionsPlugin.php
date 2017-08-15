@@ -17,7 +17,7 @@ class TeiEditionsPlugin extends Omeka_Plugin_AbstractPlugin
      * @var array Hooks for the plugin.
      */
     protected $_hooks = array('install', 'uninstall', 'upgrade', 'initialize',
-        'define_routes', 'config_form', 'config',
+        'define_acl', 'define_routes', 'config_form', 'config',
         'after_save_item');
 
     /**
@@ -65,6 +65,18 @@ class TeiEditionsPlugin extends Omeka_Plugin_AbstractPlugin
          *
          *  - ensure that file types 'xml' are allowed
          *  - ensure that mimetypes 'application/xml' is allowed
+         *
+         * Also add default mappings, e.g.
+         *
+         *   "Persons" => "/tei:TEI/tei:teiHeader/tei:profileDesc/tei:abstract/tei:persName",
+         *   "Subjects" => "/tei:TEI/tei:teiHeader/tei:profileDesc/tei:abstract/tei:term",
+         *   "Places" => "/tei:TEI/tei:teiHeader/tei:profileDesc/tei:abstract/tei:placeName",
+         *   "XML Text" => "/tei:TEI/tei:text",
+         *   "Source Details" => "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc",
+         *   "Encoding Description" => "/tei:TEI/tei:teiHeader/tei:encodingDesc/tei:projectDesc",
+         *   "Publisher" => "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:publisher",
+         *   "Publication Date" => "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date",
+         *   "Author" => "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author",
          *
          */
         $this->_db->query(<<<SQL
@@ -121,6 +133,19 @@ SQL
     public function hookConfigForm()
     {
         require dirname(__FILE__) . '/config_form.php';
+    }
+
+    /**
+     * Define the ACL.
+     *
+     * @param Omeka_Acl
+     */
+    public function hookDefineAcl($args)
+    {
+        $acl = $args['acl'];
+
+        $mappingResource = new Zend_Acl_Resource('TeiEditions_FieldMapping');
+        $acl->add($mappingResource);
     }
 
     /**

@@ -117,19 +117,7 @@ function xpath_query_uri($uri, $xpaths)
  */
 function extract_metadata(File $file)
 {
-    // TODO: Configure these mappings in the database
-    $xpaths = array(
-        "Persons" => "/tei:TEI/tei:teiHeader/tei:profileDesc/tei:abstract/tei:persName",
-        "Subjects" => "/tei:TEI/tei:teiHeader/tei:profileDesc/tei:abstract/tei:term",
-        "Places" => "/tei:TEI/tei:teiHeader/tei:profileDesc/tei:abstract/tei:placeName",
-        "XML Text" => "/tei:TEI/tei:text",
-        "Source Details" => "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc",
-        "Encoding Description" => "/tei:TEI/tei:teiHeader/tei:encodingDesc/tei:projectDesc",
-        "Publisher" => "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:publisher",
-        "Publication Date" => "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date",
-        "Author" => "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author",
-    );
-
+    $xpaths = tei_editions_get_field_mappings();
     $out = [];
 
     foreach (xpath_query_uri($file->getWebPath('original'), $xpaths) as $elem => $data) {
@@ -201,4 +189,25 @@ function set_tei_metadata(Item $item)
     $metadata = get_tei_metadata($item->getFiles());
     $item->addElementTextsByArray(array('Item Type Metadata' => $metadata));
     $item->saveElementTexts();
+}
+
+function tei_editions_field_mappings_element_options()
+{
+    $valuePairs = array();
+    $itemType = get_db()->getTable("ItemType")->findBySql("name = ?", array('name' => 'TEI'), true);
+    $elems = is_null($itemType) ? array() : get_db()->getTable('Element')->findByItemType($itemType->id);
+    foreach ($elems as $elem) {
+        $valuePairs[$elem->id] = $elem->name;
+    };
+
+    return $valuePairs;
+}
+
+function tei_editions_get_field_mappings()
+{
+    $mappings = array();
+    foreach (get_db()->getTable("TeiEditionsFieldMapping")->findAll() as $mapping) {
+        $mappings[$mapping->getElementName()] = $mapping->path;
+    }
+    return $mappings;
 }
