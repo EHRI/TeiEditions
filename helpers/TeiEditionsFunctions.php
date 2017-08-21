@@ -117,6 +117,7 @@ function xpath_query_uri($uri, $xpaths)
 
 function xpath_is_valid($path) {
     $xpath = new DOMXPath(new DOMDocument);
+    $xpath->registerNamespace("tei", "http://www.tei-c.org/ns/1.0");
     $check = $xpath->evaluate($path);
     return $check !== false;
 }
