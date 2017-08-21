@@ -19,47 +19,67 @@
 
 <script type="text/x-templ" id="authority-tmpl">
     <div class="access-point authority" id="access-point-{%=o.data.id%}">
-        <h4>{%=o.data.attributes.name%}</h4>
-        <p class="is-small">{%=o.data.attributes.history%}</p>
+        <h4 class="title is-4">{%=o.data.item.eng.name%}</h4>
+        <p class="is-small">{%=o.data.item.eng.biographicalHistory%}</p>
     </div>
 </script>
 
 <script type="text/x-templ" id="place-tmpl">
     <div class="access-point place" id="access-point-{%=o.geonameId%}">
-        <h4>{%=o.name%} <small>{%=o.countryName%}</small></h4>
+        <h4 class="title is-4">{%=o.name%} <span class="subtitle is-6">{%=o.countryName%}</span></h4>
         <p class="is-small">{%=o.lat%}/{%=o.lng%}</p>
         {% if(o.wikipediaURL) { %}
-            <a href="https://{%=o.wikipediaURL%}" title="Wikipedia">Show Wikipedia Entry</a>
+            <a class="is-small" href="https://{%=o.wikipediaURL%}" title="Wikipedia">Show Wikipedia Entry</a>
         {% } %}
     </div>
 </script>
 
 <script type="text/x-templ" id="subject-tmpl">
-    <div class="access-point subject" id="access-point-{%=o.data.subject.id%}">
-        <h4>{%=o.data.subject.eng.name%}</h4>
+    <div class="access-point subject" id="access-point-{%=o.data.item.id%}">
+        <h4 class="title is-4">{%=o.data.item.eng.name%}</h4>
     </div>
 </script>
 
 <script>
     jQuery(function($) {
+
+        function graphql(query, variables, callback) {
+            $.ajax({
+                url: "https://portal.ehri-project.eu/api/graphql",
+                data: JSON.stringify({query: query, variables: JSON.stringify(variables)}),
+                type: "POST",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: callback
+            });
+        }
+
         var matchers = {
-            '.+geonames.org\/(\\d+)\/.+': function(id) {
+            '.+geonames\\.org\/(\\d+)\/.+': function(id) {
                 var url = "http://api.geonames.org/getJSON?geonameId=" + id + "&lang=en&username=EhriAdmin";
                 $.get(url, function(data) {
                     $("#access-points-places").append($(tmpl("place-tmpl", data)));
                 });
             },
-            '.+portal.ehri-project.eu\/authorities\/([^\/]+).+': function(id) {
-                var url = "https://portal.ehri-project.eu/api/v1/" + id;
-                $.get(url, function(data) {
+
+            '.+portal\\.ehri-project\\.eu\/authorities\/([^\/]+).*': function(id) {
+                var query = "query get($id: Id!) {\n" +
+                            "  item: HistoricalAgent(id: $id) {\n" +
+                            "    eng: description(languageCode: \"eng\") {\n" +
+                            "      name\n" +
+                            "      biographicalHistory\n" +
+                            "    }\n" +
+                            "  }\n" +
+                            "}";
+
+                graphql(query, {id: id}, function(data) {
                     $("#access-points-authorities").append($(tmpl("authority-tmpl", data)));
                 });
             },
-            '.+portal.ehri-project.eu\/keywords\/([^\/]+).*': function(id) {
-                console.log("graphql", id);
 
-                var query = "query getConcept($id: Id!) {\n" +
-                            "  subject: CvocConcept(id: $id) {\n" +
+            '.+portal\\.ehri-project\\.eu\/keywords\/([^\/]+).*': function(id) {
+                var query = "query get($id: Id!) {\n" +
+                            "  item: CvocConcept(id: $id) {\n" +
                             "    eng: description(languageCode: \"eng\") {\n" +
                             "      name\n" +
                             "      scopeNote\n" +
@@ -69,20 +89,8 @@
                             "  }\n" +
                             "}";
 
-                var url = "https://portal.ehri-project.eu/api/graphql";
-                var params = {
-                  query: query,
-                  variables: "{\"id\":\"" + id + "\"}"
-                };
-                $.ajax({
-                    url: url,
-                    data: JSON.stringify(params),
-                    type: "POST",
-                    dataType: "json",
-                    contentType: "application/json; charset=utf-8",
-                    success: function(data) {
-                        $("#access-points-subjects").append($(tmpl("subject-tmpl", data)));
-                    }
+                graphql(query, {id: id}, function(data) {
+                    $("#access-points-subjects").append($(tmpl("subject-tmpl", data)));
                 });
             }
         };
@@ -90,11 +98,9 @@
         function addAccessPoint(url) {
             for (regexp in matchers) {
                 if (matchers.hasOwnProperty(regexp)) {
-                    var func = matchers[regexp];
                     var match = url.match(regexp);
                     if (match !== null && match.length > 1) {
-                        console.log(regexp, url)
-                        func.call(this, match[1]);
+                        matchers[regexp](match[1]);
                     }
                 }
             }
@@ -104,7 +110,8 @@
             addAccessPoint(this.href);
         });
 
-        addAccessPoint("https://portal.ehri-project.eu/keywords/ehri_terms-1207")
+//        addAccessPoint("https://portal.ehri-project.eu/authorities/ehri_pers-000258");
+//        addAccessPoint("https://portal.ehri-project.eu/keywords/ehri_terms-217")
     });
 </script>
 
