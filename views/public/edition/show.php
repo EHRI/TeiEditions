@@ -226,6 +226,31 @@
 
 <?php echo $this->partial('edition/header.php'); ?>
 
+<script>
+    jQuery(function($) {
+      console.log("Loaded jQuery...")
+      $("a", $("abstract")).each(function(i) {
+        var url = this.href;
+        console.log(url);
+
+        var geonamesRE = /.+geonames.org\/(\d+)\/.+/;
+        var match = url.match(geonamesRE);
+        if (match !== null && match.length > 1) {
+          var id = match[1];
+            var apiUrl = "http://api.geonames.org/getJSON?geonameId=" + id + "&lang=en&username=demo";
+            $.get(apiUrl, function(data) {
+              console.log(data);
+            });
+        }
+      });
+
+      var personId = "ehri_pers-000258";
+      $.get("https://portal.ehri-project.eu/api/v1/" + personId, function(data) {
+        console.log(data.data.attributes.history);
+      });
+    });
+</script>
+
 <div id="wrapper" class="container">
     <div class="columns">
         <section id="sidebar" class="column is-3">
