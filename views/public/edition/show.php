@@ -220,11 +220,19 @@
             src="https://code.jquery.com/jquery-3.2.1.min.js"
             integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
             crossorigin="anonymous"></script>
+    <script src="<?php echo web_path_to("js/tmpl.min.js");?>"></script>
     <title><?php echo metadata('item', 'display_title'); ?></title>
 </head>
 <body>
 
 <?php echo $this->partial('edition/header.php'); ?>
+
+<script type="text/x-templ" id="person-tmpl">
+    <div id="access-point-{%=o.data.id%}">
+        <h3>{%=o.data.attributes.name%}</h3>
+        <p>{%=o.data.attributes.history%}</p>
+    </div>
+</script>
 
 <script>
     jQuery(function($) {
@@ -246,7 +254,9 @@
 
       var personId = "ehri_pers-000258";
       $.get("https://portal.ehri-project.eu/api/v1/" + personId, function(data) {
-        console.log(data.data.attributes.history);
+        console.log(data);
+
+        $("#access-points").append($(tmpl("person-tmpl", data)));
       });
     });
 </script>
@@ -301,6 +311,10 @@
                                 <?php endif; ?>
                             <?php endforeach; ?>
                         </dl>
+
+                        <div id="access-points">
+
+                        </div>
                     </div>
                 </div>
             </div>
