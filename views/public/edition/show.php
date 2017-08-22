@@ -56,7 +56,7 @@
 
         var matchers = {
             '.+geonames\\.org\/(\\d+)\/.+': function(id) {
-                var url = "http://api.geonames.org/getJSON?geonameId=" + id + "&lang=en&username=EhriAdmin";
+                var url = "https://secure.geonames.org/getJSON?geonameId=" + id + "&lang=en&username=EhriAdmin";
                 $.get(url, function(data) {
                     $("#access-points-places").append($(tmpl("place-tmpl", data)));
                 });
