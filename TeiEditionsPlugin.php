@@ -79,6 +79,7 @@ class TeiEditionsPlugin extends Omeka_Plugin_AbstractPlugin
          *   "Author" => "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author",
          *
          */
+
         $this->_db->query(<<<SQL
         CREATE TABLE IF NOT EXISTS {$this->_db->prefix}tei_editions_field_mappings (
             id          int(10) unsigned NOT NULL auto_increment,
@@ -89,6 +90,98 @@ class TeiEditionsPlugin extends Omeka_Plugin_AbstractPlugin
 SQL
         );
 
+        $data = array(
+            "Author" => array(
+                "description" => "The TEI author.",
+                "xpaths" => array(
+                    "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author"
+                )
+            ),
+            "Source Details" => array(
+                "description" => "Details about the document source.",
+                "xpaths" => array(
+                    "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc"
+                )
+            ),
+            "Encoding Description" => array(
+                "description" => "A description of the encoding process.",
+                "xpaths" => array(
+                    "/tei:TEI/tei:teiHeader/tei:encodingDesc/tei:projectDesc"
+                )
+            ),
+            "Publisher" => array(
+                "description" => "The TEI publisher.",
+                "xpaths" => array(
+                    "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:publisher"
+                )
+            ),
+            "Publication Date" => array(
+                "description" => "The TEI's date of publication.",
+                "xpaths" => array(
+                    "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date"
+                )
+            ),
+            "Subject" => array(
+                "description" => "Subjects mentioned in the text.",
+                "xpaths" => array(
+                    "/tei:TEI/tei:teiHeader/tei:profileDesc/tei:abstract/tei:term"
+                )
+            ),
+            "Persons" => array(
+                "description" => "Persons mentioned in the text.",
+                "xpaths" => array(
+                    "/tei:TEI/tei:teiHeader/tei:profileDesc/tei:abstract/tei:persName"
+                )
+            ),
+            "Places" => array(
+                "description" => "Places mentioned in the text.",
+                "xpaths" => array(
+                    "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:listPlace/tei:place/tei:placeName"
+                )
+            ),
+            "XML Text" => array(
+                "description" => "The body text of the TEI document.",
+                "xpaths" => array(
+                    "/tei:TEI/tei:text"
+                )
+            )
+        );
+
+        $this->_db->getAdapter()->beginTransaction();
+
+        // create TEI item type
+        $type = new ItemType;
+        $type->name = "TEI";
+        $type->description = "TEI documents";
+
+        $element_data = [];
+        foreach ( $data as $name => $details ) {
+            $elem = new Element;
+            $elem->setName($name);
+            $elem->setDescription($details["description"]);
+            $elem->setElementSet("Item Type Metadata");
+            $elem->save();
+            $element_data[] = $elem;
+        }
+        $type->addElements($element_data);
+        $type->save();
+
+        $elements_to_ids = [];
+        $elements = get_db()->getTable('Element')->findByItemType($type->id);
+        foreach ($elements as $element) {
+            $elements_to_ids[$element->name] = $element->id;
+        }
+
+        foreach ($data as $name => $config) {
+            foreach ($config["xpaths"] as $xpath) {
+                $mapping = new TeiEditionsFieldMapping;
+                $mapping->path = $xpath;
+                $mapping->element_id = $elements_to_ids[$name];
+                $mapping->save(true);
+            }
+        }
+
+        $this->_db->getAdapter()->commit();
 
         $this->_installOptions();
     }
@@ -100,6 +193,19 @@ SQL
     {
         $this->_db->query(
             "DROP TABLE IF EXISTS {$this->_db->prefix}tei_editions_field_mappings");
+
+        $this->_db->getAdapter()->beginTransaction();
+        
+        $item_types = get_db()->getTable("ItemType")->findBy(array('name' => 'TEI'));
+        if (!empty($item_types)) {
+            $type = $item_types[0];
+            $elements = get_db()->getTable('Element')->findByItemType($type->id);
+            foreach ($elements as $element) {
+                $element->delete();
+            }
+            $type->delete();
+        }
+        $this->_db->getAdapter()->commit();
 
         $this->_uninstallOptions();
     }
