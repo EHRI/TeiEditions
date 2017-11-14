@@ -13,20 +13,27 @@
  */
 
 /**
- * Determine if a string ends with another.
+ * Determine if an URL is an XML file.
  *
- * @param $haystack
- * @param $needle
+ * @param $file_url
  * @return bool
  */
-function endswith($haystack, $needle)
+function tei_editions_is_xml_file($file)
 {
-    $length = strlen($needle);
+    if ($file instanceof File) {
+        $file = $file->getWebPath();
+    }
+    $url = strpos($file, "?")
+        ? substr($file, 0, strpos($file, "?"))
+        : $file;
+
+    $suffix = ".xml";
+    $length = strlen($suffix);
     if ($length == 0) {
         return true;
     }
 
-    return (substr($haystack, -$length) === $needle);
+    return (substr($url, -$length) === $suffix);
 }
 
 function tei_editions_prettify_tei($path, $img_map)
@@ -141,7 +148,7 @@ function tei_editions_render_item(Item $item)
     $xml = "";
     foreach ($files as $file) {
         $path = $file->getWebPath();
-        if (endswith($path, ".xml")) {
+        if (tei_editions_is_xml_file($path)) {
             $xml .= @tei_editions_prettify_tei($path, $file_url_map);
             break;
         }
@@ -153,7 +160,7 @@ function tei_editions_get_tei_path(Item $item)
 {
     foreach ($item->getFiles() as $file) {
         $path = $file->getWebPath();
-        if (endswith($path, ".xml")) {
+        if (tei_editions_is_xml_file($path)) {
             return $path;
         }
     }
@@ -204,7 +211,7 @@ function tei_editions_get_metadata(array $files)
     foreach ($files as $file) {
         if ($file->mime_type == "text/xml"
             || $file->mime_type == "application/xml"
-            || endswith($file->original_filename, ".xml")
+            || tei_editions_is_xml_file($file->original_filename)
         ) {
 
             $meta = tei_editions_extract_metadata($file);

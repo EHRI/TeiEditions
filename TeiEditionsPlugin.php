@@ -18,7 +18,7 @@ class TeiEditionsPlugin extends Omeka_Plugin_AbstractPlugin
      */
     protected $_hooks = array('install', 'uninstall', 'upgrade', 'initialize',
         'define_acl', 'define_routes', 'config_form', 'config',
-        'after_save_item');
+        'after_save_item', 'public_head');
 
     /**
      * @var array Filters for the plugin.
@@ -272,6 +272,13 @@ SQL
                 tei_editions_set_metadata($item);
             }
         }
+    }
+
+    public function hookPublicHead($args)
+    {
+        queue_css_file('css/teibp', $media = "all", $conditional = false, $dir = 'teibp');
+        queue_css_file('css/custom', $media = "all", $conditional = false, $dir = 'teibp');
+        queue_js_file('js/teibp', $dir = 'teibp');
     }
 
     /**
