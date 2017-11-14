@@ -148,40 +148,43 @@ SQL
         );
 
         $this->_db->getAdapter()->beginTransaction();
+        try {
+            // create TEI item type
+            $type = new ItemType;
+            $type->name = "TEI";
+            $type->description = "TEI documents";
 
-        // create TEI item type
-        $type = new ItemType;
-        $type->name = "TEI";
-        $type->description = "TEI documents";
-
-        $element_data = [];
-        foreach ( $data as $name => $details ) {
-            $elem = new Element;
-            $elem->setName($name);
-            $elem->setDescription($details["description"]);
-            $elem->setElementSet("Item Type Metadata");
-            $elem->save();
-            $element_data[] = $elem;
-        }
-        $type->addElements($element_data);
-        $type->save();
-
-        $elements_to_ids = [];
-        $elements = get_db()->getTable('Element')->findByItemType($type->id);
-        foreach ($elements as $element) {
-            $elements_to_ids[$element->name] = $element->id;
-        }
-
-        foreach ($data as $name => $config) {
-            foreach ($config["xpaths"] as $xpath) {
-                $mapping = new TeiEditionsFieldMapping;
-                $mapping->path = $xpath;
-                $mapping->element_id = $elements_to_ids[$name];
-                $mapping->save(true);
+            $element_data = [];
+            foreach ($data as $name => $details) {
+                $elem = new Element;
+                $elem->setName($name);
+                $elem->setDescription($details["description"]);
+                $elem->setElementSet("Item Type Metadata");
+                $elem->save();
+                $element_data[] = $elem;
             }
-        }
+            $type->addElements($element_data);
+            $type->save();
 
-        $this->_db->getAdapter()->commit();
+            $elements_to_ids = [];
+            $elements = get_db()->getTable('Element')->findByItemType($type->id);
+            foreach ($elements as $element) {
+                $elements_to_ids[$element->name] = $element->id;
+            }
+
+            foreach ($data as $name => $config) {
+                foreach ($config["xpaths"] as $xpath) {
+                    $mapping = new TeiEditionsFieldMapping;
+                    $mapping->path = $xpath;
+                    $mapping->element_id = $elements_to_ids[$name];
+                    $mapping->save(true);
+                }
+            }
+
+            $this->_db->getAdapter()->commit();
+        } catch (Exception $e) {
+            $this->_db->getAdapter()->rollBack();
+        }
 
         $this->_installOptions();
     }
@@ -195,7 +198,7 @@ SQL
             "DROP TABLE IF EXISTS {$this->_db->prefix}tei_editions_field_mappings");
 
         $this->_db->getAdapter()->beginTransaction();
-        
+
         $item_types = get_db()->getTable("ItemType")->findBy(array('name' => 'TEI'));
         if (!empty($item_types)) {
             $type = $item_types[0];
@@ -266,7 +269,7 @@ SQL
     {
         if ($item = $args["record"]) {
             if ($item->getProperty('item_type_name') == "TEI") {
-                set_tei_metadata($item);
+                tei_editions_set_metadata($item);
             }
         }
     }

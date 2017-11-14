@@ -29,7 +29,7 @@ function endswith($haystack, $needle)
     return (substr($haystack, -$length) === $needle);
 }
 
-function prettify_tei($path, $img_map)
+function tei_editions_prettify_tei($path, $img_map)
 {
     $teipb = web_path_to('teibp/content/teibp.xsl');
 
@@ -42,14 +42,14 @@ function prettify_tei($path, $img_map)
     $xmldoc->documentURI = $path;
 
     // NB: Suppress annoying warnings here...
-    $xmldoc = replace_urls_xml($xmldoc, $img_map);
+    $xmldoc = tei_editions_replace_urls_xml($xmldoc, $img_map);
 
     $proc = new XSLTProcessor;
     $proc->importStylesheet($xsldoc);
     return $proc->transformToXml($xmldoc);
 }
 
-function replace_urls_xml($doc, $map)
+function tei_editions_replace_urls_xml($doc, $map)
 {
     $filename = web_path_to('teibp/content/replace-urls.xsl');
     $xsldoc = new DOMDocument();
@@ -70,7 +70,7 @@ function replace_urls_xml($doc, $map)
     return $proc->transformToDoc($doc);
 }
 
-function xpath_dom_query(DOMXPath $doc, $xpath)
+function tei_editions_xpath_dom_query(DOMXPath $doc, $xpath)
 {
     $out = array();
     $nodes = $doc->query($xpath);
@@ -89,7 +89,7 @@ function xpath_dom_query(DOMXPath $doc, $xpath)
  *
  * @return array An array of element names to matched strings.
  */
-function xpath_query_uri($uri, $xpaths)
+function tei_editions_xpath_query_uri($uri, $xpaths)
 {
     $out = [];
 
@@ -102,7 +102,7 @@ function xpath_query_uri($uri, $xpaths)
         foreach ($xpaths as $name => $paths) {
             $all = array();
             foreach ($paths as $path) {
-                $all = array_merge($all, xpath_dom_query($query, $path));
+                $all = array_merge($all, tei_editions_xpath_dom_query($query, $path));
             }
             $out[$name] = $all;
         }
@@ -115,7 +115,8 @@ function xpath_query_uri($uri, $xpaths)
 }
 
 
-function xpath_is_valid($path) {
+function tei_editions_check_xpath_is_valid($path)
+{
     $xpath = new DOMXPath(new DOMDocument);
     $xpath->registerNamespace("tei", "http://www.tei-c.org/ns/1.0");
     $check = $xpath->evaluate($path);
@@ -123,15 +124,52 @@ function xpath_is_valid($path) {
 }
 
 /**
+ * Render the first XML file associated with the item as TEI.
+ *
+ * @param Item $item an Omeka item
+ * @return string
+ */
+function tei_editions_render_item(Item $item)
+{
+    $files = $item->getFiles();
+
+    $file_url_map = array();
+    foreach ($files as $file) {
+        $file_url_map[basename($file->original_filename)] = $file->getWebPath();
+    }
+
+    $xml = "";
+    foreach ($files as $file) {
+        $path = $file->getWebPath();
+        if (endswith($path, ".xml")) {
+            $xml .= @tei_editions_prettify_tei($path, $file_url_map);
+            break;
+        }
+    }
+    return $xml;
+}
+
+function tei_editions_get_tei_path(Item $item)
+{
+    foreach ($item->getFiles() as $file) {
+        $path = $file->getWebPath();
+        if (endswith($path, ".xml")) {
+            return $path;
+        }
+    }
+    return null;
+}
+
+/**
  * @param File $file
  * @return array
  */
-function extract_metadata(File $file)
+function tei_editions_extract_metadata(File $file)
 {
     $xpaths = tei_editions_get_field_mappings();
     $out = [];
 
-    foreach (xpath_query_uri($file->getWebPath('original'), $xpaths) as $elem => $data) {
+    foreach (tei_editions_xpath_query_uri($file->getWebPath('original'), $xpaths) as $elem => $data) {
         $meta = [];
         foreach ($data as $text) {
             $meta[] = array('text' => $text, 'html' => false);
@@ -159,7 +197,7 @@ function extract_metadata(File $file)
  *
  * @return array
  */
-function get_tei_metadata(array $files)
+function tei_editions_get_metadata(array $files)
 {
     $out = array();
 
@@ -169,7 +207,7 @@ function get_tei_metadata(array $files)
             || endswith($file->original_filename, ".xml")
         ) {
 
-            $meta = extract_metadata($file);
+            $meta = tei_editions_extract_metadata($file);
             foreach ($meta as $elem => $data) {
                 if (array_key_exists($elem, $out)) {
                     $out[$elem] = array_unique(array_merge($out[$elem], $data), SORT_REGULAR);
@@ -183,7 +221,7 @@ function get_tei_metadata(array $files)
     return $out;
 }
 
-function set_tei_metadata(Item $item)
+function tei_editions_set_metadata(Item $item)
 {
     $item_types = get_db()->getTable("ItemType")->findBy(array('name' => 'TEI'));
     if (empty($item_types)) {
@@ -197,7 +235,7 @@ function set_tei_metadata(Item $item)
     }, $elements);
 
     $item->deleteElementTextsByElementId($ids);
-    $metadata = get_tei_metadata($item->getFiles());
+    $metadata = tei_editions_get_metadata($item->getFiles());
     $item->addElementTextsByArray(array('Item Type Metadata' => $metadata));
     $item->saveElementTexts();
 }

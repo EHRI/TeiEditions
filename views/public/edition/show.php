@@ -63,7 +63,7 @@
             },
 
             '.+portal\\.ehri-project\\.eu\/authorities\/([^\/]+).*': function(id) {
-                var query = "query get($id: Id!) {\n" +
+                var query = "query get($id: ID!) {\n" +
                             "  item: HistoricalAgent(id: $id) {\n" +
                             "    eng: description(languageCode: \"eng\") {\n" +
                             "      name\n" +
@@ -78,7 +78,7 @@
             },
 
             '.+portal\\.ehri-project\\.eu\/keywords\/([^\/]+).*': function(id) {
-                var query = "query get($id: Id!) {\n" +
+                var query = "query get($id: ID!) {\n" +
                             "  item: CvocConcept(id: $id) {\n" +
                             "    eng: description(languageCode: \"eng\") {\n" +
                             "      name\n" +
@@ -138,14 +138,14 @@
                 </div>
                 <div class="card-footer">
                     <div class="card-footer-item is-pulled-left">
-                        <a href="<?php echo $xml_url; ?>">XML</a>
+                        <a href="<?php echo tei_editions_get_tei_path($item); ?>">XML</a>
                     </div>
                 </div>
             </div>
         </section>
         <section id="main-content" class="column is-6" role="main">
             <div class="content box">
-                <?php echo $xml; ?>
+                <?php echo tei_editions_render_item($item); ?>
             </div>
         </section>
         <section id="data" class="column content">

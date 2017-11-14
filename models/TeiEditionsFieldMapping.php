@@ -16,7 +16,7 @@ class TeiEditionsFieldMapping extends Omeka_Record_AbstractRecord implements Zen
 
     protected function _validate()
     {
-        if (!@xpath_is_valid($this->path)) {
+        if (!@tei_editions_check_xpath_is_valid($this->path)) {
             $this->addError('path', __('Invalid XPath query.'));
         }
     }

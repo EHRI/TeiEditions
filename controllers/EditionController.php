@@ -27,28 +27,8 @@ class TeiEditions_EditionController extends Omeka_Controller_AbstractActionContr
             throw new Omeka_Controller_Exception_404;
         }
 
-        $files = $item->getFiles();
-
-        $file_url_map = array();
-        foreach ($files as $file) {
-            $file_url_map[basename($file->original_filename)] = $file->getWebPath();
-        }
-
-        $xml = "";
-        foreach ($files as $file) {
-            $path = $file->getWebPath();
-            if (endswith($path, ".xml")) {
-                $xml .= @prettify_tei($path, $file_url_map);
-                break;
-            }
-        }
-
         // Set the page object to the view.
-        $this->view->assign(array(
-            'item' => $item,
-            'xml' => $xml,
-            'xml_url' => $path
-        ));
+        $this->view->assign(array('item' => $item));
     }
 
     public function indexAction()
