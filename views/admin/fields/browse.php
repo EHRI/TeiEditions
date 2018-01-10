@@ -52,7 +52,7 @@ echo head($head);
     </div>
 <?php endif; ?>
 
-<a class="add-page button small green" href="<?php echo html_escape(url('editions/fields/add')); ?>"><?php echo __('Add a Field Mapping'); ?></a>
+<a class="add-page button small green" href="<?php echo html_escape(url('edition-fields/add')); ?>"><?php echo __('Add a Field Mapping'); ?></a>
 
 
 <?php echo foot(); ?>

@@ -268,9 +268,9 @@ SQL
     public function hookAfterSaveItem($args)
     {
         if ($item = $args["record"]) {
-            if ($item->getProperty('item_type_name') == "TEI") {
-                tei_editions_set_metadata($item);
-            }
+            //if ($item->getProperty('item_type_name') == "TEI") {
+                //tei_editions_set_metadata($item);
+            //}
         }
     }
 
@@ -291,7 +291,7 @@ SQL
     {
         $nav[] = array(
             'label' => __('Editions'),
-            'uri' => url('editions/fields')
+            'uri' => url('editions')
         );
         return $nav;
     }

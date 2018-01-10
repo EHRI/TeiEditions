@@ -91,18 +91,18 @@ function tei_editions_xpath_dom_query(DOMXPath $doc, $xpath)
 /**
  * Run xpath queries on a document.
  *
- * @param string $uri The uri of the document.
+ * @param string $uri_or_path The uri_or_path of the document.
  * @param array $xpaths A mapping element names to an array of XPath queries.
  *
  * @return array An array of element names to matched strings.
  */
-function tei_editions_xpath_query_uri($uri, $xpaths)
+function tei_editions_xpath_query_uri($uri_or_path, $xpaths)
 {
     $out = [];
 
     try {
         $xml = new DomDocument();
-        $xml->load($uri);
+        $xml->load($uri_or_path);
         $query = new DOMXPath($xml);
         $query->registerNamespace("tei", "http://www.tei-c.org/ns/1.0");
 
@@ -115,7 +115,7 @@ function tei_editions_xpath_query_uri($uri, $xpaths)
         }
     } catch (Exception $e) {
         $msg = $e->getMessage();
-        _log("Error extracting TEI data from $uri: $msg", Zend_Log::ERR);
+        _log("Error extracting TEI data from $uri_or_path: $msg", Zend_Log::ERR);
     }
 
     return $out;
@@ -168,23 +168,25 @@ function tei_editions_get_tei_path(Item $item)
 }
 
 /**
- * @param File $file
- * @return array
+ * @param File|string $file a file object or a local path
+ * @return array an array of arrays. each containing the following fields:
+ *  'element_id' => <id>, 'text' => <string>, 'html' => false
  */
-function tei_editions_extract_metadata(File $file)
+function tei_editions_extract_metadata($file)
 {
+    $uri_or_path = $file instanceof File
+        ? $file->getWebPath('original')
+        : $file;
     $xpaths = tei_editions_get_field_mappings();
     $out = [];
 
-    foreach (tei_editions_xpath_query_uri($file->getWebPath('original'), $xpaths) as $elem => $data) {
-        $meta = [];
+    foreach (tei_editions_xpath_query_uri($uri_or_path, $xpaths) as $elem => $data) {
         foreach ($data as $text) {
-            $meta[] = array('text' => $text, 'html' => false);
+            $out[] = array('element_id' => $elem, 'text' => $text, 'html' => false);
         }
-        $out[$elem] = $meta;
     }
 
-    _log("Extracted from " . $file->getWebPath() . " -> " . json_encode($out));
+    _log("Extracted from " . $uri_or_path . " -> " . json_encode($out));
 
     return $out;
 }
@@ -230,44 +232,41 @@ function tei_editions_get_metadata(array $files)
 
 function tei_editions_set_metadata(Item $item)
 {
-    $item_types = get_db()->getTable("ItemType")->findBy(array('name' => 'TEI'));
-    if (empty($item_types)) {
-        _log("No TEI item type found, skipping metadata.", Zend_Log::WARN);
-        return;
-    }
-
-    $elements = get_db()->getTable('Element')->findByItemType($item_types[0]->id);
-    $ids = array_map(function ($e) {
-        return $e->id;
-    }, $elements);
-
-    $item->deleteElementTextsByElementId($ids);
+    $item->deleteElementTexts();
     $metadata = tei_editions_get_metadata($item->getFiles());
-    $item->addElementTextsByArray(array('Item Type Metadata' => $metadata));
+    $item->addElementTextsByArray($metadata);
+    _log("Saving data: " . json_encode($metadata));
     $item->saveElementTexts();
 }
 
 function tei_editions_field_mappings_element_options()
 {
-    $valuePairs = array();
-    $itemType = get_db()->getTable("ItemType")->findBySql("name = ?", array('name' => 'TEI'), true);
-    $elems = is_null($itemType) ? array() : get_db()->getTable('Element')->findByItemType($itemType->id);
-    foreach ($elems as $elem) {
-        $valuePairs[$elem->id] = $elem->name;
-    };
+    $db = get_db();
+    $types = array();
 
-    return $valuePairs;
+    foreach ($db->getTable("ElementSet")
+                 ->findBySql('name = ?', array('name' => 'Dublin Core'), $findOne = true)
+                 ->getElements() as $elem) {
+        $types["Dublin Core"][$elem->id] = $elem->name;
+    }
+
+    foreach ($db->getTable("ItemType")->findAll() as $itemType) {
+        foreach ($db->getTable('Element')->findByItemType($itemType->id) as $elem) {
+            $types[$itemType->name][$elem->id] = $elem->name;
+        };
+    }
+    return $types;
 }
 
 function tei_editions_get_field_mappings()
 {
     $mappings = array();
     foreach (get_db()->getTable("TeiEditionsFieldMapping")->findAll() as $mapping) {
-        $name = $mapping->getElementName();
-        if (!array_key_exists($name, $mappings)) {
-            $mappings[$name] = array();
+        $id = $mapping->element_id;
+        if (!array_key_exists($id, $mappings)) {
+            $mappings[$id] = array();
         }
-        $mappings[$name][] = $mapping->path;
+        $mappings[$id][] = $mapping->path;
     }
     return $mappings;
 }
