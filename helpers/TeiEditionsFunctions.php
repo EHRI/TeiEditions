@@ -182,7 +182,7 @@ function tei_editions_extract_metadata($file, $elem_to_xpaths)
         }
     }
 
-    error_log("Extracted from " . $uri_or_path . " -> " . json_encode($out));
+    error_log("Extracted from " . $uri_or_path . " -> " . json_encode($out, JSON_PRETTY_PRINT));
 
     return $out;
 }
