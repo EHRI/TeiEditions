@@ -27,6 +27,47 @@ class TeiEditionsFieldMapping extends Omeka_Record_AbstractRecord implements Zen
     }
 
     /**
+     * Fetch a list of element options by type category.
+     *
+     * @return array
+     */
+    public static function elementOptions() {
+        $db = get_db();
+        $types = array();
+
+        foreach ($db->getTable("ElementSet")
+                     ->findBySql('name = ?', array('name' => 'Dublin Core'), $findOne = true)
+                     ->getElements() as $elem) {
+            $types["Dublin Core"][$elem->id] = $elem->name;
+        }
+
+        foreach ($db->getTable("ItemType")->findAll() as $itemType) {
+            foreach ($db->getTable('Element')->findByItemType($itemType->id) as $elem) {
+                $types[$itemType->name][$elem->id] = $elem->name;
+            };
+        }
+        return $types;
+    }
+
+    /**
+     * Fetch a mapping of element IDs to an array of XPath strings.
+     *
+     * @return array element id to XPath array
+     */
+    public static function fieldMappings()
+    {
+        $mappings = array();
+        foreach (get_db()->getTable("TeiEditionsFieldMapping")->findAll() as $mapping) {
+            $id = $mapping->element_id;
+            if (!array_key_exists($id, $mappings)) {
+                $mappings[$id] = array();
+            }
+            $mappings[$id][] = $mapping->path;
+        }
+        return $mappings;
+    }
+
+    /**
      * Get the parent element.
      *
      * @return false|Element The element.

@@ -64,7 +64,7 @@ class TeiEditions_FieldsController extends Omeka_Controller_AbstractActionContro
             'select', 'element_id',
             array(
                 'id' => 'tei-editions-field-mapping-element-id',
-                'multiOptions' => label_table_options(tei_editions_field_mappings_element_options()),
+                'multiOptions' => label_table_options(TeiEditionsFieldMapping::elementOptions()),
                 'value' => $fieldMapping->element_id,
                 'label' => __('Element'),
                 'description' => __('The element'),

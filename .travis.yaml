@@ -1,0 +1,6 @@
+language: php
+php:
+  - 5.5
+
+script: vendor/phpunit/phpunit/phpunit tests
+before_script: composer install

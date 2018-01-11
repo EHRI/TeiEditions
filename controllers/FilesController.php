@@ -46,7 +46,8 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
             array(
                 'id' => 'tei-editions-upload-file',
                 'label' => __('Select TEI'),
-                'description' => __('A TEI file to upload as a new item')
+                'description' => __('A TEI file to upload as a new item'),
+                'required' => true
             )
         );
 
@@ -64,7 +65,8 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
                 return;
             }
             $item = new Item;
-            $data = @tei_editions_extract_metadata($_FILES["file"]["tmp_name"]);
+            $xpath = TeiEditionsFieldMapping::fieldMappings();
+            $data = @tei_editions_extract_metadata($_FILES["file"]["tmp_name"], $xpath);
             $item->addElementTextsByArray($data);
             $item->save();
             @insert_files_for_item($item, "Upload", "file");

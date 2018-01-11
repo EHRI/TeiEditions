@@ -1,5 +1,6 @@
 TeiEditions
 ===========
 
-An attempt to integrate [TEI Boilerplate](http://teiboilerplate.org) and Omeka.
+An Omeka plugin containing various helpers for managing items derived from TEI.
 
+TODO: More readme...

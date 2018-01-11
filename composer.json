@@ -1,0 +1,6 @@
+{
+    "require": {
+        "php": "^5.5",
+        "phpunit/phpunit": "~4.8.0@stable"
+    }
+}
