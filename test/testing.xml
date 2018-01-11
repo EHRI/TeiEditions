@@ -17,6 +17,18 @@
             </publicationStmt>
             <sourceDesc>
                 <bibl>King's College London</bibl>
+                <listPlace>
+                    <place>
+                        <placeName>Tartu</placeName>
+                        <location>
+                            <geo>58.38062 26.72509</geo>
+                        </location>
+                        <linkGrp>
+                            <link type="normal" target="http://www.geonames.org/588335/tartu.html"/>
+                            <link type="desc" target="http://ru.wikipedia.org/wiki/%D0%A2%D0%B0%D1%80%D1%82%D1%83"/>
+                        </linkGrp>
+                    </place>
+                </listPlace>
             </sourceDesc>
         </fileDesc>
         <encodingDesc>

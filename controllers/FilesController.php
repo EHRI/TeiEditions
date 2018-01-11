@@ -69,7 +69,11 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
             }
             $item = new Item;
             $xpaths = TeiEditionsFieldMapping::fieldMappings();
-            $data = @tei_editions_extract_metadata($_FILES["file"]["tmp_name"], $xpaths);
+            $path = $_FILES["file"]["tmp_name"];
+            $data = @tei_editions_extract_metadata($path, $xpaths);
+            error_log("Extracted from " . $path . " -> " .
+                json_encode($data, JSON_PRETTY_PRINT));
+
             $item->addElementTextsByArray($data);
             $item->save();
             @insert_files_for_item($item, "Upload", "file");

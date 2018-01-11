@@ -7,11 +7,13 @@ class TeiEditionsFunctionsTest extends PHPUnit_Framework_Testcase
 
     private $file;
 
-    public function setUp() {
+    public function setUp()
+    {
         $this->file = dirname(__FILE__) . "/testing.xml";
     }
 
-    public function test_tei_editions_is_xml_file() {
+    public function test_tei_editions_is_xml_file()
+    {
         $out = tei_editions_extract_metadata($this->file, array(
             1 => array(
                 '/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title	'
@@ -19,5 +21,12 @@ class TeiEditionsFunctionsTest extends PHPUnit_Framework_Testcase
         ));
         $expect = array(array('element_id' => 1, 'text' => 'This is a test TEI', 'html' => false));
         $this->assertEquals($expect, $out);
+    }
+
+    public function test_tei_editions_get_places()
+    {
+        $out = tei_editions_get_places($this->file);
+        $this->assertEquals(
+            array(array("name" => "Tartu", "longitude" => 26.72509, "latitude" => 58.38062)), $out);
     }
 }

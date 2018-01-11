@@ -79,7 +79,6 @@ function tei_editions_xpath_dom_query(DOMXPath $doc, $xpath)
     $out = array();
     $nodes = $doc->query($xpath);
     for ($i = 0; $i < $nodes->length; $i++) {
-        error_log("Got node for " . $xpath . " -> " . $nodes->item($i)->tagName);
         $out[] = trim($nodes->item($i)->textContent);
     }
     return $out;
@@ -165,6 +164,61 @@ function tei_editions_get_tei_path(Item $item)
 }
 
 /**
+ * Find instances of tei:place elements which contain placeName
+ * and geo and return them as an array
+ *
+ * @param $uri_or_path
+ * @return array
+ */
+function tei_editions_get_places($uri_or_path)
+{
+    $out = [];
+
+    try {
+        $xml = new DomDocument();
+        $xml->load($uri_or_path);
+        $query = new DOMXPath($xml);
+        $query->registerNamespace("tei", "http://www.tei-c.org/ns/1.0");
+
+        $placesXpath = "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:listPlace/tei:place";
+        $places = $query->query($placesXpath);
+        foreach ($places as $place) {
+            $names = $query->evaluate("./tei:placeName", $place);
+            if (empty($names)) continue;
+
+            $lat_long = $query->evaluate("./tei:location/tei:geo", $place);
+            if (empty($lat_long)) continue;
+
+            $parts = explode(" ", $lat_long[0]->textContent);
+
+            $out[] = array(
+                "name" => $names[0]->textContent,
+                "latitude" => $parts[0],
+                "longitude" => $parts[1]
+            );
+        }
+    } catch (Exception $e) {
+        $msg = $e->getMessage();
+        error_log("Error extracting TEI place data from $uri_or_path: $msg");
+    }
+
+    return $out;
+}
+
+/**
+ * Returns a list of places found in a given TEI file,
+ * consisting of name, latitude, and longitude.
+ *
+ * @param Item $item
+ * @return array
+ */
+function tei_editions_get_item_places(Item $item)
+{
+    $path = tei_editions_get_tei_path($item);
+    return $path ? tei_editions_get_places($path) : array();
+}
+
+/**
  * @param File|string $file a file object or a local path
  * @return array an array of arrays. each containing the following fields:
  *  'element_id' => <id>, 'text' => <string>, 'html' => false
@@ -181,8 +235,6 @@ function tei_editions_extract_metadata($file, $elem_to_xpaths)
             $out[] = array('element_id' => $elem, 'text' => $text, 'html' => false);
         }
     }
-
-    error_log("Extracted from " . $uri_or_path . " -> " . json_encode($out, JSON_PRETTY_PRINT));
 
     return $out;
 }
