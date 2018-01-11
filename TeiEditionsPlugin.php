@@ -18,7 +18,7 @@ class TeiEditionsPlugin extends Omeka_Plugin_AbstractPlugin
      */
     protected $_hooks = array('install', 'uninstall', 'upgrade', 'initialize',
         'define_acl', 'define_routes', 'config_form', 'config',
-        'after_save_item', 'public_head');
+        'public_head');
 
     /**
      * @var array Filters for the plugin.
@@ -232,8 +232,8 @@ SQL
     public function hookDefineRoutes($args)
     {
         $args['router']->addConfig(new Zend_Config_Ini(
-            dirname(__FILE__) . '/routes.ini'
-        ));
+            dirname(__FILE__) . "/routes.ini")
+        );
     }
 
     /**
@@ -265,15 +265,6 @@ SQL
         //set_option('tei_editions_filter_page_content', (int)(boolean)$_POST['tei_editions_filter_page_content']);
     }
 
-    public function hookAfterSaveItem($args)
-    {
-        if ($item = $args["record"]) {
-            //if ($item->getProperty('item_type_name') == "TEI") {
-                //tei_editions_set_metadata($item);
-            //}
-        }
-    }
-
     public function hookPublicHead($args)
     {
         queue_css_file('css/teibp', $media = "all", $conditional = false, $dir = 'teibp');
@@ -291,7 +282,7 @@ SQL
     {
         $nav[] = array(
             'label' => __('Editions'),
-            'uri' => url('editions')
+            'uri' => url('tei-editions')
         );
         return $nav;
     }

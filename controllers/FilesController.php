@@ -11,7 +11,7 @@
  *
  * @package TeiEditions
  */
-class TeiEditions_UploadController extends Omeka_Controller_AbstractActionController
+class TeiEditions_FilesController extends Omeka_Controller_AbstractActionController
 {
 
     public function init()

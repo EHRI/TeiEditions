@@ -35,9 +35,9 @@ echo head($head);
                         <tr>
                             <td><?php echo $mapping->getElementName();?></td>
                             <td><span class="xpath"><?php echo $mapping->path; ?></span></td>
-                            <td><a class="edit" href="<?php echo html_escape(record_url('tei_editions_field_mapping', 'edit')); ?>">
+                            <td><a class="edit" href="<?php echo html_escape(record_url($mapping, 'edit')); ?>">
                                 <?php echo __('Edit'); ?></td>
-                            <td><a class="delete-confirm" href="<?php echo html_escape(record_url('tei_editions_field_mapping', 'delete-confirm')); ?>">
+                            <td><a class="delete-confirm" href="<?php echo html_escape(record_url($mapping, 'delete-confirm')); ?>">
                                     <?php echo __('Delete'); ?>
                                 </a></td>
                         </tr>
@@ -52,7 +52,7 @@ echo head($head);
     </div>
 <?php endif; ?>
 
-<a class="add-page button small green" href="<?php echo html_escape(url('edition-fields/add')); ?>"><?php echo __('Add a Field Mapping'); ?></a>
+<a class="add-page button small green" href="<?php echo html_escape(url(array('action' => 'add'))); ?>"><?php echo __('Add a Field Mapping'); ?></a>
 
 
 <?php echo foot(); ?>
