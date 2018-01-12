@@ -92,24 +92,30 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
                 @insert_files_for_item($item, "Upload", "file");
 
                 if ($form->getElement('create_exhibit')->isChecked()) {
-                    $geo = @tei_editions_get_item_places($item);
+                    $geo = array_unique(@tei_editions_get_item_places($item), SORT_REGULAR);
 
                     $exhibit = new NeatlineExhibit;
-                    $exhibit->title = metadata($item, 'display_title');
-                    // FIXME: Make slug safe...
-                    $exhibit->slug = metadata($item, 'display_title');
+                    $title = metadata($item, 'display_title');
+                    $exhibit->title = $title;
+                    $exhibit->slug = $this->slugify($title);
                     $exhibit->spatial_layer = 'OpenStreetMap';
                     $exhibit->save(true);
 
+                    $points = array();
                     foreach ($geo as $teiPlace) {
                         $place = new NeatlineRecord;
                         $place->exhibit_id = $exhibit->id;
                         $place->title = $teiPlace["name"];
                         $place->item_id = $item->id;
-                        // FIXME: Need to convert WGS84 to WKT...?
-                        $place->coverage = "Point(" . $teiPlace["longitude"] . " " . $teiPlace["latitude"] . ")";
+                        $metres = tei_editions_degrees_to_metres(
+                            array($teiPlace["longitude"], $teiPlace["latitude"]));
+                        $points[] = $metres;
+                        $place->coverage = "Point(" . implode(" ", $metres) . ")";
                         $place->save();
                     }
+                    $exhibit->map_focus = implode(",", tei_editions_centre_points($points));
+                    $exhibit->map_zoom = 7; // guess?
+                    $exhibit->save(true);
 
                 }
                 $tx->commit();
@@ -126,5 +132,11 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
 
             $this->_helper->redirector($item->id, 'show', "items");
         }
+    }
+
+    private function slugify($text)
+    {
+        $text = iconv('utf-8', 'us-ascii//TRANSLIT', $text);
+        return strtolower(preg_replace('/[^A-Za-z0-9-]+/', '-', $text));
     }
 }

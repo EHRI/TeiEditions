@@ -29,4 +29,11 @@ class TeiEditionsFunctionsTest extends PHPUnit_Framework_Testcase
         $this->assertEquals(
             array(array("name" => "Tartu", "longitude" => 26.72509, "latitude" => 58.38062)), $out);
     }
+
+    public function test_tei_editions_centre_points()
+    {
+        $points = array(array(1.0, 1.0), array(2.0, 2.0));
+        $this->assertEquals(
+            array(1.5, 1.5), tei_editions_centre_points($points));
+    }
 }

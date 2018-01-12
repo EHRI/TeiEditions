@@ -164,6 +164,41 @@ function tei_editions_get_tei_path(Item $item)
 }
 
 /**
+ * Average an array of long/lat arrays.
+ *
+ * @param $points
+ * @return array average long/lat values
+ */
+function tei_editions_centre_points($points)
+{
+    $num = count($points);
+    $lons = array_map(function ($p) {return $p[0];}, $points);
+    $lats = array_map(function ($p) {return $p[1];}, $points);
+    return array(array_sum($lons) / $num, array_sum($lats) / $num);
+}
+
+/**
+ * Hack to convert degrees to Neatline's metres:
+ *
+ * http://neatline.org/2012/09/10/geocoding-for-neatline-part-i/
+ *
+ * @param $coords array an array containing latitude and longitude keys
+ * in degrees
+ *
+ * @return array an array containing latitude and longitude keys
+ * in metres
+ */
+function tei_editions_degrees_to_metres($lon_lat)
+{
+    $half_circumference = 20037508.34;
+
+    $x = $lon_lat[0] * $half_circumference / 180;
+    $y = log(tan((90 + $lon_lat[1]) * pi() / 360)) / (pi() / 180);
+    $y = $y * $half_circumference / 180;
+    return array($x, $y);
+}
+
+/**
  * Find instances of tei:place elements which contain placeName
  * and geo and return them as an array
  *
