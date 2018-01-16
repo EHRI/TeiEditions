@@ -31,12 +31,23 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
     public function importAction()
     {
         // Set the created by user ID.
-        $form = $this->_getForm();
+        $form = $this->_getImportForm();
         $this->view->form = $form;
-        $this->_processFieldForm($form, 'import');
+        $this->_processImportForm($form);
     }
 
-    private function _getForm()
+    /**
+     * Display the "Field Configuration" form.
+     */
+    public function updateAction()
+    {
+        // Set the created by user ID.
+        $form = $this->_getUpdateForm();
+        $this->view->form = $form;
+        $this->_processUpdateForm($form);
+    }
+
+    private function _getImportForm()
     {
         $formOptions = array('type' => 'tei_editions_upload');
         $form = new Omeka_Form($formOptions);
@@ -66,10 +77,32 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
         return $form;
     }
 
+    private function _getUpdateForm()
+    {
+        $formOptions = array('type' => 'tei_editions_update');
+        $form = new Omeka_Form($formOptions);
+
+        $form->addElement('checkbox', 'create_exhibit', array(
+            'id' => 'tei-editions-upload-create-exhibit',
+            'label' => __('Create Neatline Exhibit'),
+            'class' => 'checkbox',
+            'description' => __('Create a Neatline Exhibit containing records for each place element contained in the TEI')
+        ));
+
+        $form->addElement('submit', 'submit', array(
+            'label' => __('Update Items')
+        ));
+
+        $form->addDisplayGroup(array('create_exhibit'), 'teiupdate_info');
+        $form->addDisplayGroup(array('submit'), 'teiupdate_submit');
+
+        return $form;
+    }
+
     /**
      * Process the page edit and edit forms.
      */
-    private function _processFieldForm($form, $action)
+    private function _processImportForm($form)
     {
         if ($this->getRequest()->isPost()) {
             if (!$form->isValid($_POST)) {
@@ -79,45 +112,12 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
 
             $tx = get_db()->getAdapter()->beginTransaction();
             try {
-
                 $item = new Item;
-                $xpaths = TeiEditionsFieldMapping::fieldMappings();
-                $path = $_FILES["file"]["tmp_name"];
-                $data = @tei_editions_extract_metadata($path, $xpaths);
-                error_log("Extracted from " . $path . " -> " .
-                    json_encode($data, JSON_PRETTY_PRINT));
-
-                $item->addElementTextsByArray($data);
-                $item->save();
+                $file = "file";
+                $path = $_FILES[$file]["tmp_name"];
+                $this->_updateItemFromTEI($item, $path,
+                    $form->getElement('create_exhibit')->isChecked());
                 @insert_files_for_item($item, "Upload", "file");
-
-                if ($form->getElement('create_exhibit')->isChecked()) {
-                    $geo = array_unique(@tei_editions_get_item_places($item), SORT_REGULAR);
-
-                    $exhibit = new NeatlineExhibit;
-                    $title = metadata($item, 'display_title');
-                    $exhibit->title = $title;
-                    $exhibit->slug = $this->slugify($title);
-                    $exhibit->spatial_layer = 'OpenStreetMap';
-                    $exhibit->save(true);
-
-                    $points = array();
-                    foreach ($geo as $teiPlace) {
-                        $place = new NeatlineRecord;
-                        $place->exhibit_id = $exhibit->id;
-                        $place->title = $teiPlace["name"];
-                        $place->item_id = $item->id;
-                        $metres = tei_editions_degrees_to_metres(
-                            array($teiPlace["longitude"], $teiPlace["latitude"]));
-                        $points[] = $metres;
-                        $place->coverage = "Point(" . implode(" ", $metres) . ")";
-                        $place->save();
-                    }
-                    $exhibit->map_focus = implode(",", tei_editions_centre_points($points));
-                    $exhibit->map_zoom = 7; // guess?
-                    $exhibit->save(true);
-
-                }
                 $tx->commit();
             } catch (Exception $e) {
                 error_log($e->getTraceAsString());
@@ -134,9 +134,94 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
         }
     }
 
+    /**
+     * Process the page edit and edit forms.
+     */
+    private function _processUpdateForm($form)
+    {
+        if ($this->getRequest()->isPost()) {
+            if (!$form->isValid($_POST)) {
+                $this->_helper->_flashMessenger(__('There was an error on the form. Please try again.'), 'error');
+                return;
+            }
+
+            $db = get_db();
+            $tx = $db->getAdapter()->beginTransaction();
+            $updated = 0;
+            try {
+                $extract_neatline = $form->getElement('create_exhibit')->isChecked();
+                foreach ($items = $db->getTable('Item')->findAll() as $item) {
+                    foreach ($item->getFiles() as $file) {
+                        if (tei_editions_is_xml_file($file)) {
+                            $item->deleteElementTexts();
+                            $this->_updateItemFromTEI($item, $file->getWebPath(),
+                                $extract_neatline);
+                            $updated++;
+                        }
+                    }
+                }
+                $tx->commit();
+            } catch (Exception $e) {
+                error_log($e->getTraceAsString());
+                $tx->rollBack();
+                $this->_helper->_flashMessenger(
+                    __('There was an error on the form: ' . $e->getMessage()), 'error');
+                return;
+            }
+
+            $this->_helper->flashMessenger(
+                __("TEI items updated: $updated"), 'success');
+        }
+    }
+
     private function slugify($text)
     {
         $text = iconv('utf-8', 'us-ascii//TRANSLIT', $text);
         return strtolower(preg_replace('/[^A-Za-z0-9-]+/', '-', $text));
+    }
+
+    /**
+     * @param $form
+     * @param $path
+     * @param $xpaths
+     * @param $item
+     */
+    private function _updateItemFromTEI($item, $path, $extract_neatline)
+    {
+        $xpaths = TeiEditionsFieldMapping::fieldMappings();
+        $doc = new TeiEditionsDocumentProxy($path);
+        $data = $doc->metadata($xpaths);
+        error_log("Extracted from " . $path . " -> " .
+            json_encode($data, JSON_PRETTY_PRINT));
+
+        $item->addElementTextsByArray($data);
+        $item->save();
+
+        if ($extract_neatline) {
+            $exhibit = new NeatlineExhibit;
+            $title = metadata($item, 'display_title');
+            $exhibit->title = $title;
+            $exhibit->slug = $doc->id();
+            $exhibit->spatial_layer = 'OpenStreetMap';
+            $exhibit->save(true);
+
+            $points = array();
+            $geo = array_unique($doc->places(), SORT_REGULAR);
+            foreach ($geo as $teiPlace) {
+                $place = new NeatlineRecord;
+                $place->exhibit_id = $exhibit->id;
+                $place->title = $teiPlace["name"];
+                $metres = tei_editions_degrees_to_metres(
+                    array($teiPlace["longitude"], $teiPlace["latitude"]));
+                $points[] = $metres;
+                $place->coverage = "Point(" . implode(" ", $metres) . ")";
+                $place->save();
+            }
+            if (!empty($points)) {
+                $exhibit->map_focus = implode(",", tei_editions_centre_points($points));
+                $exhibit->map_zoom = 7; // guess?
+            }
+            $exhibit->save(true);
+        }
     }
 }
