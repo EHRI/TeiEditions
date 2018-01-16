@@ -123,7 +123,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
                 error_log($e->getTraceAsString());
                 $tx->rollBack();
                 $this->_helper->_flashMessenger(
-                    __('There was an error on the form: ' . $e->getMessage()), 'error');
+                    __('There was an error on the form: %s', $e->getMessage()), 'error');
                 return;
             }
 
@@ -165,7 +165,8 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
                 error_log($e->getTraceAsString());
                 $tx->rollBack();
                 $this->_helper->_flashMessenger(
-                    __('There was an error on the form: ' . $e->getMessage()), 'error');
+                    __("There was an processing element %d '%s': %s",
+                        $item->id, metadata($item, "display_title"), $e->getMessage()), 'error');
                 return;
             }
 
