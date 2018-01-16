@@ -224,10 +224,10 @@ function tei_editions_get_places($uri_or_path)
             $lat_long = $query->evaluate("./tei:location/tei:geo", $place);
             if (empty($lat_long)) continue;
 
-            $parts = explode(" ", $lat_long[0]->textContent);
+            $parts = explode(" ", $lat_long->item(0)->textContent);
 
             $out[] = array(
-                "name" => $names[0]->textContent,
+                "name" => $names->item(0)->textContent,
                 "latitude" => $parts[0],
                 "longitude" => $parts[1]
             );
