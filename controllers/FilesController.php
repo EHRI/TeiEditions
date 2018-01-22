@@ -82,6 +82,17 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
         $formOptions = array('type' => 'tei_editions_update');
         $form = new Omeka_Form($formOptions);
 
+        // The pick an item drop-down select:
+        $select = $form->createElement('select', 'item', array(
+            'required' => false,
+            'multiple' => 'multiple',
+            'label' => __('Item'),
+            'description' => __('Select a specific item (optional). If left blank all items with a TEI file will be processed'),
+            'multiOptions' => $this->_getItemsForSelect(),
+        ));
+        $select->setRegisterInArrayValidator(false);
+        $form->addElement($select);
+
         $form->addElement('checkbox', 'create_exhibit', array(
             'id' => 'tei-editions-upload-create-exhibit',
             'label' => __('Create Neatline Exhibit'),
@@ -150,7 +161,12 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
             $updated = 0;
             try {
                 $extract_neatline = $form->getElement('create_exhibit')->isChecked();
-                foreach ($items = $db->getTable('Item')->findAll() as $item) {
+                $selected_items = $form->getValue('item');
+
+                foreach ($this->_getCandidateItems() as $item) {
+                    if (!in_array((string)$item->id, $selected_items)) {
+                        continue;
+                    }
                     foreach ($item->getFiles() as $file) {
                         if (tei_editions_is_xml_file($file)) {
                             $item->deleteElementTexts();
@@ -173,12 +189,6 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
             $this->_helper->flashMessenger(
                 __("TEI items updated: $updated"), 'success');
         }
-    }
-
-    private function slugify($text)
-    {
-        $text = iconv('utf-8', 'us-ascii//TRANSLIT', $text);
-        return strtolower(preg_replace('/[^A-Za-z0-9-]+/', '-', $text));
     }
 
     /**
@@ -224,5 +234,25 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
             }
             $exhibit->save(true);
         }
+    }
+
+    private function _getCandidateItems() {
+        $items = array();
+        foreach (get_db()->getTable('Item')->findAll() as $item) {
+            foreach ($item->getFiles() as $file) {
+                if (tei_editions_is_xml_file($file)) {
+                    $items[] = $item;
+                }
+            }
+        }
+        return $items;
+    }
+
+    private function _getItemsForSelect() {
+        $options = array();
+        foreach ($this->_getCandidateItems() as $item) {
+            $options[$item->id] = metadata($item, 'display_title');
+        }
+        return $options;
     }
 }
