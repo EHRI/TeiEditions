@@ -28,6 +28,44 @@ TEI elements and services handled:
 */
 
 /**
+ * Attempt to convert an external URL for some resource
+ * into a local slug value.
+ *
+ * @param $url
+ */
+
+$_KNOWN_URLS = array(
+    'geonames' => 'http://sws.geonames.org/<id>/',
+    'ehri-authority' => 'https://portal.ehri-project.eu/authorities/<id>'
+);
+
+function urlToSlug($url)
+{
+    global $_KNOWN_URLS;
+    foreach ($_KNOWN_URLS as $name => $pattern) {
+        $regex = '~' . str_replace('<id>', '([^/]+)', $pattern) . '~';
+        $matches = array();
+        if (preg_match($regex, $url, $matches)) {
+            return implode('-', array($name, $matches[1]));
+        }
+    }
+    return null;
+}
+
+function slugToUrl($slug)
+{
+    global $_KNOWN_URLS;
+    foreach ($_KNOWN_URLS as $name => $pattern) {
+        $pos = strpos($slug, $name);
+        if ($pos !== false) {
+            $id = substr($slug, strlen($name) + 1);
+            return str_replace('<id>', $id, $pattern);
+        }
+    }
+    return null;
+}
+
+/**
  * @param $req string the GraphQL request body
  * @param $params array the GraphQL parameters
  * @return array the return data
