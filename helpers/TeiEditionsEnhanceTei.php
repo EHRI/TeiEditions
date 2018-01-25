@@ -34,15 +34,17 @@ TEI elements and services handled:
  * @param $url
  */
 
-$_KNOWN_URLS = array(
-    'geonames' => 'http://sws.geonames.org/<id>/',
-    'ehri-authority' => 'https://portal.ehri-project.eu/authorities/<id>'
-);
+function urlSlugMappings()
+{
+    return array(
+        'geonames' => 'http://sws.geonames.org/<id>/',
+        'ehri-authority' => 'https://portal.ehri-project.eu/authorities/<id>'
+    );
+}
 
 function urlToSlug($url)
 {
-    global $_KNOWN_URLS;
-    foreach ($_KNOWN_URLS as $name => $pattern) {
+    foreach (urlSlugMappings() as $name => $pattern) {
         $regex = '~' . str_replace('<id>', '([^/]+)', $pattern) . '~';
         $matches = array();
         if (preg_match($regex, $url, $matches)) {
@@ -54,8 +56,7 @@ function urlToSlug($url)
 
 function slugToUrl($slug)
 {
-    global $_KNOWN_URLS;
-    foreach ($_KNOWN_URLS as $name => $pattern) {
+    foreach (urlSlugMappings() as $name => $pattern) {
         $pos = strpos($slug, $name);
         if ($pos !== false) {
             $id = substr($slug, strlen($name) + 1);

@@ -97,7 +97,7 @@ class TeiEditionsDocumentProxy
 
     /**
      * Find instances of tei:place elements which contain placeName
-     * and geo and return them as an array
+     * and geo and return them as an array.
      *
      * @return array
      */
@@ -112,14 +112,22 @@ class TeiEditionsDocumentProxy
             $lat_long = $this->query->evaluate("./tei:location/tei:geo", $place);
             if (empty($lat_long)) continue;
 
+            $links = $this->query->evaluate("./tei:linkGrp/tei:link/@target", $place);
+            $urls = array();
+            foreach ($links as $link) {
+                $urls[] = $link->value;
+            }
+
             $parts = explode(" ", $lat_long->item(0)->textContent);
 
-            $out[] = array(
-                "name" => $names->item(0)->textContent,
+            $name = $names->item(0)->textContent;
+            $out[$name] = array(
+                "name" => $name,
                 "latitude" => $parts[0],
-                "longitude" => $parts[1]
+                "longitude" => $parts[1],
+                "urls" => $urls
             );
         }
-        return $out;
+        return array_values($out);
     }
 }

@@ -201,6 +201,10 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
     {
         $xpaths = TeiEditionsFieldMapping::fieldMappings();
         $doc = new TeiEditionsDocumentProxy($path);
+        if (is_null($doc->id())) {
+            throw new Exception("TEI document must have a unique 'id' attribute");
+        }
+
         $data = $doc->metadata($xpaths);
         error_log("Extracted from " . $path . " -> " .
             json_encode($data, JSON_PRETTY_PRINT));
@@ -218,6 +222,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
 
             $points = array();
             $geo = array_unique($doc->places(), SORT_REGULAR);
+            error_log(json_encode($geo), true);
             foreach ($geo as $teiPlace) {
                 $place = new NeatlineRecord;
                 $place->exhibit_id = $exhibit->id;
@@ -226,6 +231,13 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
                     array($teiPlace["longitude"], $teiPlace["latitude"]));
                 $points[] = $metres;
                 $place->coverage = "Point(" . implode(" ", $metres) . ")";
+                foreach ($teiPlace["urls"] as $url) {
+                    $slug = urlToSlug($url);
+                    if ($slug) {
+                        $place->slug = $slug;
+                        break;
+                    }
+                }
                 $place->save();
             }
             if (!empty($points)) {

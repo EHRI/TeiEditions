@@ -24,7 +24,7 @@
                             <geo>58.38062 26.72509</geo>
                         </location>
                         <linkGrp>
-                            <link type="normal" target="http://www.geonames.org/588335/tartu.html"/>
+                            <link type="normal" target="http://www.geonames.org/588335/"/>
                             <link type="desc" target="http://ru.wikipedia.org/wiki/%D0%A2%D0%B0%D1%80%D1%82%D1%83"/>
                         </linkGrp>
                     </place>
@@ -38,7 +38,7 @@
         </encodingDesc>
         <profileDesc>
             <creation><date when="2017-04-29">29th April 2017</date>,
-                <placeName ref="http://www.geonames.org/2643743/london.html">London</placeName></creation>
+                <placeName ref="http://www.geonames.org/2643743/">London</placeName></creation>
         </profileDesc>
         <revisionDesc>
             <listChange>
@@ -49,7 +49,7 @@
     <text>
         <body>
             <p>This is a test TEI file.</p>
-            <p>It contains a reference to the place: <placeName ref="http://www.geonames.org/2643743/london.html">London</placeName>.</p>
+            <p>It contains a reference to the place: <placeName ref="http://www.geonames.org/2643743/">London</placeName>.</p>
 
             <p>It contains a reference to an image of the Memorial of the Murdered Jews of Europe, Berlin. <figure><graphic url="memorial.jpg" /><head>Figure 1: Memorial to the Murdered Jews of Europe.</head><figDesc>Image of the Memorial to the Murdered Jews of Europe, Berlin by Flickr user Tomasz Przechlewski under the Creative Commons license.</figDesc></figure></p>
             <p>It also contains a reference to the Slovak Nationalist politician <persName ref="https://portal.ehri-project.eu/authorities/ehri-pers-000261">Mach Alexander</persName> and the subject term
