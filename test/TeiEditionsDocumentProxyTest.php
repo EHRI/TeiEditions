@@ -29,8 +29,16 @@ class TeiEditionsDocumentProxyTest extends PHPUnit_Framework_Testcase
     public function testGetPlaces()
     {
         $doc = new TeiEditionsDocumentProxy($this->file);
-        $this->assertEquals(
-            array(array("name" => "Tartu", "longitude" => 26.72509, "latitude" => 58.38062)), $doc->places());
+        $tartu = array(
+            "name" => "Tartu",
+            "longitude" => 26.72509,
+            "latitude" => 58.38062,
+            "urls" => array(
+                "http://www.geonames.org/588335/",
+                "http://ru.wikipedia.org/wiki/%D0%A2%D0%B0%D1%80%D1%82%D1%83"
+            )
+        );
+        $this->assertEquals(array($tartu), $doc->places());
     }
 
     public function testGetId()

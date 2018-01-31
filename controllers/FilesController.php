@@ -232,7 +232,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
                 $points[] = $metres;
                 $place->coverage = "Point(" . implode(" ", $metres) . ")";
                 foreach ($teiPlace["urls"] as $url) {
-                    $slug = urlToSlug($url);
+                    $slug = tei_editions_url_to_slug($url);
                     if ($slug) {
                         $place->slug = $slug;
                         break;

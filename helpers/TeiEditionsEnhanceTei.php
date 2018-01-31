@@ -34,7 +34,7 @@ TEI elements and services handled:
  * @param $url
  */
 
-function urlSlugMappings()
+function tei_editions_url_slug_mappings()
 {
     return array(
         'geonames' => 'http://sws.geonames.org/<id>/',
@@ -42,9 +42,9 @@ function urlSlugMappings()
     );
 }
 
-function urlToSlug($url)
+function tei_editions_url_to_slug($url)
 {
-    foreach (urlSlugMappings() as $name => $pattern) {
+    foreach (tei_editions_url_slug_mappings() as $name => $pattern) {
         $regex = '~' . str_replace('<id>', '([^/]+)', $pattern) . '~';
         $matches = array();
         if (preg_match($regex, $url, $matches)) {
@@ -54,9 +54,9 @@ function urlToSlug($url)
     return null;
 }
 
-function slugToUrl($slug)
+function tei_editions_slug_to_url($slug)
 {
-    foreach (urlSlugMappings() as $name => $pattern) {
+    foreach (tei_editions_url_slug_mappings() as $name => $pattern) {
         $pos = strpos($slug, $name);
         if ($pos !== false) {
             $id = substr($slug, strlen($name) + 1);
@@ -71,7 +71,7 @@ function slugToUrl($slug)
  * @param $params array the GraphQL parameters
  * @return array the return data
  */
-function graphQLRequest($req, $params)
+function tei_editions_make_graphql_request($req, $params)
 {
     $data = array("query" => $req, "variables" => $params);
     $json = json_encode($data);
@@ -89,7 +89,7 @@ function graphQLRequest($req, $params)
     return json_decode($res, true);
 }
 
-function wikidataRequest($url)
+function tei_editions_get_wikidata_info($url)
 {
     $json_url = preg_match("\.json$", $url) ? $url : "$url.json";
     $curl = curl_init($json_url);
@@ -99,7 +99,7 @@ function wikidataRequest($url)
     return json_decode($res, true);
 }
 
-function getPlace($id)
+function tei_editions_get_place($id)
 {
     $geonames_url = "http://sws.geonames.org/$id/about.rdf";
 
@@ -129,7 +129,7 @@ function getPlace($id)
     );
 }
 
-function getHistoricalAgent($id, $lang = null)
+function tei_editions_get_historical_agent($url, $lang = null)
 {
     // build query
     $req = 'query getAgent($id: ID!, $lang: String) {
@@ -147,11 +147,14 @@ function getHistoricalAgent($id, $lang = null)
         }';
 
     // execute query and extract JSON
-    $result = graphQLRequest($req, array("id" => $id, "lang" => $lang));
-    return $result['data']['HistoricalAgent']['description'];
+    $id = basename($url);
+    $result = tei_editions_make_graphql_request($req, array("id" => $id, "lang" => $lang));
+    return is_null($result['data']['HistoricalAgent'])
+        ? null
+        : $result['data']['HistoricalAgent']['description'];
 }
 
-function getConcept($id, $lang = null)
+function tei_editions_get_concept($url, $lang = null)
 {
     // build query
     $req = 'query getConcept($id: ID!, $lang: String) {
@@ -166,19 +169,19 @@ function getConcept($id, $lang = null)
     }';
 
     // execute query and extract JSON
-    $result = graphQLRequest($req, array("id" => $id, "lang" => $lang));
-    $data = array(
+    $id = basename($url);
+    $result = tei_editions_make_graphql_request($req, array("id" => $id, "lang" => $lang));
+    return is_null($result['data']['CvocConcept']) ? null : array(
         "name" => $result['data']['CvocConcept']['description']['name'],
         "longitude" => $result['data']['CvocConcept']['longitude'],
         "latitude" => $result['data']['CvocConcept']['latitude'],
-        "wikipedia" => array_reduce($result['data']['CvocConcept']['seeAlso'], function($acc, $i) {
+        "wikipedia" => array_reduce($result['data']['CvocConcept']['seeAlso'], function ($acc, $i) {
             return strpos($i, "wikipedia") ? $i : $acc;
         })
     );
-    return $data;
 }
 
-function processTEIPlaces(SimpleXMLElement $tei)
+function tei_editions_process_tei_places(SimpleXMLElement $tei)
 {
     // get place URLs
     $urls = array_unique($tei->xpath('//t:placeName/@ref'));
@@ -197,7 +200,7 @@ function processTEIPlaces(SimpleXMLElement $tei)
                 $partsURL = explode("/", $partURL);
                 $geonamesID = $partsURL[0];
 
-                $data = getPlace($geonamesID);
+                $data = tei_editions_get_place($geonamesID);
                 if ($data and $data["name"]) {
                     $name = $data["name"];
 
@@ -233,7 +236,7 @@ function processTEIPlaces(SimpleXMLElement $tei)
     }
 }
 
-function processTEITerms(SimpleXMLElement $tei)
+function tei_editions_process_tei_terms(SimpleXMLElement $tei)
 {
 
     // query for terms URLs
@@ -242,27 +245,24 @@ function processTEITerms(SimpleXMLElement $tei)
     if ($urls) {
         $list = $tei->teiHeader->fileDesc->sourceDesc->addChild('list');
 
-        foreach ($urls as $URL) {
-            $id = basename($URL);
-
+        foreach ($urls as $url) {
             // test preferred language -> if empty result -> send query again with empty language code
-            $data = getConcept($id, "eng") or getConcept($id);
-            print json_encode($data) . "\n";
+            $data = tei_editions_get_concept($url, "eng") or tei_editions_get_concept($url);
             if ($data and $data["name"]) {
                 $name = $data["name"];
-                print "Term URL: $URL: $name\n";
+                print "Term URL: $url: $name\n";
                 $item = $list->addChild("item");
                 $item->addChild("name", $name);
                 $linkGrp = $item->addChild("linkGrp");
                 $link = $linkGrp->addChild("link");
                 $link->addAttribute("type", "normal");
-                $link->addAttribute("target", $URL);
+                $link->addAttribute("target", $url);
             }
         }
     }
 }
 
-function processTEIPeople(SimpleXMLElement $tei)
+function tei_editions_process_tei_people(SimpleXMLElement $tei)
 {
     // query for terms URLs
     $urls = array_unique($tei->xpath('//t:persName/@ref'));
@@ -270,13 +270,12 @@ function processTEIPeople(SimpleXMLElement $tei)
     if ($urls) {
         $listPerson = $tei->teiHeader->fileDesc->sourceDesc->addChild('listPerson');
 
-        foreach ($urls as $URL) {
-            $id = basename($URL);
-            $data = getHistoricalAgent($id, "eng") or getHistoricalAgent($id);
+        foreach ($urls as $url) {
+            $data = tei_editions_get_historical_agent($url, "eng") or tei_editions_get_historical_agent($url);
 
             if ($data and $data["name"]) {
                 $name = $data["name"];
-                print "Person URL: $URL: $name\n";
+                print "Person URL: $url: $name\n";
                 $item = $listPerson->addChild("person");
                 $item->addChild("persName", $name); // FIXME - add life span
                 $datesOfExistence = $data['datesOfExistence'];
@@ -288,7 +287,7 @@ function processTEIPeople(SimpleXMLElement $tei)
                 $linkGrp = $item->addChild("linkGrp");
                 $link = $linkGrp->addChild("link");
                 $link->addAttribute("type", "normal");
-                $link->addAttribute("target", $URL);
+                $link->addAttribute("target", $url);
             }
         }
     }
@@ -310,9 +309,9 @@ if (!count(debug_backtrace())) {
     $tei->registerXPathNamespace('t', 'http://www.tei-c.org/ns/1.0');
 
     // get normalized records and save them as XML fragments
-    processTEIPlaces($tei);
-    processTEITerms($tei);
-    processTEIPeople($tei);
+    tei_editions_process_tei_places($tei);
+    tei_editions_process_tei_terms($tei);
+    tei_editions_process_tei_people($tei);
 
     // save the resulting TEI
     if (count($argv) > 2) {

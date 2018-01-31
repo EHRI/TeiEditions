@@ -76,6 +76,36 @@ class TeiEditions_EditionController extends Omeka_Controller_AbstractActionContr
         ));
     }
 
+    public function entitiesAction()
+    {
+        $url = array_key_exists('url', $_REQUEST) ? $_REQUEST['url'] : null;
+        $this->view->assign(
+            array(
+                'url' => $url,
+                'data' => $this->_lookupInfo($url),
+                'mappings' => array(
+                    'otherFormsOfName' => __("Also Known As"),
+                    'biographicalHistory' => __("Biographical History"),
+                    'datesOfExistence' => __("Dates"),
+                    'source' => __("Source"),
+                    'longitude' =>  __("Longitude"),
+                    'latitude' => __("Latitude"),
+                    'seeAlso' => __("See Also")
+                )
+            )
+        );
+    }
+
+    protected function _lookupInfo($url) {
+        if (preg_match('/\/keywords\//', $url)) {
+            return tei_editions_get_concept($url);
+        } else if (preg_match('/\/authorities\//', $url)) {
+            return tei_editions_get_historical_agent($url);
+        }
+        return null;
+
+    }
+
     /**
      * Pass setting to Solr search
      *
@@ -165,6 +195,5 @@ class TeiEditions_EditionController extends Omeka_Controller_AbstractActionContr
             'hl.fl'               => '*_t'
 
         );
-
     }
 }
