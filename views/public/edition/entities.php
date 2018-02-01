@@ -29,30 +29,10 @@
     <div class="entity">
         <div class="entity-name"><?php echo $data['name']; ?></div>
 
-        <?php if (array_key_exists('otherFormsOfName', $data) and !empty($data['otherFormsOfName'])): ?>
-            <ul class="entity-other-names">
-                <?php foreach ($data['otherFormsOfName'] as $altname): ?>
-                    <li><?php echo $altname; ?></li>
-                <?php endforeach; ?>
-            </ul>
-        <?php endif; ?>
-
-        <?php foreach (array('biographicalHistory', 'datesOfExistence') as $key): ?>
-            <dl class="entity-properties">
-                <?php if (array_key_exists($key, $data)): ?>
-                    <dt><?php echo $mappings[$key]; ?></dt>
-                    <dd><?php echo $data[$key]; ?></dd>
-                <?php endif; ?>
-            </dl>
-        <?php endforeach; ?>
-
-        <?php if (array_key_exists('source', $data) && (is_array($data['source']) && !empty($data['source']))): ?>
-            <ul class="entity-source">
-                <?php var_dump($data['source']);?>
-                <?php foreach ($data['source'] as $source): ?>
-                    <li><?php echo $source; ?></li>
-                <?php endforeach; ?>
-            </ul>
-        <?php endif; ?>
+        <?php echo tei_editions_render_string_list($data['otherFormsOfName'], "entity-other-names"); ?>
+        <?php echo tei_editions_render_string_list($data['parallelFormsOfName'], "entity-other-names"); ?>
+        <?php echo tei_editions_render_properties($data, $mappings,
+            array('biographicalHistory', 'datesOfExistence'), "entity-properties"); ?>
+        <?php echo tei_editions_render_string_list($data['source'], "entity-source"); ?>
     </div>
 <?php endif; ?>

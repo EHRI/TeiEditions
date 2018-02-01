@@ -8,6 +8,7 @@
 
 require_once dirname(__FILE__) . '/helpers/TeiEditionsFunctions.php';
 require_once dirname(__FILE__) . '/helpers/TeiEditionsEnhanceTei.php';
+require_once dirname(__FILE__) . '/helpers/TeiEditionsViewHelpers.php';
 
 /**
  * Simple Pages plugin.

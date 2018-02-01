@@ -122,6 +122,8 @@ function tei_editions_get_place($id)
     $wiki = (array)$xml->xpath("/rdf:RDF/gn:Feature/gn:wikipediaArticle/@rdf:resource")[0][0];
 
     return array(
+        "id" => $id,
+        "url" => $geonames_url,
         "name" => $name[0],
         "latitude" => $lat[0],
         "longitude" => $lon[0],
@@ -134,6 +136,8 @@ function tei_editions_get_historical_agent($url, $lang = null)
     // build query
     $req = 'query getAgent($id: ID!, $lang: String) {
             HistoricalAgent(id: $id) {
+                id
+                identifier
                 description(languageCode: $lang) {
                     name
                     lastName
@@ -142,6 +146,7 @@ function tei_editions_get_historical_agent($url, $lang = null)
                     datesOfExistence
                     source
                     otherFormsOfName
+                    parallelFormsOfName
                 }
             }
         }';
@@ -151,7 +156,10 @@ function tei_editions_get_historical_agent($url, $lang = null)
     $result = tei_editions_make_graphql_request($req, array("id" => $id, "lang" => $lang));
     return is_null($result['data']['HistoricalAgent'])
         ? null
-        : $result['data']['HistoricalAgent']['description'];
+        : array_merge(
+            array("id" => $id, "url" => $url),
+            $result['data']['HistoricalAgent']['description']
+        );
 }
 
 function tei_editions_get_concept($url, $lang = null)
@@ -172,6 +180,8 @@ function tei_editions_get_concept($url, $lang = null)
     $id = basename($url);
     $result = tei_editions_make_graphql_request($req, array("id" => $id, "lang" => $lang));
     return is_null($result['data']['CvocConcept']) ? null : array(
+        "id" => $id,
+        "url" => $url,
         "name" => $result['data']['CvocConcept']['description']['name'],
         "longitude" => $result['data']['CvocConcept']['longitude'],
         "latitude" => $result['data']['CvocConcept']['latitude'],

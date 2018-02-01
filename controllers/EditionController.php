@@ -85,6 +85,7 @@ class TeiEditions_EditionController extends Omeka_Controller_AbstractActionContr
                 'data' => $this->_lookupInfo($url),
                 'mappings' => array(
                     'otherFormsOfName' => __("Also Known As"),
+                    'parallelFormsOfName' => __("Parallel Names"),
                     'biographicalHistory' => __("Biographical History"),
                     'datesOfExistence' => __("Dates"),
                     'source' => __("Source"),
