@@ -27,13 +27,6 @@ TEI elements and services handled:
 
 */
 
-/**
- * Attempt to convert an external URL for some resource
- * into a local slug value.
- *
- * @param $url
- */
-
 function tei_editions_url_slug_mappings()
 {
     return array(
@@ -107,7 +100,7 @@ function tei_editions_get_place($id)
     $data = file_get_contents($geonames_url);
     $xml = new SimpleXMLElement($data);
     if ($xml === FALSE) {
-        print "Error reading URL!\n";
+        error_log("Error reading URL!");
         return false;
     }
 
@@ -214,7 +207,7 @@ function tei_editions_process_tei_places(SimpleXMLElement $tei)
                 if ($data and $data["name"]) {
                     $name = $data["name"];
 
-                    print("Place URL: $place_url: $name\n");
+                    error_log("Place URL: $place_url: $name");
 
                     // placeName
                     $place->addChild('placeName', $name);
@@ -260,7 +253,7 @@ function tei_editions_process_tei_terms(SimpleXMLElement $tei)
             $data = tei_editions_get_concept($url, "eng") or tei_editions_get_concept($url);
             if ($data and $data["name"]) {
                 $name = $data["name"];
-                print "Term URL: $url: $name\n";
+                error_log("Term URL: $url: $name");
                 $item = $list->addChild("item");
                 $item->addChild("name", $name);
                 $linkGrp = $item->addChild("linkGrp");
@@ -285,7 +278,7 @@ function tei_editions_process_tei_people(SimpleXMLElement $tei)
 
             if ($data and $data["name"]) {
                 $name = $data["name"];
-                print "Person URL: $url: $name\n";
+                error_log("Person URL: $url: $name");
                 $item = $listPerson->addChild("person");
                 $item->addChild("persName", $name); // FIXME - add life span
                 $datesOfExistence = $data['datesOfExistence'];
@@ -312,7 +305,7 @@ if (!count(debug_backtrace())) {
         die("Input file not defined. The script requires a parameter with path to the TEI file.");
     }
 
-    // FIXME: validate file
+    // TODO: validate file
 
     // read TEI file
     $tei = simplexml_load_file($in_file) or exit("Couldn't load the TEI file.");
@@ -323,8 +316,11 @@ if (!count(debug_backtrace())) {
     tei_editions_process_tei_terms($tei);
     tei_editions_process_tei_people($tei);
 
-    // save the resulting TEI
+    // save the resulting TEI to output file or print
+    // to stdout
     if (count($argv) > 2) {
         $tei->asXML($argv[2]);
+    } else {
+        print($tei->asXML());
     }
 }
