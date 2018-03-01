@@ -40,6 +40,8 @@
             <p>It contains a reference to the place: <placeName ref="http://www.geonames.org/2643743/">London</placeName>
                 and one without a reference: <placeName>Tartu</placeName>.</p>
 
+            <p>This is an organisation: <orgName ref="https://portal.ehri-project.eu/authorities/ehri_cb-001408">Czechoslovak Government-in-Exile</orgName></p>
+
             <p>It contains a reference to an image of the Memorial of the Murdered Jews of Europe, Berlin. <figure><graphic url="memorial.jpg" /><head>Figure 1: Memorial to the Murdered Jews of Europe.</head><figDesc>Image of the Memorial to the Murdered Jews of Europe, Berlin by Flickr user Tomasz Przechlewski under the Creative Commons license.</figDesc></figure></p>
             <p>It also contains a reference to the Slovak Nationalist politician <persName ref="https://portal.ehri-project.eu/authorities/ehri_pers-000261">Mach Alexander</persName> and the subject term
             <term type="subject" ref="https://portal.ehri-project.eu/keywords/ehri_terms-585">Confiscation of Property</term>.</p>

@@ -55,12 +55,16 @@ class TeiEditionsEnhanceTeiTest extends PHPUnit_Framework_Testcase
             $this->tei->xpath("//t:fileDesc/t:sourceDesc/t:listPlace/t:place[2]/t:placeName/text()")[0]
         );
         $this->assertEquals(
-            "Confiscation of Property",
+            "Confiscation of property",
             $this->tei->xpath("//t:fileDesc/t:sourceDesc/t:list/t:item[1]/t:name/text()")[0]
         );
         $this->assertEquals(
             "Mach Alexander",
             $this->tei->xpath("//t:fileDesc/t:sourceDesc/t:listPerson/t:person[1]/t:persName/text()")[0]
+        );
+        $this->assertEquals(
+            "Československá vláda v exilu",
+            $this->tei->xpath("//t:fileDesc/t:sourceDesc/t:listOrg/t:org[1]/t:orgName/text()")[0]
         );
     }
 }

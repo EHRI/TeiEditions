@@ -218,15 +218,15 @@ function tei_editions_add_place(SimpleXMLElement $place_list, $name, $url, $data
 
     if ($url) {
         // URIs and links
-        $linkGrp = $place->addChild('linkGrp');
+        $link_grp = $place->addChild('linkGrp');
 
-        $link = $linkGrp->addChild('link');
+        $link = $link_grp->addChild('link');
         $link->addAttribute('type', 'normal');
         // $link->addAttribute('source', 'geonames') ; FIXME: doesn't validate in Oxygen
         $link->addAttribute('target', $url);
 
         if (isset($data["wikipedia"])) {
-            $wlink = $linkGrp->addChild('link');
+            $wlink = $link_grp->addChild('link');
             $wlink->addAttribute('type', 'desc');
             // $wlink->addAttribute('source', 'wikipedia') ; FIXME: doesn't validate in Oxygen
             $wlink->addAttribute('target', $data["wikipedia"]);
@@ -242,7 +242,7 @@ function tei_editions_process_tei_places(SimpleXMLElement $tei)
     $refs = tei_editions_get_references($tei, "placeName");
 
     if ($refs) {
-        $listPlace = $tei->teiHeader->fileDesc->sourceDesc->addChild('listPlace');
+        $list_place = $tei->teiHeader->fileDesc->sourceDesc->addChild('listPlace');
 
         foreach ($refs as $name => $url) {
 
@@ -252,14 +252,11 @@ function tei_editions_process_tei_places(SimpleXMLElement $tei)
             if ($url and preg_match("/(geonames)/", $url)) {
 
                 // correct geonames url
-                $partURL = str_replace("http://www.geonames.org/", "", $url);
-                $partsURL = explode("/", $partURL);
-                $geonamesID = $partsURL[0];
-
-                $data = array_merge($data, tei_editions_get_place($geonamesID));
+                $parts = explode("/", str_replace("http://www.geonames.org/", "", $url));
+                $data = array_merge($data, tei_editions_get_place($parts[0]));
             }
 
-            tei_editions_add_place($listPlace, $name, $url, $data);
+            tei_editions_add_place($list_place, $name, $url, $data);
         }
     }
 }
@@ -273,8 +270,8 @@ function tei_editions_add_term(SimpleXMLElement $list, $name, $url, $data)
     $item->addChild('name', trim($name));
 
     if ($url) {
-        $linkGrp = $item->addChild("linkGrp");
-        $link = $linkGrp->addChild("link");
+        $link_grp = $item->addChild("linkGrp");
+        $link = $link_grp->addChild("link");
         $link->addAttribute("type", "normal");
         $link->addAttribute("target", $url);
     }
@@ -320,8 +317,8 @@ function tei_editions_add_person(SimpleXMLElement $list, $name, $url, $data)
         $item->addChild("note", $data['biographicalHistory']);
     }
     if ($url) {
-        $linkGrp = $item->addChild("linkGrp");
-        $link = $linkGrp->addChild("link");
+        $link_grp = $item->addChild("linkGrp");
+        $link = $link_grp->addChild("link");
         $link->addAttribute("type", "normal");
         $link->addAttribute("target", $url);
     }
@@ -336,7 +333,7 @@ function tei_editions_process_tei_people(SimpleXMLElement $tei)
     $refs = tei_editions_get_references($tei, "persName");
 
     if ($refs) {
-        $listPerson = $tei->teiHeader->fileDesc->sourceDesc->addChild('listPerson');
+        $list_person = $tei->teiHeader->fileDesc->sourceDesc->addChild('listPerson');
 
         foreach ($refs as $name => $url) {
 
@@ -347,18 +344,64 @@ function tei_editions_process_tei_people(SimpleXMLElement $tei)
                 $data = array_merge($data, $lookup);
             }
 
-            tei_editions_add_person($listPerson, $name, $url, $data);
+            tei_editions_add_person($list_person, $name, $url, $data);
+        }
+    }
+}
+
+function tei_editions_add_org(SimpleXMLElement $list, $name, $url, $data)
+{
+    $name = isset($data["name"]) ? $data["name"] : $name;
+    error_log("Adding org: $name");
+
+    $item = $list->addChild('org');
+    $item->addChild('orgName', trim($name));
+
+    if (isset($data['datesOfExistence'])) {
+        $item->addChild("p", $data['datesOfExistence']);
+    }
+    if (isset($data['biographicalHistory'])) {
+        $item->addChild("note", $data['biographicalHistory']);
+    }
+    if ($url) {
+        $link_grp = $item->addChild("linkGrp");
+        $link = $link_grp->addChild("link");
+        $link->addAttribute("type", "normal");
+        $link->addAttribute("target", $url);
+    }
+
+    return $item;
+}
+
+
+function tei_editions_process_tei_orgs(SimpleXMLElement $tei)
+{
+    // query for terms URLs
+    $refs = tei_editions_get_references($tei, "orgName");
+
+    if ($refs) {
+        $list_org = $tei->teiHeader->fileDesc->sourceDesc->addChild('listOrg');
+
+        foreach ($refs as $name => $url) {
+
+            $data = array();
+            if ($url) {
+                $lookup = tei_editions_get_historical_agent($url, "eng")
+                    or tei_editions_get_historical_agent($url);
+                $data = array_merge($data, $lookup);
+            }
+
+            tei_editions_add_org($list_org, $name, $url, $data);
         }
     }
 }
 
 function tei_editions_enhance_tei(SimpleXMLElement $tei)
 {
-    // get normalized records and save them as XML fragments
-
     tei_editions_process_tei_places($tei);
     tei_editions_process_tei_terms($tei);
     tei_editions_process_tei_people($tei);
+    tei_editions_process_tei_orgs($tei);
 }
 
 // If we're running interactively...
