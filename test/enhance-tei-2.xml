@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="http://www.tei-c.org/release/xml/tei/custom/schema/relaxng/tei_all.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<!--EHRI ODT to TEI convertor: 2018-01-08T13:51:56+01:00-->
+<TEI xmlns="http://www.tei-c.org/ns/1.0">
+  <teiHeader>
+    <fileDesc>
+      <titleStmt>
+        <title>Telegramm von Richard A. Bermann an Präsident Edvard Beneš aus Lundenburg</title>
+      </titleStmt>
+      <editionStmt>
+        <edition>BeGrenzte Flucht. Die österreichischen Flüchtlinge an der Grenze zur
+          Tschechoslowakei im Krisenjahr 1938</edition>
+        <author>
+          <persName>Michal Frankl</persName>
+        </author>
+        <author>
+          <persName>Wolfgang Schellenbacher</persName>
+        </author>
+        <sponsor>Nationalfonds der Republik Österreich</sponsor>
+      </editionStmt>
+      <publicationStmt>
+        <publisher>
+          <ref target="https://www.ehri-project.eu/">European Holocaust Research
+            Infrastructure</ref>
+        </publisher>
+        <availability>
+          <licence target="http://creativecommons.org/licenses/by-sa/4.0/">Attribution-ShareAlike
+            4.0 International</licence>
+        </availability>
+      </publicationStmt>
+      <sourceDesc>
+        <msDesc>
+          <msIdentifier>
+            <country ref="https://portal.ehri-project.eu/countries/cz">Tschechische Republik</country>
+            <repository ref="https://portal.ehri-project.eu/institutions/cz-002286">Nationalarchiv
+              Prag</repository>
+            <collection ref="https://portal.ehri-project.eu/units/cz-002286-1075">Ministerium des
+              Innern (225)</collection>
+            <idno>1936-1940, Sign. X/R/3/2, K. 1186-19</idno>
+          </msIdentifier>
+          <msContents>
+            <textLang mainLang="de">Original auf Deutsch</textLang>
+          </msContents>
+          <physDesc/>
+        </msDesc>
+        <bibl>Nationalarchiv, Prag, Präsidium des Ministeriums des Innern (225) 1936-1940, Sign. X/R/3/2, K. 1186-19</bibl>
+      </sourceDesc>
+    </fileDesc>
+    <profileDesc>
+      <creation>
+        <date when="1938-03-11">11. März 1938</date>
+        <placeName>Břeclav (Lundenburg)</placeName>
+        <persName>Richard A. Bermann</persName>
+        <idno>EHRI.BF.19380311a</idno>
+      </creation>
+      <textClass>
+        <keywords>
+          <term>persönliche Dokumente</term>
+        </keywords>
+      </textClass>
+      <langUsage>
+        <language ident="de">Deutsch</language>
+      </langUsage>
+      <abstract>
+        <p/>
+      </abstract>
+    </profileDesc>
+  </teiHeader>
+  <text>
+    <body>
+      <p><note type="gloss">Stempel:</note><placeName ref="http://www.geonames.org/3067696/prague.html">Praha</placeName> 10 <placeName>Hrad</placeName></p>
+      <p>
+        <date when="1938-03-12">12. III. 1938</date>
+      </p>
+      <p>f]</p>
+      <p>
+        <!-- Druh.........TELEGRAM Došel pod čislem 205 -->
+      </p>
+      <p>
+        <term type="subject" ref="https://portal.ehri-project.eu/keywords/ehri_terms-105">Praesident</term>
+        <persName ref="https://portal.ehri-project.eu/authorities/ehri_pers-000030">dr benes</persName>
+        <placeName ref="http://www.geonames.org/3067696/prague.html">prag</placeName>
+      </p>
+      <p>=+ <placeName ref="http://www.geonames.org/3078773/breclav.html">breclav</placeName> /2 121 34/32 12 0504 =</p>
+      <p>= im namen der an der grenzstation <placeName ref="http://www.geonames.org/3078773/breclav.html">breclav</placeName> aufgehaltenen
+          <placeName ref="http://www.geonames.org/2782113/republic-of-austria.html">oesterreichischen</placeName>
+        <term ref="https://portal.ehri-project.eu/keywords/ehri_terms-304" type="subject">fluechtlinge</term> und in [sic!] eigenen apelliere ich an die menschlichkeit der
+          <placeName ref="http://www.geonames.org/8505031/czechoslovakia.html">tschechoslowakischen</placeName> demokratie <persName>arnold hoellriegel</persName><note>
+          Richard Arnold Bermann (27.4.1883 - 9.9.1939), österreichsicher Journalist, verfasste
+          seine Artikel v.a. unter dem Pseudonym Arnold Höllriegel.</note> redakteur der stunde</p>
+      <p>passname dr <persName>bermann</persName> =+</p>
+    </body>
+  </text>
+</TEI>

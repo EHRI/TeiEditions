@@ -11,7 +11,7 @@ class TeiEditionsEnhanceTeiTest extends PHPUnit_Framework_Testcase
 
     public function setUp()
     {
-        $this->file = dirname(__FILE__) . "/testing.xml";
+        $this->file = dirname(__FILE__) . "/enhance-tei.xml";
         $this->tei = simplexml_load_file($this->file);
         $this->tei->registerXPathNamespace('t', 'http://www.tei-c.org/ns/1.0');
     }
@@ -36,10 +36,31 @@ class TeiEditionsEnhanceTeiTest extends PHPUnit_Framework_Testcase
     {
         $refs = tei_editions_get_references($this->tei, "placeName");
         $this->assertEquals(
-            (object)array(
-                "names" => array("Tartu"),
-                "refs" => array("http://www.geonames.org/2643743/" => "London")),
+            array("Tartu" => null, "London" => "http://www.geonames.org/2643743/"),
             $refs
+        );
+    }
+
+    public function test_tei_editions_enhance_tei()
+    {
+        // TODO: fix this so we can mock the data lookups!
+        tei_editions_enhance_tei($this->tei);
+
+        $this->assertEquals(
+            "Tartu",
+            $this->tei->xpath("//t:fileDesc/t:sourceDesc/t:listPlace/t:place[1]/t:placeName/text()")[0]
+        );
+        $this->assertEquals(
+            "London",
+            $this->tei->xpath("//t:fileDesc/t:sourceDesc/t:listPlace/t:place[2]/t:placeName/text()")[0]
+        );
+        $this->assertEquals(
+            "Confiscation of Property",
+            $this->tei->xpath("//t:fileDesc/t:sourceDesc/t:list/t:item[1]/t:name/text()")[0]
+        );
+        $this->assertEquals(
+            "Mach Alexander",
+            $this->tei->xpath("//t:fileDesc/t:sourceDesc/t:listPerson/t:person[1]/t:persName/text()")[0]
         );
     }
 }
