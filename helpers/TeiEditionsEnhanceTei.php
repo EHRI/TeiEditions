@@ -184,19 +184,44 @@ function tei_editions_get_concept($url, $lang = null)
     );
 }
 
+function tei_editions_get_references(SimpleXMLElement $tei, $tag_name)
+{
+    $names = array();
+    $urls = array();
+    $nodes = $tei->xpath("/t:TEI/t:text/t:body/*/t:$tag_name");
+    foreach ($nodes as $node) {
+        $text = $node->xpath("text()");
+        $ref = $node->xpath("@ref");
+        if ($ref) {
+            $urls[(string)($ref[0])] = (string)$text[0];
+        } else {
+            $names[(string)($text[0])] = true;
+        }
+    }
+    return (object) array(
+      "names" => array_keys($names),
+      "refs" => $urls
+    );
+}
+
+function tei_editions_add_place_name(SimpleXMLElement $place_list, $name)
+{
+    $place = $place_list->addChild('place');
+    $place->addChild('placeName', $name);
+    return $place;
+}
+
 function tei_editions_process_tei_places(SimpleXMLElement $tei)
 {
     // get place URLs
-    $urls = array_unique($tei->xpath('//t:placeName/@ref'));
+    $refs = tei_editions_get_references($tei, "placeName");
 
-    if ($urls) {
+    if ($refs->names or $refs->refs) {
         $listPlace = $tei->teiHeader->fileDesc->sourceDesc->addChild('listPlace');
 
-        foreach ($urls as $place_url) {
+        foreach ($refs->refs as $place_url => $name) {
             // Geonames
             if (preg_match("/(geonames)/", $place_url)) {
-
-                $place = $listPlace->addChild('place');
 
                 // correct geonames url
                 $partURL = str_replace("http://www.geonames.org/", "", $place_url);
@@ -209,8 +234,7 @@ function tei_editions_process_tei_places(SimpleXMLElement $tei)
 
                     error_log("Place URL: $place_url: $name");
 
-                    // placeName
-                    $place->addChild('placeName', $name);
+                    $place = tei_editions_add_place_name($listPlace, $name);
 
                     // longitude and latitude
                     $location = $place->addChild('location');
@@ -231,56 +255,82 @@ function tei_editions_process_tei_places(SimpleXMLElement $tei)
                         $wlink->addAttribute('target', $data["wikipedia"]);
 
                     }
+                } else {
+                    tei_editions_add_place_name($listPlace, $name);
                 }
-            } elseif (preg_match("/(wikidata)/", $place_url)) {
-                // https://www.wikidata.org/wiki/Special:EntityData/Q179251.json
+            //} elseif (preg_match("/(wikidata)/", $place_url)) {
+            //    // https://www.wikidata.org/wiki/Special:EntityData/Q179251.json
+            } else {
+                tei_editions_add_place_name($listPlace, $name);
             }
         }
+
+        foreach ($refs->names as $name) {
+            tei_editions_add_place_name($listPlace, $name);
+        }
     }
+}
+
+function tei_editions_add_term_name(SimpleXMLElement $list, $name)
+{
+    $item = $list->addChild('item');
+    $item->addChild('name', $name);
+    return $item;
 }
 
 function tei_editions_process_tei_terms(SimpleXMLElement $tei)
 {
 
     // query for terms URLs
-    $urls = array_unique($tei->xpath('//t:term/@ref'));
+    $refs = tei_editions_get_references($tei, "term");
 
-    if ($urls) {
+    if ($refs->names or $refs->refs) {
         $list = $tei->teiHeader->fileDesc->sourceDesc->addChild('list');
 
-        foreach ($urls as $url) {
+        foreach ($refs->refs as $url => $name) {
             // test preferred language -> if empty result -> send query again with empty language code
             $data = tei_editions_get_concept($url, "eng") or tei_editions_get_concept($url);
             if ($data and $data["name"]) {
                 $name = $data["name"];
                 error_log("Term URL: $url: $name");
-                $item = $list->addChild("item");
-                $item->addChild("name", $name);
+                $item = tei_editions_add_term_name($list, $name);
                 $linkGrp = $item->addChild("linkGrp");
                 $link = $linkGrp->addChild("link");
                 $link->addAttribute("type", "normal");
                 $link->addAttribute("target", $url);
+            } else {
+                tei_editions_add_term_name($list, $name);
             }
+        }
+
+        foreach ($refs->names as $name) {
+            tei_editions_add_term_name($list, $name);
         }
     }
 }
 
+function tei_editions_add_person_name(SimpleXMLElement $list, $name)
+{
+    $item = $list->addChild('person');
+    $item->addChild('persName', $name);
+    return $item;
+}
+
+
 function tei_editions_process_tei_people(SimpleXMLElement $tei)
 {
     // query for terms URLs
-    $urls = array_unique($tei->xpath('//t:persName/@ref'));
-
-    if ($urls) {
+    $refs = tei_editions_get_references($tei, "persName");
+    if ($refs->names or $refs->refs) {
         $listPerson = $tei->teiHeader->fileDesc->sourceDesc->addChild('listPerson');
 
-        foreach ($urls as $url) {
+        foreach ($refs->refs as $url => $name) {
             $data = tei_editions_get_historical_agent($url, "eng") or tei_editions_get_historical_agent($url);
 
             if ($data and $data["name"]) {
                 $name = $data["name"];
                 error_log("Person URL: $url: $name");
-                $item = $listPerson->addChild("person");
-                $item->addChild("persName", $name); // FIXME - add life span
+                $item = tei_editions_add_person_name($listPerson, $name);
                 $datesOfExistence = $data['datesOfExistence'];
                 if ($datesOfExistence)
                     $item->addChild("p", $datesOfExistence);
@@ -291,7 +341,13 @@ function tei_editions_process_tei_people(SimpleXMLElement $tei)
                 $link = $linkGrp->addChild("link");
                 $link->addAttribute("type", "normal");
                 $link->addAttribute("target", $url);
+            } else {
+                tei_editions_add_person_name($listPerson, $name);
             }
+        }
+
+        foreach ($refs->refs as $name) {
+            tei_editions_add_person_name($listPerson, $name);
         }
     }
 }
