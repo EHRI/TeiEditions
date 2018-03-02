@@ -17,7 +17,7 @@ class TeiEditionsFieldMapping extends Omeka_Record_AbstractRecord implements Zen
     protected function _validate()
     {
         if (!@tei_editions_check_xpath_is_valid($this->path)) {
-            $this->addError('path', __('Invalid XPath query.'));
+            $this->addError('path', __('Invalid XPath query: ' . $this->path));
         }
     }
 
@@ -86,9 +86,11 @@ class TeiEditionsFieldMapping extends Omeka_Record_AbstractRecord implements Zen
      */
     public function getElementName()
     {
+        $elem = $this->getTable('Element')->find($this->element_id);
+
         return $this->hasElement()
             ? false
-            : $this->getTable('Element')->find($this->element_id)->name;
+            : $elem->getElementSet()->name . ' / ' . $elem->name;
     }
 
     /**

@@ -36,51 +36,124 @@ class TeiEditionsPlugin extends Omeka_Plugin_AbstractPlugin
     protected $_options = array();
 
     /**
+     * @param $element_id
+     * @param $xpath
+     * @return TeiEditionsFieldMapping
+     * @throws Omeka_Record_Exception
+     * @throws Omeka_Validate_Exception
+     */
+    private function createMapping($element_id, $xpath)
+    {
+        $mapping = new TeiEditionsFieldMapping;
+        $mapping->path = $xpath;
+        $mapping->element_id = $element_id;
+        $mapping->save(true);
+        return $mapping;
+    }
+
+    /**
+     * @param $name
+     * @param $description
+     * @return Element
+     * @throws Omeka_Record_Exception
+     * @throws Omeka_Validate_Exception
+     */
+    private function createElement($name, $description)
+    {
+        $elem = new Element;
+        $elem->setName($name);
+        $elem->setDescription($description);
+        $elem->setElementSet("Item Type Metadata");
+        $elem->save(true);
+        return $elem;
+    }
+
+    /**
+     * @param $name
+     * @return ItemType
+     * @throws Omeka_Record_Exception
+     * @throws Omeka_Validate_Exception
+     */
+    private function getOrCreateItemType($name, $description)
+    {
+        $types = get_db()->getTable('ItemType')->findBy(["name" => $name], 1);
+        if ($types) {
+            return $types[0];
+        }
+
+        // we need to create a new item type
+        $type = new ItemType;
+        $type->name = $name;
+        $type->description = $description;
+        $type->save(true);
+        return $type;
+    }
+
+    /**
+     * @param $dc_mappings
+     * @return array
+     * @throws Omeka_Record_Exception
+     * @throws Omeka_Validate_Exception
+     */
+    private function createDublinCoreMappings($dc_mappings)
+    {
+        $dc_set = get_db()->getTable('ElementSet')
+            ->findBy(["name" => "Dublin Core"], 1)[0];
+        $dc_elements_to_ids = [];
+        foreach ($dc_set->getElements() as $element) {
+            $dc_elements_to_ids[$element->name] = $element->id;
+        }
+        foreach ($dc_mappings as $name => $xpaths) {
+            foreach ($xpaths as $xpath) {
+                $this->createMapping($dc_elements_to_ids[$name], $xpath);
+            }
+        }
+        return array($element, $name, $xpath);
+    }
+
+    /**
+     * @param $item_type_mappings
+     * @throws Omeka_Record_Exception
+     * @throws Omeka_Validate_Exception
+     */
+    private function createItemTypeMappings($item_type_mappings)
+    {
+        foreach ($item_type_mappings as $type_name => $data) {
+
+            $type = $this->getOrCreateItemType($type_name, $data["description"]);
+            $elements = get_db()->getTable('Element')->findByItemType($type->id);
+            $elements_to_ids = [];
+            foreach ($elements as $element) {
+                $elements_to_ids[$element->name] = $element->id;
+            }
+
+            $elements_to_add = [];
+            foreach ($data["mappings"] as $name => $details) {
+                if (!isset($elements_to_ids[$name])) {
+                    $elem = $this->createElement($name, $details["description"]);
+                    $elements_to_ids[$name] = $elem->id;
+                    $elements_to_add[] = $elem;
+                }
+            }
+            if ($elements_to_add) {
+                $type->addElements($elements_to_add);
+                $type->save();
+            }
+
+            foreach ($data["mappings"] as $name => $config) {
+                foreach ($config["xpaths"] as $xpath) {
+                    $this->createMapping($elements_to_ids[$name], $xpath);
+                }
+            }
+        }
+    }
+
+    /**
      * Install the plugin.
+     * @throws Exception
      */
     public function hookInstall()
     {
-        /*
-         * TODO: Need to create TEI item type and
-         *  add associations for new Elements:
-         *
-         *   Author
-         *       The TEI author.
-         *   Source Details
-         *       Details about the document source.
-         *   Encoding Description
-         *       A description of the encoding process.
-         *   Publisher
-         *       The TEI publisher.
-         *   Publication Date
-         *       The TEI's date of publication.
-         *   Subjects
-         *       Subjects mentioned in this text.
-         *   Places
-         *       Places mentioned in this text.
-         *   Persons
-         *       People mentioned in this text.
-         *   XML Text
-         *       The body text of the TEI document.
-         *
-         * Also:
-         *
-         *  - ensure that file types 'xml' are allowed
-         *  - ensure that mimetypes 'application/xml' is allowed
-         *
-         * Also add default mappings, e.g.
-         *
-         *   "Persons" => "/tei:TEI/tei:teiHeader/tei:profileDesc/tei:abstract/tei:persName",
-         *   "Subjects" => "/tei:TEI/tei:teiHeader/tei:profileDesc/tei:abstract/tei:term",
-         *   "Places" => "/tei:TEI/tei:teiHeader/tei:profileDesc/tei:abstract/tei:placeName",
-         *   "XML Text" => "/tei:TEI/tei:text",
-         *   "Source Details" => "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc",
-         *   "Encoding Description" => "/tei:TEI/tei:teiHeader/tei:encodingDesc/tei:projectDesc",
-         *   "Publisher" => "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:publisher",
-         *   "Publication Date" => "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date",
-         *   "Author" => "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author",
-         *
-         */
 
         $this->_db->query(<<<SQL
         CREATE TABLE IF NOT EXISTS {$this->_db->prefix}tei_editions_field_mappings (
@@ -92,100 +165,68 @@ class TeiEditionsPlugin extends Omeka_Plugin_AbstractPlugin
 SQL
         );
 
-        $data = array(
-            "Author" => array(
-                "description" => "The TEI author.",
-                "xpaths" => array(
-                    "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author"
-                )
-            ),
-            "Source Details" => array(
-                "description" => "Details about the document source.",
-                "xpaths" => array(
-                    "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc"
-                )
-            ),
-            "Encoding Description" => array(
-                "description" => "A description of the encoding process.",
-                "xpaths" => array(
-                    "/tei:TEI/tei:teiHeader/tei:encodingDesc/tei:projectDesc"
-                )
-            ),
-            "Publisher" => array(
-                "description" => "The TEI publisher.",
-                "xpaths" => array(
-                    "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:publisher"
-                )
-            ),
-            "Publication Date" => array(
-                "description" => "The TEI's date of publication.",
-                "xpaths" => array(
-                    "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date"
-                )
-            ),
-            "Subject" => array(
-                "description" => "Subjects mentioned in the text.",
-                "xpaths" => array(
-                    "/tei:TEI/tei:teiHeader/tei:profileDesc/tei:abstract/tei:term"
-                )
-            ),
-            "Persons" => array(
-                "description" => "Persons mentioned in the text.",
-                "xpaths" => array(
-                    "/tei:TEI/tei:teiHeader/tei:profileDesc/tei:abstract/tei:persName"
-                )
-            ),
-            "Places" => array(
-                "description" => "Places mentioned in the text.",
-                "xpaths" => array(
-                    "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:listPlace/tei:place/tei:placeName"
-                )
-            ),
-            "XML Text" => array(
-                "description" => "The body text of the TEI document.",
-                "xpaths" => array(
-                    "/tei:TEI/tei:text"
-                )
-            )
-        );
+        $dc_mappings = [
+            "Title" => ["/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title"],
+            "Subject" => ["/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:list/tei:item/tei:name"],
+            "Description" => ["/tei:TEI/tei:teiHeader/tei:profileDesc/tei:abstract"],
+            "Creator" => [
+                "/tei:TEI/tei:teiHeader/tei:profileDesc/tei:creation/tei:persName",
+                "/tei:TEI/tei:teiHeader/tei:profileDesc/tei:creation/tei:orgName"
+            ],
+            "Source" => [
+                "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl",
+                "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:msDesc/tei:msIdentifier/tei:collection/@ref"
+            ],
+            "Publisher" => ["/tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:publisher/tei:ref"],
+            "Date" => ["/tei:TEI/tei:teiHeader/tei:profileDesc/tei:creation/tei:date/@when"],
+            "Rights" => ["/tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability/tei:licence"],
+            "Format" => ["/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:msDesc/tei:physDesc"],
+            "Language" => [
+                "/tei:TEI/tei:teiHeader/tei:profileDesc/tei:langUsage/tei:language",
+                "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/tei:textLang"
+            ],
+            "Coverage" => ["/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:listPlace/tei:place/tei:placeName"]
+        ];
+
+        $item_type_mappings = [
+            "Text" => [
+                "description" => "Text items",
+                "mappings" => [
+                    "Text" => [
+                        "description" => "The TEI text",
+                        "xpaths" => [
+                            "/tei:TEI/tei:text/tei:body"
+                        ]
+                    ]
+                ]
+            ],
+            "TEI" => [
+                "description" => "TEI items",
+                "mappings" => [
+                    "Persons" => [
+                        "description" => "Persons mentioned in the text.",
+                        "xpaths" => [
+                            "/tei:TEI/tei:teiHeader/tei:sourceDesc/tei:listPerson/tei:person/tei:persName"
+                        ]
+                    ],
+                    "Organisations" => [
+                        "description" => "Organisations mentioned in the text.",
+                        "xpaths" => [
+                            "/tei:TEI/tei:teiHeader/tei:sourceDesc/tei:listOrg/tei:org/tei:orgName"
+                        ]
+                    ]
+                ]
+            ]
+        ];
 
         $this->_db->getAdapter()->beginTransaction();
         try {
-            // create TEI item type
-            $type = new ItemType;
-            $type->name = "TEI";
-            $type->description = "TEI documents";
-
-            $element_data = [];
-            foreach ($data as $name => $details) {
-                $elem = new Element;
-                $elem->setName($name);
-                $elem->setDescription($details["description"]);
-                $elem->setElementSet("Item Type Metadata");
-                $elem->save();
-                $element_data[] = $elem;
-            }
-            $type->addElements($element_data);
-            $type->save();
-
-            $elements_to_ids = [];
-            $elements = get_db()->getTable('Element')->findByItemType($type->id);
-            foreach ($elements as $element) {
-                $elements_to_ids[$element->name] = $element->id;
-            }
-
-            foreach ($data as $name => $config) {
-                foreach ($config["xpaths"] as $xpath) {
-                    $mapping = new TeiEditionsFieldMapping;
-                    $mapping->path = $xpath;
-                    $mapping->element_id = $elements_to_ids[$name];
-                    $mapping->save(true);
-                }
-            }
-
+            $this->createDublinCoreMappings($dc_mappings);
+            $this->createItemTypeMappings($item_type_mappings);
             $this->_db->getAdapter()->commit();
         } catch (Exception $e) {
             $this->_db->getAdapter()->rollBack();
+            throw $e;
         }
 
         $this->_installOptions();
@@ -201,7 +242,7 @@ SQL
 
         $this->_db->getAdapter()->beginTransaction();
 
-        $item_types = get_db()->getTable("ItemType")->findBy(array('name' => 'TEI'));
+        $item_types = get_db()->getTable("ItemType")->findBy(['name' => 'TEI']);
         if (!empty($item_types)) {
             $type = $item_types[0];
             $elements = get_db()->getTable('Element')->findByItemType($type->id);
@@ -234,7 +275,7 @@ SQL
     public function hookDefineRoutes($args)
     {
         $args['router']->addConfig(new Zend_Config_Ini(
-            dirname(__FILE__) . "/routes.ini")
+                dirname(__FILE__) . "/routes.ini")
         );
     }
 
