@@ -146,11 +146,12 @@ function tei_editions_get_historical_agent($url, $lang = null)
 
     // execute query and extract JSON
     $id = basename($url);
+    $data = array("id" => $id, "url" => $url);
     $result = tei_editions_make_graphql_request($req, array("id" => $id, "lang" => $lang));
     return is_null($result['data']['HistoricalAgent'])
-        ? null
+        ? $data
         : array_merge(
-            array("id" => $id, "url" => $url),
+            $data,
             $result['data']['HistoricalAgent']['description']
         );
 }
@@ -171,17 +172,18 @@ function tei_editions_get_concept($url, $lang = null)
 
     // execute query and extract JSON
     $id = basename($url);
+    $data = array("id" => $id, "url" => $url);
     $result = tei_editions_make_graphql_request($req, array("id" => $id, "lang" => $lang));
-    return is_null($result['data']['CvocConcept']) ? null : array(
-        "id" => $id,
-        "url" => $url,
-        "name" => $result['data']['CvocConcept']['description']['name'],
-        "longitude" => $result['data']['CvocConcept']['longitude'],
-        "latitude" => $result['data']['CvocConcept']['latitude'],
-        "wikipedia" => array_reduce($result['data']['CvocConcept']['seeAlso'], function ($acc, $i) {
-            return strpos($i, "wikipedia") ? $i : $acc;
-        })
-    );
+    return is_null($result['data']['CvocConcept'])
+        ? $data
+        : array_merge($data, array(
+            "name" => $result['data']['CvocConcept']['description']['name'],
+            "longitude" => $result['data']['CvocConcept']['longitude'],
+            "latitude" => $result['data']['CvocConcept']['latitude'],
+            "wikipedia" => array_reduce($result['data']['CvocConcept']['seeAlso'], function ($acc, $i) {
+                return strpos($i, "wikipedia") ? $i : $acc;
+            })
+        ));
 }
 
 function tei_editions_get_references(SimpleXMLElement $tei, $tag_name)
@@ -373,11 +375,9 @@ function tei_editions_process_tei_orgs(SimpleXMLElement $tei)
         $list_org = $tei->teiHeader->fileDesc->sourceDesc->addChild('listOrg');
 
         foreach ($refs as $name => $url) {
-
             $data = array();
             if ($url) {
-                $lookup = tei_editions_get_historical_agent($url, "eng")
-                or tei_editions_get_historical_agent($url);
+                $lookup = tei_editions_get_historical_agent($url, "eng") or tei_editions_get_historical_agent($url);
                 $data = array_merge($data, $lookup);
             }
 

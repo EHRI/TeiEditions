@@ -80,7 +80,8 @@
         <term type="subject" ref="https://portal.ehri-project.eu/keywords/ehri_terms-105">Praesident</term>
         <persName ref="https://portal.ehri-project.eu/authorities/ehri_pers-000030">dr benes</persName>
         <placeName ref="http://www.geonames.org/3067696/prague.html">prag</placeName>
-      </p>
+    </p>
+    <p><orgName ref="https://portal.ehri-project.eu/authorities/ehri_cb-407">Nationalsozialistische Deutsche Arbeiterpartei</orgName></p>
       <p>=+ <placeName ref="http://www.geonames.org/3078773/breclav.html">breclav</placeName> /2 121 34/32 12 0504 =</p>
       <p>= im namen der an der grenzstation <placeName ref="http://www.geonames.org/3078773/breclav.html">breclav</placeName> aufgehaltenen
           <placeName ref="http://www.geonames.org/2782113/republic-of-austria.html">oesterreichischen</placeName>
