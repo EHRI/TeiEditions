@@ -202,6 +202,30 @@ function tei_editions_get_references(SimpleXMLElement $tei, $tag_name)
     return array_merge($names, array_flip($urls));
 }
 
+function tei_editions_add_link_group(SimpleXMLElement $item, $url)
+{
+    $link_grp = $item->addChild('linkGrp');
+    $link = $link_grp->addChild('link');
+    $link->addAttribute('type', 'normal');
+    $link->addAttribute('target', $url);
+    return $link_grp;
+}
+
+function tei_editions_add_bio_data(SimpleXMLElement $item, $data)
+{
+    if (isset($data['datesOfExistence']) OR isset($data['biographicalHistory'])) {
+        $note = $item->addChild('note');
+        if (isset($data['datesOfExistence'])) {
+            $note->addChild("p", $data['datesOfExistence']);
+        }
+        if (isset($data['biographicalHistory'])) {
+            $note->addChild("p", $data['biographicalHistory']);
+        }
+        return $note;
+    }
+    return null;
+}
+
 function tei_editions_add_place(SimpleXMLElement $place_list, $name, $url, $data)
 {
     $name = isset($data["name"]) ? $data["name"] : $name;
@@ -218,13 +242,7 @@ function tei_editions_add_place(SimpleXMLElement $place_list, $name, $url, $data
 
     if ($url) {
         // URIs and links
-        $link_grp = $place->addChild('linkGrp');
-
-        $link = $link_grp->addChild('link');
-        $link->addAttribute('type', 'normal');
-        // $link->addAttribute('source', 'geonames') ; FIXME: doesn't validate in Oxygen
-        $link->addAttribute('target', $url);
-
+        $link_grp = tei_editions_add_link_group($place, $url);
         if (isset($data["wikipedia"])) {
             $wlink = $link_grp->addChild('link');
             $wlink->addAttribute('type', 'desc');
@@ -245,12 +263,8 @@ function tei_editions_process_tei_places(SimpleXMLElement $tei)
         $list_place = $tei->teiHeader->fileDesc->sourceDesc->addChild('listPlace');
 
         foreach ($refs as $name => $url) {
-
             $data = array();
-
-            // Geonames
             if ($url and preg_match("/(geonames)/", $url)) {
-
                 // correct geonames url
                 $parts = explode("/", str_replace("http://www.geonames.org/", "", $url));
                 $data = array_merge($data, tei_editions_get_place($parts[0]));
@@ -270,10 +284,7 @@ function tei_editions_add_term(SimpleXMLElement $list, $name, $url, $data)
     $item->addChild('name', trim($name));
 
     if ($url) {
-        $link_grp = $item->addChild("linkGrp");
-        $link = $link_grp->addChild("link");
-        $link->addAttribute("type", "normal");
-        $link->addAttribute("target", $url);
+        tei_editions_add_link_group($item, $url);
     }
 
     return $item;
@@ -288,12 +299,9 @@ function tei_editions_process_tei_terms(SimpleXMLElement $tei)
         $list = $tei->teiHeader->fileDesc->sourceDesc->addChild('list');
 
         foreach ($refs as $name => $url) {
-
             $data = array();
-
             if ($url) {
-                $lookup = tei_editions_get_concept($url, "eng")
-                    or tei_editions_get_concept($url);
+                $lookup = tei_editions_get_concept($url, "eng") or tei_editions_get_concept($url);
                 $data = array_merge($data, $lookup);
             }
 
@@ -310,17 +318,9 @@ function tei_editions_add_person(SimpleXMLElement $list, $name, $url, $data)
     $item = $list->addChild('person');
     $item->addChild('persName', trim($name));
 
-    if (isset($data['datesOfExistence'])) {
-        $item->addChild("p", $data['datesOfExistence']);
-    }
-    if (isset($data['biographicalHistory'])) {
-        $item->addChild("note", $data['biographicalHistory']);
-    }
+    tei_editions_add_bio_data($item, $data);
     if ($url) {
-        $link_grp = $item->addChild("linkGrp");
-        $link = $link_grp->addChild("link");
-        $link->addAttribute("type", "normal");
-        $link->addAttribute("target", $url);
+        tei_editions_add_link_group($item, $url);
     }
 
     return $item;
@@ -336,11 +336,9 @@ function tei_editions_process_tei_people(SimpleXMLElement $tei)
         $list_person = $tei->teiHeader->fileDesc->sourceDesc->addChild('listPerson');
 
         foreach ($refs as $name => $url) {
-
             $data = array();
             if ($url) {
-                $lookup = tei_editions_get_historical_agent($url, "eng")
-                    or tei_editions_get_historical_agent($url);
+                $lookup = tei_editions_get_historical_agent($url, "eng") or tei_editions_get_historical_agent($url);
                 $data = array_merge($data, $lookup);
             }
 
@@ -357,17 +355,9 @@ function tei_editions_add_org(SimpleXMLElement $list, $name, $url, $data)
     $item = $list->addChild('org');
     $item->addChild('orgName', trim($name));
 
-    if (isset($data['datesOfExistence'])) {
-        $item->addChild("p", $data['datesOfExistence']);
-    }
-    if (isset($data['biographicalHistory'])) {
-        $item->addChild("note", $data['biographicalHistory']);
-    }
+    tei_editions_add_bio_data($item, $data);
     if ($url) {
-        $link_grp = $item->addChild("linkGrp");
-        $link = $link_grp->addChild("link");
-        $link->addAttribute("type", "normal");
-        $link->addAttribute("target", $url);
+        tei_editions_add_link_group($item, $url);
     }
 
     return $item;
@@ -387,7 +377,7 @@ function tei_editions_process_tei_orgs(SimpleXMLElement $tei)
             $data = array();
             if ($url) {
                 $lookup = tei_editions_get_historical_agent($url, "eng")
-                    or tei_editions_get_historical_agent($url);
+                or tei_editions_get_historical_agent($url);
                 $data = array_merge($data, $lookup);
             }
 
