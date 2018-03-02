@@ -92,8 +92,16 @@ function tei_editions_get_wikidata_info($url)
     return json_decode($res, true);
 }
 
-function tei_editions_get_place($id)
+function tei_editions_get_place($url)
 {
+
+    if (!preg_match("/(geonames)/", $url)) {
+        return false;
+    }
+
+    // correct geonames url
+    $id = explode("/", str_replace("http://www.geonames.org/", "", $url))[0];
+
     $geonames_url = "http://sws.geonames.org/$id/about.rdf";
 
     // fetch geonames RDF
@@ -146,12 +154,11 @@ function tei_editions_get_historical_agent($url, $lang = null)
 
     // execute query and extract JSON
     $id = basename($url);
-    $data = array("id" => $id, "url" => $url);
     $result = tei_editions_make_graphql_request($req, array("id" => $id, "lang" => $lang));
     return is_null($result['data']['HistoricalAgent'])
-        ? $data
+        ? false
         : array_merge(
-            $data,
+            array("id" => $id, "url" => $url),
             $result['data']['HistoricalAgent']['description']
         );
 }
@@ -172,18 +179,19 @@ function tei_editions_get_concept($url, $lang = null)
 
     // execute query and extract JSON
     $id = basename($url);
-    $data = array("id" => $id, "url" => $url);
     $result = tei_editions_make_graphql_request($req, array("id" => $id, "lang" => $lang));
     return is_null($result['data']['CvocConcept'])
-        ? $data
-        : array_merge($data, array(
+        ? false
+        : array(
+            "id" => $id,
+            "url" => $url,
             "name" => $result['data']['CvocConcept']['description']['name'],
             "longitude" => $result['data']['CvocConcept']['longitude'],
             "latitude" => $result['data']['CvocConcept']['latitude'],
             "wikipedia" => array_reduce($result['data']['CvocConcept']['seeAlso'], function ($acc, $i) {
                 return strpos($i, "wikipedia") ? $i : $acc;
             })
-        ));
+        );
 }
 
 function tei_editions_get_references(SimpleXMLElement $tei, $tag_name)
@@ -266,10 +274,11 @@ function tei_editions_process_tei_places(SimpleXMLElement $tei)
 
         foreach ($refs as $name => $url) {
             $data = array();
-            if ($url and preg_match("/(geonames)/", $url)) {
-                // correct geonames url
-                $parts = explode("/", str_replace("http://www.geonames.org/", "", $url));
-                $data = array_merge($data, tei_editions_get_place($parts[0]));
+            if ($url) {
+                $lookup = tei_editions_get_place($url);
+                if ($lookup) {
+                    $data = $lookup;
+                }
             }
 
             tei_editions_add_place($list_place, $name, $url, $data);
@@ -304,7 +313,9 @@ function tei_editions_process_tei_terms(SimpleXMLElement $tei)
             $data = array();
             if ($url) {
                 $lookup = tei_editions_get_concept($url, "eng") or tei_editions_get_concept($url);
-                $data = array_merge($data, $lookup);
+                if ($lookup) {
+                    $data = $lookup;
+                }
             }
 
             tei_editions_add_term($list, $name, $url, $data);
@@ -341,7 +352,9 @@ function tei_editions_process_tei_people(SimpleXMLElement $tei)
             $data = array();
             if ($url) {
                 $lookup = tei_editions_get_historical_agent($url, "eng") or tei_editions_get_historical_agent($url);
-                $data = array_merge($data, $lookup);
+                if ($lookup) {
+                    $data = $lookup;
+                }
             }
 
             tei_editions_add_person($list_person, $name, $url, $data);
@@ -378,7 +391,9 @@ function tei_editions_process_tei_orgs(SimpleXMLElement $tei)
             $data = array();
             if ($url) {
                 $lookup = tei_editions_get_historical_agent($url, "eng") or tei_editions_get_historical_agent($url);
-                $data = array_merge($data, $lookup);
+                if ($lookup) {
+                    $data = $lookup;
+                }
             }
 
             tei_editions_add_org($list_org, $name, $url, $data);
