@@ -107,17 +107,28 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
             }
 
             $done = 0;
+            $neatline = $form->getElement('create_exhibit')->isChecked();
             $tx = get_db()->getAdapter()->beginTransaction();
             try {
                 foreach ($_FILES["file"]["name"] as $idx => $name) {
-                    $item = new Item;
                     $path = $_FILES["file"]["tmp_name"][$idx];
-                    $this->_updateItemFromTEI($item, $path,
-                        $form->getElement('create_exhibit')->isChecked());
-                    @insert_files_for_item($item, "Filesystem",
-                        array('source' => $_FILES["file"]["tmp_name"][$idx],
-                            'name' => $_FILES["file"]["name"][$idx]));
-                    $done++;
+                    $mime = $_FILES["file"]["type"][$idx];
+                    switch ($mime) {
+                        case "text/xml":
+                        case "application/xml":
+                            $item = new Item;
+                            $this->_updateItemFromTEI($item, $path, $neatline);
+                            @insert_files_for_item($item, "Filesystem",
+                                array('source' => $_FILES["file"]["tmp_name"][$idx],
+                                    'name' => $_FILES["file"]["name"][$idx]));
+                            $done++;
+                            break;
+                        case "application/zip":
+                            $done += $this->_readZip($path, $neatline);
+                            break;
+                        default:
+                            error_log("Unhandled file extension: $mime");
+                    }
                 }
                 $tx->commit();
             } catch (Exception $e) {
@@ -255,5 +266,56 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
             $options[$item->id] = metadata($item, 'display_title');
         }
         return $options;
+    }
+
+    /**
+     * @param $path
+     * @param bool $createExhibit
+     * @throws Exception
+     * @throws Omeka_Record_Exception
+     */
+    private function _readZip($path, $createExhibit = false)
+    {
+        $done = 0;
+        $temp = $this->tempdir();
+
+        try {
+            $zip = new ZipArchive;
+            if ($zip->open($path) === true) {
+                $zip->extractTo($temp);
+                $zip->close();
+
+                foreach (glob($temp . '/*.xml') as $filename) {
+                    error_log("Importing file: $filename");
+                    $item = new Item;
+                    $this->_updateItemFromTEI($item, $filename, $createExhibit);
+                    @insert_files_for_item($item, "Filesystem",
+                        array('source' => $filename, 'name' => basename($filename)));
+                    $done++;
+                }
+            } else {
+                throw new Exception("Zip cannot be opened");
+            }
+        } finally {
+            $this->deleteDir($temp);
+        }
+
+        return $done;
+    }
+
+    private function tempdir($mode = 0700) {
+        do {
+            $tmp = tempnam(sys_get_temp_dir(),'');
+            unlink($tmp);
+        }
+        while (!@mkdir($tmp, $mode));
+        return $tmp;
+    }
+
+    private function deleteDir($path) {
+        return is_file($path) ?
+            @unlink($path) :
+            array_map(function($p) { $this->deleteDir($p); },
+                glob($path.'/*')) == @rmdir($path);
     }
 }

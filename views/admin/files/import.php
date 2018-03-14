@@ -40,10 +40,8 @@ queue_js_file('items');
             <fieldset class="set">
                 <h2><?php echo __("TEI Files"); ?></h2>
 
-                <div class="add-new"><?php echo __("Upload TEI"); ?></div>
+                <div class="add-new"><?php echo __("Upload TEI or ZIP archive"); ?></div>
                 <div class="drawer-contents">
-                    <p>The maximum file size is 2 MB.</p>
-
                     <div class="field two columns alpha" id="file-inputs">
                         <label><?php echo __("Find a file"); ?></label>
                     </div>
