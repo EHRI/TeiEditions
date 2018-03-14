@@ -11,7 +11,7 @@
 
 <div id="tei-fields">
 
-    <a href="<?php echo html_escape(url(array('controller' => 'files', 'action' => 'import'))); ?>" class="small green button"><?php echo __('New Item From TEI'); ?></a>
+    <a href="<?php echo html_escape(url(array('controller' => 'files', 'action' => 'import'))); ?>" class="small green button"><?php echo __('New Items From TEI'); ?></a>
 </div>
 
 <div id="tei-fields">

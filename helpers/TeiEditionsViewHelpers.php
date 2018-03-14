@@ -33,3 +33,11 @@ function tei_editions_render_properties($data, $messages, $only_keys = null, $cl
     }
     return $out;
 }
+
+function tei_editions_render_map($data, $width = 425, $height = 350)
+{
+    if (isset($data["latitude"]) and isset($data["longitude"])) {
+        // TODO
+    }
+    return "";
+}

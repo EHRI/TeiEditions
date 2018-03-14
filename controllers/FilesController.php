@@ -50,14 +50,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
     private function _getImportForm()
     {
         $formOptions = array('type' => 'tei_editions_upload');
-        $form = new Omeka_Form($formOptions);
-
-        $form->addElement('file', 'file', array(
-            'id' => 'tei-editions-upload-file',
-            'label' => __('Select TEI'),
-            'description' => __('A TEI file to upload as a new item'),
-            'required' => true
-        ));
+        $form = new Omeka_Form_Admin($formOptions);
 
         $form->addElement('checkbox', 'create_exhibit', array(
             'id' => 'tei-editions-upload-create-exhibit',
@@ -65,14 +58,6 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
             'class' => 'checkbox',
             'description' => __('Create a Neatline Exhibit containing records for each place element contained in the TEI')
         ));
-
-
-        $form->addElement('submit', 'submit', array(
-            'label' => __('Import TEI')
-        ));
-
-        $form->addDisplayGroup(array('file', 'create_exhibit'), 'teiimport_info');
-        $form->addDisplayGroup(array('submit'), 'teiimport_submit');
 
         return $form;
     }
@@ -121,27 +106,28 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
                 return;
             }
 
+            $done = 0;
             $tx = get_db()->getAdapter()->beginTransaction();
             try {
-                $item = new Item;
-                $file = "file";
-                $path = $_FILES[$file]["tmp_name"];
-                $this->_updateItemFromTEI($item, $path,
-                    $form->getElement('create_exhibit')->isChecked());
-                @insert_files_for_item($item, "Upload", "file");
+                foreach ($_FILES["file"]["name"] as $idx => $name) {
+                    $item = new Item;
+                    $path = $_FILES["file"]["tmp_name"][$idx];
+                    $this->_updateItemFromTEI($item, $path,
+                        $form->getElement('create_exhibit')->isChecked());
+                    @insert_files_for_item($item, "Filesystem",
+                        array('source' => $_FILES["file"]["tmp_name"][$idx],
+                            'name' => $_FILES["file"]["name"][$idx]));
+                    $done++;
+                }
                 $tx->commit();
             } catch (Exception $e) {
-                error_log($e->getTraceAsString());
                 $tx->rollBack();
                 $this->_helper->_flashMessenger(
                     __('There was an error on the form: %s', $e->getMessage()), 'error');
                 return;
             }
 
-            $this->_helper->flashMessenger(
-                __('The TEI was successfully imported!'), 'success');
-
-            $this->_helper->redirector($item->id, 'show', "items");
+            $this->_helper->flashMessenger(__("TEIs successfully imported: $done"), 'success');
         }
     }
 
@@ -199,10 +185,11 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
      */
     private function _updateItemFromTEI($item, $path, $extract_neatline)
     {
+        error_log("Processing $path");
         $xpaths = TeiEditionsFieldMapping::fieldMappings();
         $doc = new TeiEditionsDocumentProxy($path);
         if (is_null($doc->id())) {
-            throw new Exception("TEI document must have a unique 'id' attribute");
+            throw new Exception("TEI document '$path' must have a unique 'xml:id' attribute");
         }
 
         $data = $doc->metadata($xpaths);
