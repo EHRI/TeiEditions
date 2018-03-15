@@ -44,8 +44,18 @@ class TeiEditionsDocumentProxy
      *
      * @return null|string an ID value, or null
      */
-    public function id() {
+    public function xmlId() {
         $id = $this->pathValues("/tei:TEI/@xml:id");
+        return empty($id) ? null : $id[0];
+    }
+
+    /**
+     * Get the TEI /TEI/teiHeader/profileDesc/creation/idno value
+     *
+     * @return null|string an ID value, or null
+     */
+    public function recordId() {
+        $id = $this->pathValues("/tei:TEI/tei:teiHeader/tei:profileDesc/tei:creation/tei:idno");
         return empty($id) ? null : $id[0];
     }
 

@@ -166,6 +166,7 @@ SQL
         );
 
         $dc_mappings = [
+            "Identifier" => ["/tei:TEI/tei:teiHeader/tei:profileDesc/tei:creation/tei:idno"],
             "Title" => ["/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title"],
             "Subject" => ["/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:list/tei:item/tei:name"],
             "Description" => ["/tei:TEI/tei:teiHeader/tei:profileDesc/tei:abstract"],
@@ -305,7 +306,7 @@ SQL
      */
     public function hookConfig()
     {
-        //set_option('tei_editions_filter_page_content', (int)(boolean)$_POST['tei_editions_filter_page_content']);
+        set_option('tei_editions_default_item_type', (int)$_POST['tei_editions_default_item_type']);
     }
 
     public function hookPublicHead($args)

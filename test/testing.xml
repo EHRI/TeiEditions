@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<TEI xmlns="http://www.tei-c.org/ns/1.0" xml:id="testing">
+<TEI xmlns="http://www.tei-c.org/ns/1.0" xml:id="testing_EN.xml">
     <teiHeader>
         <fileDesc>
             <titleStmt>
@@ -37,8 +37,11 @@
             </projectDesc>
         </encodingDesc>
         <profileDesc>
-            <creation><date when="2017-04-29">29th April 2017</date>,
-                <placeName ref="http://www.geonames.org/2643743/">London</placeName></creation>
+            <creation>
+                <idno>testing</idno>
+                <date when="2017-04-29">29th April 2017</date>,
+                <placeName ref="http://www.geonames.org/2643743/">London</placeName>
+            </creation>
         </profileDesc>
         <revisionDesc>
             <listChange>

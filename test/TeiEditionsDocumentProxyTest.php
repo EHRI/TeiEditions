@@ -41,9 +41,15 @@ class TeiEditionsDocumentProxyTest extends PHPUnit_Framework_Testcase
         $this->assertEquals(array($tartu), $doc->places());
     }
 
-    public function testGetId()
+    public function testGetXmlId()
     {
         $doc = new TeiEditionsDocumentProxy($this->file);
-        $this->assertEquals("testing", $doc->id());
+        $this->assertEquals("testing_EN.xml", $doc->xmlId());
+    }
+
+    public function testGetRecordId()
+    {
+        $doc = new TeiEditionsDocumentProxy($this->file);
+        $this->assertEquals("testing", $doc->recordId());
     }
 }
