@@ -173,7 +173,6 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
                     foreach ($item->getFiles() as $file) {
                         if (tei_editions_is_xml_file($file)) {
                             $item->deleteElementTexts();
-                            $update = false;
                             $doc = $this->_getDoc($file->getWebPath(), $file->getProperty('display_title'));
                             $this->_updateItemFromTEI($item, $doc, $neatline);
                             $updated++;
@@ -274,6 +273,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
     {
         $item->item_type_id = get_option('tei_editions_default_item_type');
         $data = $doc->metadata(TeiEditionsFieldMapping::fieldMappings());
+        $item->deleteElementTexts();
         $item->addElementTextsByArray($data);
         $item->save();
 
