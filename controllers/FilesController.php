@@ -108,7 +108,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
     /**
      * Process the page edit and edit forms.
      */
-    private function _processImportForm($form)
+    private function _processImportForm(Omeka_Form_Admin $form)
     {
         if ($this->getRequest()->isPost()) {
             if (!$form->isValid($_POST)) {
@@ -151,7 +151,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
     /**
      * Process the page edit and edit forms.
      */
-    private function _processUpdateForm($form)
+    private function _processUpdateForm(Omeka_Form $form)
     {
         if ($this->getRequest()->isPost()) {
             if (!$form->isValid($_POST)) {
@@ -196,8 +196,8 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
     }
 
     /**
-     * @param $identifier
-     * @return false|Item|Omeka_Record_AbstractRecord
+     * @param string $identifier
+     * @return null|Item
      * @throws Omeka_Record_Exception
      */
     private function _getItemByIdentifier($identifier)
@@ -222,8 +222,8 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
 
     /**
      * @param TeiEditionsDocumentProxy $doc
-     * @param $created boolean
-     * @return false|Item|Omeka_Record_AbstractRecord
+     * @param bool $created
+     * @return Item
      * @throws Omeka_Record_Exception
      */
     private function _getOrCreateItem(TeiEditionsDocumentProxy $doc, &$created)
@@ -233,6 +233,12 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
         return $created ? new Item : $item;
     }
 
+    /**
+     * @param Item $item
+     * @param string $path
+     * @param string $name
+     * @param bool $created
+     */
     private function _updateItemFile(Item $item, $path, $name, $created)
     {
         if (!$created) {
@@ -259,9 +265,9 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
     }
 
     /**
-     * @param $item Item
-     * @param $doc TeiEditionsDocumentProxy
-     * @param $neatline boolean
+     * @param Item $item
+     * @param TeiEditionsDocumentProxy $doc
+     * @param bool $neatline create a Neatline exhibit
      * @throws Omeka_Record_Exception|Exception
      */
     private function _updateItemFromTEI(Item $item, TeiEditionsDocumentProxy $doc, $neatline)
@@ -299,8 +305,8 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
     }
 
     /**
-     * @param $path
-     * @param $name
+     * @param string $path
+     * @param string $name
      * @return TeiEditionsDocumentProxy
      * @throws Exception
      */
@@ -318,12 +324,12 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
     }
 
     /**
-     * @param $zipPath
-     * @param bool $createExhibit
+     * @param string $zipPath the local path the the zip file
+     * @param bool $neatline create a Neatline exhibit
      * @throws Exception
      * @throws Omeka_Record_Exception
      */
-    private function _readZip($zipPath, $createExhibit = false, &$created = 0, &$updated = 0)
+    private function _readZip($zipPath, $neatline = false, &$created = 0, &$updated = 0)
     {
         $temp = $this->_tempDir();
 
@@ -334,7 +340,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
                 $zip->close();
 
                 foreach (glob($temp . '/*.xml') as $path) {
-                    $this->_updateItem($path, basename($path), $createExhibit, $created, $updated);
+                    $this->_updateItem($path, basename($path), $neatline, $created, $updated);
                 }
             } else {
                 throw new Exception("Zip cannot be opened");
@@ -364,11 +370,11 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
     }
 
     /**
-     * @param $path
-     * @param $name
-     * @param $neatline
-     * @param $created
-     * @param $updated
+     * @param string $path
+     * @param string $name
+     * @param bool $neatline
+     * @param int $created
+     * @param int $updated
      * @throws Exception
      * @throws Omeka_Record_Exception
      */
