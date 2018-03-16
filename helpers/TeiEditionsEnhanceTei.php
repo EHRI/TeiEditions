@@ -349,12 +349,12 @@ function tei_editions_process_tei_terms(SimpleXMLElement $tei, $lang)
         foreach ($refs as $name => $url) {
             $data = array();
             if ($url) {
-                $lookup = tei_editions_get_concept($url, $lang);
-                if ($lang and $lookup === false) {
-                    $lookup = tei_editions_get_concept($url);
-                }
-                if ($lookup) {
-                    $data = $lookup;
+                foreach (array_unique([$lang, "eng", null]) as $lang) {
+                    $lookup = tei_editions_get_concept($url, $lang);
+                    if ($lookup) {
+                        $data = $lookup;
+                        break;
+                    }
                 }
             }
 
@@ -391,12 +391,12 @@ function tei_editions_process_tei_people(SimpleXMLElement $tei, $lang)
         foreach ($refs as $name => $url) {
             $data = array();
             if ($url) {
-                $lookup = tei_editions_get_historical_agent($url, $lang);
-                if ($lang and $lookup === false) {
-                    $lookup = tei_editions_get_historical_agent($url);
-                }
-                if ($lookup) {
-                    $data = $lookup;
+                foreach (array_unique([$lang, "eng", null]) as $lang) {
+                    $lookup = tei_editions_get_historical_agent($url, $lang);
+                    if ($lookup) {
+                        $data = $lookup;
+                        break;
+                    }
                 }
             }
 
@@ -433,12 +433,12 @@ function tei_editions_process_tei_orgs(SimpleXMLElement $tei, $lang)
         foreach ($refs as $name => $url) {
             $data = array();
             if ($url) {
-                $lookup = tei_editions_get_historical_agent($url, $lang);
-                if ($lang and $lookup === false) {
-                    $lookup = tei_editions_get_historical_agent($url);
-                }
-                if ($lookup) {
-                    $data = $lookup;
+                foreach (array_unique([$lang, "eng", null]) as $lang) {
+                    $lookup = tei_editions_get_historical_agent($url, $lang);
+                    if ($lookup) {
+                        $data = $lookup;
+                        break;
+                    }
                 }
             }
 
