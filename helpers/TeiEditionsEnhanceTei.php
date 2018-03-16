@@ -27,6 +27,25 @@ TEI elements and services handled:
 
 */
 
+function tei_editions_iso639_3to2($three)
+{
+    $lookup = [
+        "eng" => "en",
+        "deu" => "de",
+        "ces" => "cs",
+        "hun" => "hu",
+        "heb" => "he",
+        "fre" => "fr",
+        "slo" => "sk",
+        "slk" => "sk",
+        "nld" => "nl",
+        "pol" => "pl",
+        "rus" => "ru",
+        "ron" => "ro"
+    ];
+    return isset($lookup[$three]) ? $lookup[$three] : $three;
+}
+
 function tei_editions_url_slug_mappings()
 {
     return array(
@@ -95,8 +114,7 @@ function tei_editions_get_wikidata_info($url)
 function tei_editions_parse_geonames_rdf_place_name(SimpleXMLElement $xml, $lang)
 {
     // try and translate the language code.
-    // HACK: just trim it: eng => en, deu => de, fre => fr, cze => cz
-    $shortlang = substr($lang, 0, 2);
+    $shortlang = tei_editions_iso639_3to2($lang);
     $paths = [
         "/rdf:RDF/gn:Feature/gn:officialName[@xml:lang = '$shortlang']/text()",
         "/rdf:RDF/gn:Feature/gn:alternateName[@xml:lang = '$shortlang']/text()",
