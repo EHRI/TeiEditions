@@ -27,6 +27,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
 
     /**
      * Display the "Field Configuration" form.
+     *
      * @throws Zend_Form_Exception
      */
     public function importAction()
@@ -39,6 +40,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
 
     /**
      * Display the "Field Configuration" form.
+     *
      * @throws Zend_Form_Exception
      */
     public function updateAction()
@@ -47,6 +49,40 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
         $form = $this->_getUpdateForm();
         $this->view->form = $form;
         $this->_processUpdateForm($form);
+    }
+
+    /**
+     * Display the import associated items form.
+     */
+    public function associateAction()
+    {
+        if ($this->getRequest()->isPost()) {
+
+            $done = 0;
+            $tx = get_db()->getAdapter()->beginTransaction();
+            try {
+                foreach ($_FILES["file"]["name"] as $idx => $name) {
+                    $path = $_FILES["file"]["tmp_name"][$idx];
+                    $mime = $_FILES["file"]["type"][$idx];
+                    switch ($mime) {
+                        case "application/zip":
+                            $done += $this->_readAssociatedItemsZip($path);
+                            break;
+                        default:
+                            $this->_addAssociatedFile($path, $name);
+                            $done++;
+                    }
+                }
+                $tx->commit();
+            } catch (Exception $e) {
+                $tx->rollBack();
+                $this->_helper->_flashMessenger(
+                    __('There was an error on the form: %s', $e->getMessage()), 'error');
+                return;
+            }
+
+            $this->_helper->flashMessenger(__("Files successfully imported: $done"), 'success');
+        }
     }
 
     /**
@@ -195,9 +231,12 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
     }
 
     /**
-     * @param string $identifier
-     * @return null|Item
-     * @throws Omeka_Record_Exception
+     * @param $form
+     * @param $path
+     * @param $xpaths
+     * @param $item
+     * @return Item|null
+     * @throws Omeka_Record_Exception|Exception
      */
     private function _getItemByIdentifier($identifier)
     {
@@ -211,7 +250,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
         ]);
         if (!empty($text)) {
             $item = get_db()->getTable('Item')->find($text[0]->record_id);
-            if (!is_null($item)) {
+            if (!is_null($item) && $item !== false) {
                 return $item;
             }
         }
@@ -224,6 +263,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
      * @param bool $created
      * @return Item
      * @throws Omeka_Record_Exception
+     * @throws Exception
      */
     private function _getOrCreateItem(TeiEditionsDocumentProxy $doc, &$created)
     {
@@ -350,6 +390,55 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
         }
     }
 
+    /**
+     * @param $zipPath
+     * @return int
+     * @throws Exception
+     * @throws Omeka_Record_Exception
+     */
+    private function _readAssociatedItemsZip($zipPath)
+    {
+        $temp = $this->_tempDir();
+        $done = 0;
+
+        try {
+            $zip = new ZipArchive;
+            if ($zip->open($zipPath) === true) {
+                $zip->extractTo($temp);
+                $zip->close();
+
+                foreach (glob($temp . '/*') as $path) {
+                    $this->_addAssociatedFile($path, basename($path));
+                    $done++;
+                }
+            } else {
+                throw new Exception("Zip cannot be opened");
+            }
+            return $done;
+        } finally {
+            $this->_deleteDir($temp);
+        }
+    }
+
+    /**
+     * Add a file to an item assuming the filename prior to the
+     * first underscore is the item identifier.
+     *
+     * @param $path
+     * @param $name
+     * @throws Exception
+     * @throws Omeka_Record_Exception
+     */
+    private function _addAssociatedFile($path, $name)
+    {
+        $id = $this->identifierFromFilename($name);
+        $item = $this->_getItemByIdentifier($id);
+        if (is_null($item)) {
+            throw new Exception("Unable to locate item with identifier: " . $id . " (file: $path)");
+        }
+        $this->_updateItemFile($item, $path, $name, false);
+    }
+
     private function _tempDir($mode = 0700)
     {
         do {
@@ -365,8 +454,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
             @unlink($path) :
             array_map(function ($p) {
                 $this->_deleteDir($p);
-            },
-                glob($path . '/*')) == @rmdir($path);
+            }, glob($path . '/*')) == @rmdir($path);
     }
 
     /**
@@ -435,5 +523,16 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
             $exhibit->map_zoom = 7; // guess?
         }
         $exhibit->save(true);
+    }
+
+    /**
+     * @param $name
+     * @return bool|string
+     */
+    private function identifierFromFilename($name)
+    {
+        $noext = substr($name, 0, strripos($name, "."));
+        $nound = strripos($noext, "_");
+        return $nound ? substr($noext, 0, $nound) : $noext;
     }
 }

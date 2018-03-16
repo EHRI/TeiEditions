@@ -4,7 +4,7 @@ queue_js_file('items');
 
 
 <?php echo head(array(
-    'title' => __('TEI Editions | Create Item From TEI'),
+    'title' => __('TEI Editions | Ingest Items From TEI'),
 )); ?>
 
 <script>
