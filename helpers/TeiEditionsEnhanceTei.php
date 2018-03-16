@@ -349,8 +349,8 @@ function tei_editions_process_tei_terms(SimpleXMLElement $tei, $lang)
         foreach ($refs as $name => $url) {
             $data = array();
             if ($url) {
-                foreach (array_unique([$lang, "eng", null]) as $lang) {
-                    $lookup = tei_editions_get_concept($url, $lang);
+                foreach (array_unique([$lang, "eng", null]) as $ln) {
+                    $lookup = tei_editions_get_concept($url, $ln);
                     if ($lookup) {
                         $data = $lookup;
                         break;
@@ -391,8 +391,8 @@ function tei_editions_process_tei_people(SimpleXMLElement $tei, $lang)
         foreach ($refs as $name => $url) {
             $data = array();
             if ($url) {
-                foreach (array_unique([$lang, "eng", null]) as $lang) {
-                    $lookup = tei_editions_get_historical_agent($url, $lang);
+                foreach (array_unique([$lang, "eng", null]) as $ln) {
+                    $lookup = tei_editions_get_historical_agent($url, $ln);
                     if ($lookup) {
                         $data = $lookup;
                         break;
@@ -433,8 +433,8 @@ function tei_editions_process_tei_orgs(SimpleXMLElement $tei, $lang)
         foreach ($refs as $name => $url) {
             $data = array();
             if ($url) {
-                foreach (array_unique([$lang, "eng", null]) as $lang) {
-                    $lookup = tei_editions_get_historical_agent($url, $lang);
+                foreach (array_unique([$lang, "eng", null]) as $ln) {
+                    $lookup = tei_editions_get_historical_agent($url, $ln);
                     if ($lookup) {
                         $data = $lookup;
                         break;
