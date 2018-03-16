@@ -36,7 +36,11 @@ class TeiEditionsEnhanceTeiTest extends PHPUnit_Framework_Testcase
     {
         $refs = tei_editions_get_references($this->tei, "placeName");
         $this->assertEquals(
-            array("Tartu" => null, "London" => "http://www.geonames.org/2643743/"),
+            array(
+                "Tartu" => null,
+                "London" => "http://www.geonames.org/2643743/",
+                "Munich" => "http://www.geonames.org/6559171/"
+            ),
             $refs
         );
     }
@@ -44,7 +48,7 @@ class TeiEditionsEnhanceTeiTest extends PHPUnit_Framework_Testcase
     public function test_tei_editions_enhance_tei()
     {
         // TODO: fix this so we can mock the data lookups!
-        tei_editions_enhance_tei($this->tei);
+        tei_editions_enhance_tei($this->tei, "eng");
 
         $this->assertEquals(
             "Tartu",
@@ -53,6 +57,10 @@ class TeiEditionsEnhanceTeiTest extends PHPUnit_Framework_Testcase
         $this->assertEquals(
             "London",
             $this->tei->xpath("//t:fileDesc/t:sourceDesc/t:listPlace/t:place[2]/t:placeName/text()")[0]
+        );
+        $this->assertEquals(
+            "Munich",
+            $this->tei->xpath("//t:fileDesc/t:sourceDesc/t:listPlace/t:place[3]/t:placeName/text()")[0]
         );
         $this->assertEquals(
             "Confiscation of property",
@@ -65,6 +73,21 @@ class TeiEditionsEnhanceTeiTest extends PHPUnit_Framework_Testcase
         $this->assertEquals(
             "Československá vláda v exilu",
             $this->tei->xpath("//t:fileDesc/t:sourceDesc/t:listOrg/t:org[1]/t:orgName/text()")[0]
+        );
+    }
+
+    public function test_tei_editions_enhance_tei_lang()
+    {
+        // TODO: fix this so we can mock the data lookups!
+        tei_editions_enhance_tei($this->tei, "deu");
+
+        $this->assertEquals(
+            "München",
+            $this->tei->xpath("//t:fileDesc/t:sourceDesc/t:listPlace/t:place[3]/t:placeName/text()")[0]
+        );
+        $this->assertEquals(
+            "Beschlagnahme von Eigentum",
+            $this->tei->xpath("//t:fileDesc/t:sourceDesc/t:list/t:item[1]/t:name/text()")[0]
         );
     }
 }

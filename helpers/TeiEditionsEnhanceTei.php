@@ -92,9 +92,29 @@ function tei_editions_get_wikidata_info($url)
     return json_decode($res, true);
 }
 
-function tei_editions_get_place($url)
+function tei_editions_parse_geonames_rdf_place_name(SimpleXMLElement $xml, $lang)
 {
+    // try and translate the language code.
+    // HACK: just trim it: eng => en, deu => de, fre => fr, cze => cz
+    $shortlang = substr($lang, 0, 2);
+    $paths = [
+        "/rdf:RDF/gn:Feature/gn:officialName[@xml:lang = '$shortlang']/text()",
+        "/rdf:RDF/gn:Feature/gn:alternateName[@xml:lang = '$shortlang']/text()",
+        "/rdf:RDF/gn:Feature/gn:name/text()"
+    ];
 
+    foreach ($paths as $path) {
+        $value = $xml->xpath($path);
+        if (!empty($value)) {
+            return (string)$value[0];
+        }
+    }
+
+    return null;
+}
+
+function tei_editions_get_place($url, $lang = null)
+{
     if (!preg_match("/(geonames)/", $url)) {
         return false;
     }
@@ -117,18 +137,17 @@ function tei_editions_get_place($url)
     $xml->registerXPathNamespace('gn', 'http://www.geonames.org/ontology#');
     $xml->registerXPathNamespace('wgs84_pos', 'http://www.w3.org/2003/01/geo/wgs84_pos#');
 
-    $name = (array)$xml->xpath("/rdf:RDF/gn:Feature/gn:name")[0][0];
     $lat = (array)$xml->xpath("/rdf:RDF/gn:Feature/wgs84_pos:lat")[0][0];
     $lon = (array)$xml->xpath("/rdf:RDF/gn:Feature/wgs84_pos:long")[0][0];
-    $wiki = (array)$xml->xpath("/rdf:RDF/gn:Feature/gn:wikipediaArticle/@rdf:resource")[0][0];
+    $wiki = @(array)$xml->xpath("/rdf:RDF/gn:Feature/gn:wikipediaArticle/@rdf:resource")[0][0];
 
     return array(
         "id" => $id,
         "url" => $geonames_url,
-        "name" => $name[0],
+        "name" => tei_editions_parse_geonames_rdf_place_name($xml, $lang),
         "latitude" => $lat[0],
         "longitude" => $lon[0],
-        "wikipedia" => $wiki[0]
+        "wikipedia" => @$wiki[0]
     );
 }
 
@@ -155,12 +174,12 @@ function tei_editions_get_historical_agent($url, $lang = null)
     // execute query and extract JSON
     $id = basename($url);
     $result = tei_editions_make_graphql_request($req, array("id" => $id, "lang" => $lang));
-    return is_null($result['data']['HistoricalAgent'])
-        ? false
-        : array_merge(
+    return isset($result['data']['HistoricalAgent']['description'])
+        ? array_merge(
             array("id" => $id, "url" => $url),
             $result['data']['HistoricalAgent']['description']
-        );
+        )
+        : false;
 }
 
 function tei_editions_get_concept($url, $lang = null)
@@ -180,9 +199,8 @@ function tei_editions_get_concept($url, $lang = null)
     // execute query and extract JSON
     $id = basename($url);
     $result = tei_editions_make_graphql_request($req, array("id" => $id, "lang" => $lang));
-    return is_null($result['data']['CvocConcept'])
-        ? false
-        : array(
+    return isset($result['data']['CvocConcept']["description"])
+        ? array(
             "id" => $id,
             "url" => $url,
             "name" => $result['data']['CvocConcept']['description']['name'],
@@ -191,7 +209,8 @@ function tei_editions_get_concept($url, $lang = null)
             "wikipedia" => array_reduce($result['data']['CvocConcept']['seeAlso'], function ($acc, $i) {
                 return strpos($i, "wikipedia") ? $i : $acc;
             })
-        );
+        )
+        : false;
 }
 
 function tei_editions_get_references(SimpleXMLElement $tei, $tag_name)
@@ -264,7 +283,7 @@ function tei_editions_add_place(SimpleXMLElement $place_list, $name, $url, $data
     return $place;
 }
 
-function tei_editions_process_tei_places(SimpleXMLElement $tei)
+function tei_editions_process_tei_places(SimpleXMLElement $tei, $lang)
 {
     // get place URLs
     $refs = tei_editions_get_references($tei, "placeName");
@@ -275,7 +294,7 @@ function tei_editions_process_tei_places(SimpleXMLElement $tei)
         foreach ($refs as $name => $url) {
             $data = array();
             if ($url) {
-                $lookup = tei_editions_get_place($url);
+                $lookup = tei_editions_get_place($url, $lang);
                 if ($lookup) {
                     $data = $lookup;
                 }
@@ -301,7 +320,7 @@ function tei_editions_add_term(SimpleXMLElement $list, $name, $url, $data)
     return $item;
 }
 
-function tei_editions_process_tei_terms(SimpleXMLElement $tei)
+function tei_editions_process_tei_terms(SimpleXMLElement $tei, $lang)
 {
     // query for terms URLs
     $refs = tei_editions_get_references($tei, "term");
@@ -312,7 +331,10 @@ function tei_editions_process_tei_terms(SimpleXMLElement $tei)
         foreach ($refs as $name => $url) {
             $data = array();
             if ($url) {
-                $lookup = tei_editions_get_concept($url, "eng") or tei_editions_get_concept($url);
+                $lookup = tei_editions_get_concept($url, $lang);
+                if ($lang and $lookup === false) {
+                    $lookup = tei_editions_get_concept($url);
+                }
                 if ($lookup) {
                     $data = $lookup;
                 }
@@ -340,7 +362,7 @@ function tei_editions_add_person(SimpleXMLElement $list, $name, $url, $data)
 }
 
 
-function tei_editions_process_tei_people(SimpleXMLElement $tei)
+function tei_editions_process_tei_people(SimpleXMLElement $tei, $lang)
 {
     // query for terms URLs
     $refs = tei_editions_get_references($tei, "persName");
@@ -351,7 +373,10 @@ function tei_editions_process_tei_people(SimpleXMLElement $tei)
         foreach ($refs as $name => $url) {
             $data = array();
             if ($url) {
-                $lookup = tei_editions_get_historical_agent($url, "eng") or tei_editions_get_historical_agent($url);
+                $lookup = tei_editions_get_historical_agent($url, $lang);
+                if ($lang and $lookup === false) {
+                    $lookup = tei_editions_get_historical_agent($url);
+                }
                 if ($lookup) {
                     $data = $lookup;
                 }
@@ -379,7 +404,7 @@ function tei_editions_add_org(SimpleXMLElement $list, $name, $url, $data)
 }
 
 
-function tei_editions_process_tei_orgs(SimpleXMLElement $tei)
+function tei_editions_process_tei_orgs(SimpleXMLElement $tei, $lang)
 {
     // query for terms URLs
     $refs = tei_editions_get_references($tei, "orgName");
@@ -390,7 +415,10 @@ function tei_editions_process_tei_orgs(SimpleXMLElement $tei)
         foreach ($refs as $name => $url) {
             $data = array();
             if ($url) {
-                $lookup = tei_editions_get_historical_agent($url, "eng") or tei_editions_get_historical_agent($url);
+                $lookup = tei_editions_get_historical_agent($url, $lang);
+                if ($lang and $lookup === false) {
+                    $lookup = tei_editions_get_historical_agent($url);
+                }
                 if ($lookup) {
                     $data = $lookup;
                 }
@@ -401,34 +429,52 @@ function tei_editions_process_tei_orgs(SimpleXMLElement $tei)
     }
 }
 
-function tei_editions_enhance_tei(SimpleXMLElement $tei)
+function tei_editions_enhance_tei(SimpleXMLElement $tei, $lang)
 {
-    tei_editions_process_tei_places($tei);
-    tei_editions_process_tei_terms($tei);
-    tei_editions_process_tei_people($tei);
-    tei_editions_process_tei_orgs($tei);
+    tei_editions_process_tei_places($tei, $lang);
+    tei_editions_process_tei_terms($tei, $lang);
+    tei_editions_process_tei_people($tei, $lang);
+    tei_editions_process_tei_orgs($tei, $lang);
 }
 
 // If we're running interactively...
 if (!count(debug_backtrace())) {
 
+    $name = array_shift($argv);
+    $lang = "eng";
+    $posargs = [];
+    while ($arg = array_shift($argv)) {
+        switch ($arg) {
+            case "-l":
+            case "--lang":
+                $lang = array_shift($argv);
+                break;
+            case "-h":
+            case "--help":
+                print("usage: $name [-l|--lang [LANG]] input [output]\n");
+                exit(1);
+            default:
+                array_push($posargs, $arg);
+        }
+    }
+
     // Check availability of TEI file
-    $in_file = $argv[1];
-    if ($in_file == "") {
-        die("Input file not defined. The script requires a parameter with path to the TEI file.");
+    if (!isset($posargs[0])) {
+        die("Input file not defined. The script requires a parameter with path to the TEI file.\n");
     }
 
     // read TEI file
+    $in_file = $posargs[0];
     $tei = simplexml_load_file($in_file) or exit("Couldn't load the TEI file.");
     $tei->registerXPathNamespace('t', 'http://www.tei-c.org/ns/1.0');
 
     // TODO: validate file
-    tei_editions_enhance_tei($tei);
+    tei_editions_enhance_tei($tei, $lang);
 
     // save the resulting TEI to output file or print
     // to stdout
-    if (count($argv) > 2) {
-        $tei->asXML($argv[2]);
+    if (count($posargs) > 1) {
+        $tei->asXML($posargs[1]);
     } else {
         print($tei->asXML());
     }
