@@ -7,7 +7,7 @@
  */
 
 /**
- * The TeiEditions Edition record class.
+ * The TeiEditions TEI file upload controller.
  *
  * @package TeiEditions
  */
@@ -47,6 +47,10 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
         $this->_processUpdateForm($form);
     }
 
+    /**
+     * @return Omeka_Form_Admin
+     * @throws Zend_Form_Exception
+     */
     private function _getImportForm()
     {
         $formOptions = array('type' => 'tei_editions_upload');
@@ -62,6 +66,10 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
         return $form;
     }
 
+    /**
+     * @return Omeka_Form
+     * @throws Zend_Form_Exception
+     */
     private function _getUpdateForm()
     {
         $formOptions = array('type' => 'tei_editions_update');
