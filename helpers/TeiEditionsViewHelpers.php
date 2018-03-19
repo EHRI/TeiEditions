@@ -1,5 +1,33 @@
 <?php
 
+function tei_editions_render_item_text($item)
+{
+    if (is_string($item)) {
+        $view = get_view();
+        $item = $view->{$view->singularize($item)};
+    }
+
+    $files = $item->getFiles();
+
+    $file_url_map = array();
+    foreach ($files as $file) {
+        $file_url_map[basename($file->original_filename)] = $file->getWebPath();
+    }
+
+    $tabs = "";
+    $html = "";
+    foreach ($files as $file) {
+        $path = $file->getWebPath();
+        if (tei_editions_is_xml_file($path)) {
+            $id = basename($path);
+            $html .= "<div class='tei-xml' id='tei_wrapper'>";
+            $html .= tei_editions_prettify_tei($path, $file_url_map);
+            $html .= "</div>";
+        }
+    }
+    return "<div class='element-texts'>" . $html . "</div>";
+
+}
 
 function tei_editions_render_string_list($list, $class_name = "")
 {

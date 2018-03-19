@@ -126,12 +126,7 @@
                     <div class="content">
                         <dl class="item-metadata">
                             <?php foreach (array("Author", "Encoding Description", "Source Details", "Publisher", "Publication Date") as $elem): ?>
-                                <?php $meta = $this->metadata($item, array("Item Type Metadata", $elem),
-                                    array('no_escape' => true, 'snippet' => 300)); ?>
-                                <?php if (!is_null($meta)): ?>
-                                    <dt><?php echo __($elem); ?></dt>
-                                    <dd><?php echo $meta ?></dd>
-                                <?php endif; ?>
+
                             <?php endforeach; ?>
                         </dl>
                     </div>

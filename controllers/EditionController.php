@@ -183,7 +183,7 @@ class TeiEditions_EditionController extends Omeka_Controller_AbstractActionContr
         $facets = $this->_fields->getActiveFacetKeys();
 
         return array(
-            'fq'                  => 'itemtype:"TEI"',
+            //'fq'                  => 'itemtype:"TEI"',
             'facet'               => 'true',
             'facet.field'         => $facets,
             'facet.mincount'      => 1,

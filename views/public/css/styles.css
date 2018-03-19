@@ -1,45 +1,12 @@
 
-/** Sticky footer */
-body {
-    display: flex;
-    min-height: 100vh;
-    flex-direction: column;
+.tei-entity {
+    border-bottom: 1px dotted lightgrey;
 }
 
-#wrapper {
-    flex: 1;
-    margin-bottom: 30px;
+.tei-entity-data {
+    display: none;
 }
 
-a {
-    color: #6c003b;
-}
-
-.solr-facet-class {
-    margin-top: 10px;
-}
-
-.applied-facet-label {
-    margin-right: 2px;
-    font-weight: bold;
-}
-
-.applied-facet-value {
-    margin-left: 2px;
-}
-
-#banner {
-    margin: 20px 0;
-}
-
-dl.item-metadata dt {
-    font-weight: bold;
-}
-
-dl.item-metadata dd {
-    margin-bottom: 10px;
-}
-
-.access-point {
-    margin-bottom: 20px;
+.tei-entity-data h5 {
+    margin: 5px 0;
 }
