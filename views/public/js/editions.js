@@ -1,4 +1,15 @@
 jQuery(function($) {
+  $("#tei-text")
+      .tabs({
+        show: false,
+        active: 0,
+        activate: function(e, ui) {
+          ui.oldTab.find("a")
+              .toggleClass("element-text-language-selected element-text-language");
+          ui.newTab.find("a")
+              .toggleClass("element-text-language-selected element-text-language");
+        }
+      });
 
   var $itemTexts = $("#item-texts");
   var $all = $(".tei-entity-data");

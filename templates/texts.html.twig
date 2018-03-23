@@ -1,0 +1,25 @@
+<div id="metadata">
+    <h3>Metadata</h3>
+    <div class="contentDescription">
+        {{ metadata | join(' | ') }}
+    </div>
+</div>
+
+<div class="document-text" id="tei-text">
+    <h3>Document text</h3>
+    <ol class="tabs clearfix" id="language-selector">
+        {% for lang, text in data|sort %}
+            {% if loop.first %}
+                <li><a class="element-text-language-selected" href="#{{ lang }}">{{ lang }}</a></li>
+            {% else %}
+                <li><a class="element-text-language" href="#{{ lang }}">{{ lang }}</a></li>
+            {% endif %}
+        {% endfor %}
+    </ol>
+
+    <div class="tei-texts">
+        {% for lang, text in data %}
+            <div class="tei-text element-text-document" id="{{ lang }}">{{ text|raw }}</div>
+        {% endfor %}
+    </div>
+</div>

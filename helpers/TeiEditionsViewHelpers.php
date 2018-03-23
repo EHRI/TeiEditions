@@ -1,5 +1,35 @@
 <?php
 
+require_once dirname(__FILE__) . '/../vendor/autoload.php';
+
+class ViewRenderer {
+    static $loader;
+    static $twig;
+
+    /**
+     * @param $template
+     * @param array $args
+     * @return string
+     * @throws Twig_Error_Loader
+     * @throws Twig_Error_Runtime
+     * @throws Twig_Error_Syntax
+     */
+    public static function render($template, $args = []) {
+        if (!isset(self::$loader)) {
+            self::$loader = new Twig_Loader_Filesystem(dirname(__FILE__) . "/../templates");
+            self::$twig = new Twig_Environment(self::$loader);
+        }
+        return self::$twig->render($template, $args);
+    }
+}
+
+/**
+ * @param $item
+ * @return string
+ * @throws Twig_Error_Loader
+ * @throws Twig_Error_Runtime
+ * @throws Twig_Error_Syntax
+ */
 function tei_editions_render_item_text($item)
 {
     if (is_string($item)) {
@@ -14,19 +44,33 @@ function tei_editions_render_item_text($item)
         $file_url_map[basename($file->original_filename)] = $file->getWebPath();
     }
 
-    $tabs = "";
-    $html = "";
+    $html = [];
+
+    $langs = 0;
     foreach ($files as $file) {
         $path = $file->getWebPath();
+
         if (tei_editions_is_xml_file($path)) {
-            $id = basename($path);
-            $html .= "<div class='tei-xml' id='tei_wrapper'>";
-            $html .= tei_editions_tei_to_html($path, $file_url_map);
-            $html .= "</div>";
+            $langs++;
+            $html["Language$langs"] = tei_editions_tei_to_html($path, $file_url_map);
         }
     }
-    return "<div class='element-texts'>" . $html . "</div>";
 
+    // FIXME: testing...
+    $html["Language2"] = "This is a test";
+
+    $meta = [];
+    foreach (["Date", "Publisher", "Format", "Language"] as $key) {
+        $value = metadata($item, ['Dublin Core', $key]);
+        if ($value) {
+            $meta[$key] = $value;
+        }
+    }
+
+    return ViewRenderer::render("texts.html.twig", [
+            "item" => $item, "data" => $html, "metadata" => $meta
+        ]
+    );
 }
 
 function tei_editions_render_string_list($list, $class_name = "")

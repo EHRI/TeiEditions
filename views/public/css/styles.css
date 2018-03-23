@@ -1,3 +1,8 @@
+.clearfix:after {
+    content: "";
+    display: table;
+    clear: both;
+}
 
 .tei-entity {
     border-bottom: 1px dotted lightgrey;
@@ -9,4 +14,16 @@
 
 .tei-entity-data h5 {
     margin: 5px 0;
+}
+
+#language-selector {
+    margin: 0;
+    padding: 0;
+    display: inline;
+    list-style-type: none;
+    overflow: auto;
+}
+
+#language-selector li {
+    float: left;
 }
