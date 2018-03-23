@@ -1,5 +1,7 @@
 <?php
 
+require_once dirname(__FILE__) . '/../helpers/TeiEditionsFunctions.php';
+
 /**
  * Convenience class for accessing TEI information via
  * XPath.
@@ -30,8 +32,9 @@ class TeiEditionsDocumentProxy
      * @param $xpath string a single XPath string
      * @return array an array trimmed of text values
      */
-    public function pathValues($xpath) {
-        $out = array();
+    public function pathValues($xpath)
+    {
+        $out = [];
         $nodes = $this->query->query($xpath);
         for ($i = 0; $i < $nodes->length; $i++) {
             $out[] = trim($nodes->item($i)->textContent);
@@ -44,7 +47,8 @@ class TeiEditionsDocumentProxy
      *
      * @return null|string an ID value, or null
      */
-    public function xmlId() {
+    public function xmlId()
+    {
         $id = $this->pathValues("/tei:TEI/@xml:id");
         return empty($id) ? null : $id[0];
     }
@@ -54,7 +58,8 @@ class TeiEditionsDocumentProxy
      *
      * @return null|string an ID value, or null
      */
-    public function recordId() {
+    public function recordId()
+    {
         $id = $this->pathValues("/tei:TEI/tei:teiHeader/tei:profileDesc/tei:creation/tei:idno");
         return empty($id) ? null : $id[0];
     }
@@ -72,7 +77,7 @@ class TeiEditionsDocumentProxy
 
         try {
             foreach ($elemToXPaths as $name => $paths) {
-                $all = array();
+                $all = [];
                 foreach ($paths as $path) {
                     $all = array_merge($all, $this->pathValues($path));
                 }
@@ -111,19 +116,20 @@ class TeiEditionsDocumentProxy
      *
      * @return array
      */
-    public function places() {
-        $out = array();
+    public function places()
+    {
+        $out = [];
         $placesXpath = "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:listPlace/tei:place";
         $places = $this->query->query($placesXpath);
         foreach ($places as $place) {
-            $names = $this->query->evaluate("./tei:placeName", $place);
-            if (empty($names)) continue;
+            $names = $this->query->evaluate("./tei:placeName[1]", $place);
+            if ($names->length === 0) continue;
 
-            $lat_long = $this->query->evaluate("./tei:location/tei:geo", $place);
-            if (empty($lat_long)) continue;
+            $lat_long = $this->query->evaluate("./tei:location/tei:geo[1]", $place);
+            if ($lat_long->length === 0) continue;
 
-            $links = $this->query->evaluate("./tei:linkGrp/tei:link/@target", $place);
-            $urls = array();
+            $links = $this->query->evaluate("./tei:linkGrp/tei:link[1]/@target", $place);
+            $urls = [];
             foreach ($links as $link) {
                 $urls[] = $link->value;
             }
@@ -139,5 +145,19 @@ class TeiEditionsDocumentProxy
             );
         }
         return array_values($out);
+    }
+
+    public function asHtml()
+    {
+        return tei_editions_tei_to_html($this->uriOrPath, []);
+    }
+
+    public function asSimpleHtml()
+    {
+        $xml = new DomDocument();
+        $xml->loadXML($this->asHtml());
+        $query = new DOMXPath($xml);
+        $div = $query->query("/div/div[@class='tei-text']");
+        return empty($div) ? "" : $xml->saveHTML($div[0]);
     }
 }

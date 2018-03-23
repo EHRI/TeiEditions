@@ -48,19 +48,25 @@ function tei_editions_iso639_3to2($three)
 
 function tei_editions_url_slug_mappings()
 {
-    return array(
-        'geonames' => 'http://sws.geonames.org/<id>/',
-        'ehri-authority' => 'https://portal.ehri-project.eu/authorities/<id>'
-    );
+    return [
+        'geonames' => ['http://sws.geonames.org/<id>/', 'http://www.geonames.org/<id>/.*'],
+        'ehri-authority' => ['https://portal.ehri-project.eu/authorities/<id>'],
+        'ehri-term' => ['https://portal.ehri-project.eu/keywords/<id>'],
+        'ehri-unit' => ['https://portal.ehri-project.eu/units/<id>'],
+        'ehri-institution' => ['https://portal.ehri-project.eu/institutions/<id>'],
+        'holocaust-cz' => ['https://www.holocaust.cz/databaze-obeti/obet/<id>']
+    ];
 }
 
 function tei_editions_url_to_slug($url)
 {
-    foreach (tei_editions_url_slug_mappings() as $name => $pattern) {
-        $regex = '~' . str_replace('<id>', '([^/]+)', $pattern) . '~';
-        $matches = array();
-        if (preg_match($regex, $url, $matches)) {
-            return implode('-', array($name, $matches[1]));
+    foreach (tei_editions_url_slug_mappings() as $name => $patterns) {
+        foreach ($patterns as $pattern) {
+            $regex = '~' . str_replace('<id>', '([^/]+)', $pattern) . '~';
+            $matches = [];
+            if (preg_match($regex, $url, $matches)) {
+                return implode('-', array($name, $matches[1]));
+            }
         }
     }
     return null;
@@ -68,11 +74,13 @@ function tei_editions_url_to_slug($url)
 
 function tei_editions_slug_to_url($slug)
 {
-    foreach (tei_editions_url_slug_mappings() as $name => $pattern) {
-        $pos = strpos($slug, $name);
-        if ($pos !== false) {
-            $id = substr($slug, strlen($name) + 1);
-            return str_replace('<id>', $id, $pattern);
+    foreach (tei_editions_url_slug_mappings() as $name => $patterns) {
+        foreach ($patterns as $pattern) {
+            $pos = strpos($slug, $name);
+            if ($pos !== false) {
+                $id = substr($slug, strlen($name) + 1);
+                return str_replace('<id>', $id, $pattern);
+            }
         }
     }
     return null;

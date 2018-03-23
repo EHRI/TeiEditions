@@ -494,6 +494,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
         $exhibit->title = $title;
         $exhibit->slug = $doc->recordId();
         $exhibit->spatial_layer = 'OpenStreetMap';
+        $exhibit->narrative = $doc->asSimpleHtml();
         $exhibit->save(true);
 
         $points = [];

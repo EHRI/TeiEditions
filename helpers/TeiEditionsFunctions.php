@@ -39,21 +39,21 @@ function full_path_to($file)
     return (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]" . web_path_to($file);
 }
 
-function tei_editions_prettify_tei($path, $img_map)
+function tei_editions_tei_to_html($path, $img_map)
 {
 
-    $teipb = dirname(__FILE__) . '/simple.xsl';
+    $tohtml = dirname(__FILE__) . '/simple.xsl';
 
     $xsldoc = new DOMDocument();
-    $xsldoc->load($teipb);
-    $xsldoc->documentURI = $teipb;
+    $xsldoc->load($tohtml);
+    $xsldoc->documentURI = $tohtml;
 
     $xmldoc = new DOMDocument();
-    $xmldoc->loadXML(file_get_contents($path));
+    $xmldoc->load($path);
     $xmldoc->documentURI = $path;
 
     // NB: Suppress annoying warnings here...
-    //$xmldoc = tei_editions_replace_urls_xml($xmldoc, $img_map);
+    $xmldoc = tei_editions_replace_urls_xml($xmldoc, $img_map);
 
     $proc = new XSLTProcessor;
     $proc->importStylesheet($xsldoc);
@@ -62,9 +62,9 @@ function tei_editions_prettify_tei($path, $img_map)
 
 function tei_editions_replace_urls_xml(DOMDocument $doc, $map)
 {
-    $filename = full_path_to('teibp/content/replace-urls.xsl');
+    $filename = dirname(__FILE__) . '/replace-urls.xsl';
     $xsldoc = new DOMDocument();
-    $xsldoc->loadXML(file_get_contents($filename));
+    $xsldoc->load($filename);
 
     foreach ($xsldoc->getElementsByTagName('url-lookup') as $elem) {
         foreach ($map as $name => $path) {
@@ -108,7 +108,7 @@ function tei_editions_render_item(Item $item)
     foreach ($files as $file) {
         $path = $file->getWebPath();
         if (tei_editions_is_xml_file($path)) {
-            $xml .= @tei_editions_prettify_tei($path, $file_url_map);
+            $xml .= @tei_editions_tei_to_html($path, $file_url_map);
             break;
         }
     }

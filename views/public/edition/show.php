@@ -2,7 +2,6 @@
 <head>
     <meta charset="UTF-8"/>
     <link id="bulma" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.4.1/css/bulma.css"   type="text/css"/>
-    <link id="maincss" rel="stylesheet" type="text/css" href="<?php echo web_path_to('teibp/css/teibp.css'); ?>"/>
     <link rel="stylesheet" href="<?php echo web_path_to('css/styles.css'); ?>" type="text/css"/>
     <link rel="stylesheet" href="<?php echo web_path_to('css/rendition.css'); ?>" type="text/css"/>
     <style type="text/css" id="tagusage-css"></style>
@@ -169,6 +168,5 @@
         <?php echo $this->partial('edition/footer_text.php'); ?>
     </div>
 </footer>
-<script type="text/javascript" src="<?php echo web_path_to('teibp/js/teibp.js'); ?>"></script>
 </body>
 </html>

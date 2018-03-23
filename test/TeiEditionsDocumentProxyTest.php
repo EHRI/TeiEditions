@@ -16,12 +16,12 @@ class TeiEditionsDocumentProxyTest extends PHPUnit_Framework_Testcase
     public function testMetadata()
     {
         $doc = new TeiEditionsDocumentProxy($this->file);
-        $out = $doc->metadata(array(
-            1 => array(
+        $out = $doc->metadata([
+            1 => [
                 '/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title	'
-            )
-        ));
-        $expect = array(array('element_id' => 1, 'text' => 'This is a test TEI', 'html' => false));
+            ]
+        ]);
+        $expect = [['element_id' => 1, 'text' => 'This is a test TEI', 'html' => false]];
         $this->assertEquals($expect, $out);
     }
 
@@ -29,16 +29,16 @@ class TeiEditionsDocumentProxyTest extends PHPUnit_Framework_Testcase
     public function testGetPlaces()
     {
         $doc = new TeiEditionsDocumentProxy($this->file);
-        $tartu = array(
+        $tartu = [
             "name" => "Tartu",
             "longitude" => 26.72509,
             "latitude" => 58.38062,
-            "urls" => array(
+            "urls" => [
                 "http://www.geonames.org/588335/",
                 "http://ru.wikipedia.org/wiki/%D0%A2%D0%B0%D1%80%D1%82%D1%83"
-            )
-        );
-        $this->assertEquals(array($tartu), $doc->places());
+            ]
+        ];
+        $this->assertEquals([$tartu], $doc->places());
     }
 
     public function testGetXmlId()
@@ -51,5 +51,23 @@ class TeiEditionsDocumentProxyTest extends PHPUnit_Framework_Testcase
     {
         $doc = new TeiEditionsDocumentProxy($this->file);
         $this->assertEquals("testing", $doc->recordId());
+    }
+
+    public function testAsHtml()
+    {
+        $doc = new TeiEditionsDocumentProxy($this->file);
+        $html = $doc->asHtml();
+        $this->assertThat($html, self::stringStartsWith("<div class=\"tei\">"),
+            'does not start with the correct div');
+        $this->assertThat($html, self::stringContains('geonames-2643743',
+            'does not contain geonames slug'));
+    }
+
+    public function testAsSimpleHtml()
+    {
+        $doc = new TeiEditionsDocumentProxy($this->file);
+        $simple = $doc->asSimpleHtml();
+        $this->assertThat($simple, self::stringStartsWith("<div class=\"tei-text\">"),
+            'does not start with the correct div');
     }
 }

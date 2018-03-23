@@ -21,7 +21,7 @@ function tei_editions_render_item_text($item)
         if (tei_editions_is_xml_file($path)) {
             $id = basename($path);
             $html .= "<div class='tei-xml' id='tei_wrapper'>";
-            $html .= tei_editions_prettify_tei($path, $file_url_map);
+            $html .= tei_editions_tei_to_html($path, $file_url_map);
             $html .= "</div>";
         }
     }

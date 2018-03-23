@@ -28,6 +28,8 @@ class TeiEditionsEnhanceTeiTest extends PHPUnit_Framework_Testcase
     {
         $this->assertEquals('geonames-12345',
             tei_editions_url_to_slug('http://sws.geonames.org/12345/'));
+        $this->assertEquals('geonames-2782113',
+            tei_editions_url_to_slug('http://www.geonames.org/2782113/republic-of-austria.html'));
         $this->assertEquals('ehri-authority-12345',
             tei_editions_url_to_slug('https://portal.ehri-project.eu/authorities/12345'));
     }
