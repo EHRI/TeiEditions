@@ -13,12 +13,47 @@
  */
 
 /**
+ * Get the TEI identifier from a file name
+ *
+ * @param string $name
+ * @return string
+ */
+function tei_editions_get_identifier($name)
+{
+    $noext = substr($name, 0, strripos($name, "."));
+    $nound = strripos($noext, "_");
+    return $nound ? substr($noext, 0, $nound) : $noext;
+}
+
+/**
+ * Get the TEI identifier from a file name
+ *
+ * @param string $name
+ * @return string|null
+ */
+function tei_editions_get_language($name, $default)
+{
+    $noext = substr($name, 0, strripos($name, "."));
+    $nound = strripos($noext, "_");
+    if ($nound) {
+        return substr($noext, $nound + 1);
+    } else {
+        $nound = strripos($noext, ".");
+        if ($nound) {
+            return substr($noext, $nound + 1);
+        } else {
+            return $default;
+        }
+    }
+}
+
+
+/**
  * Determine if an URL is an XML file.
  *
  * @param $file_url
  * @return bool
  */
-
 function tei_editions_is_xml_file($file_or_path)
 {
     $path = $file_or_path instanceof File

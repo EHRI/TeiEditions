@@ -431,7 +431,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
      */
     private function _addAssociatedFile($path, $name)
     {
-        $id = $this->identifierFromFilename($name);
+        $id = tei_editions_get_identifier($name);
         $item = $this->_getItemByIdentifier($id);
         if (is_null($item)) {
             throw new Exception("Unable to locate item with identifier: " . $id . " (file: $path)");
@@ -524,16 +524,5 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
             $exhibit->map_zoom = 7; // guess?
         }
         $exhibit->save(true);
-    }
-
-    /**
-     * @param $name
-     * @return bool|string
-     */
-    private function identifierFromFilename($name)
-    {
-        $noext = substr($name, 0, strripos($name, "."));
-        $nound = strripos($noext, "_");
-        return $nound ? substr($noext, 0, $nound) : $noext;
     }
 }

@@ -5,6 +5,7 @@ require_once dirname(__FILE__) . '/../vendor/autoload.php';
 class ViewRenderer {
     static $loader;
     static $twig;
+    static $iso;
 
     /**
      * @param $template
@@ -18,6 +19,11 @@ class ViewRenderer {
         if (!isset(self::$loader)) {
             self::$loader = new Twig_Loader_Filesystem(dirname(__FILE__) . "/../templates");
             self::$twig = new Twig_Environment(self::$loader);
+            self::$iso = $iso = new Matriphe\ISO639\ISO639;
+            self::$twig->addFilter(new Twig_SimpleFilter("lang2name", function($code) {
+                $lang = self::$iso->languageByCode1($code);
+                return $lang ? $lang : $code;
+            }));
         }
         return self::$twig->render($template, $args);
     }
@@ -46,18 +52,17 @@ function tei_editions_render_item_text($item)
 
     $html = [];
 
-    $langs = 0;
     foreach ($files as $file) {
         $path = $file->getWebPath();
 
         if (tei_editions_is_xml_file($path)) {
-            $langs++;
-            $html["Language$langs"] = tei_editions_tei_to_html($path, $file_url_map);
+            $lang = tei_editions_get_language($file->original_filename, $file->original_filename);
+            $html[$lang] = tei_editions_tei_to_html($path, $file_url_map);
         }
     }
 
     // FIXME: testing...
-    $html["Language2"] = "This is a test";
+    //$html["Language2"] = "This is a test";
 
     $meta = [];
     foreach (["Date", "Publisher", "Format", "Language"] as $key) {

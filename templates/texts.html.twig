@@ -10,9 +10,9 @@
     <ol class="tabs clearfix" id="language-selector">
         {% for lang, text in data|sort %}
             {% if loop.first %}
-                <li><a class="element-text-language-selected" href="#{{ lang }}">{{ lang }}</a></li>
+                <li><a class="element-text-language-selected" href="#{{ lang }}">{{ lang|lang2name }}</a></li>
             {% else %}
-                <li><a class="element-text-language" href="#{{ lang }}">{{ lang }}</a></li>
+                <li><a class="element-text-language" href="#{{ lang }}">{{ lang|lang2name }}</a></li>
             {% endif %}
         {% endfor %}
     </ol>
