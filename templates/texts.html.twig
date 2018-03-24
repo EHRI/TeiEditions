@@ -1,4 +1,4 @@
-<div id="metadata">
+<div id="document-metadata">
     <h3>Metadata</h3>
     <div class="contentDescription">
         {{ metadata | join(' | ') }}
@@ -22,4 +22,15 @@
             <div class="text-item element-text-document" id="document-text-{{ lang }}">{{ text|raw }}</div>
         {% endfor %}
     </div>
+
+    {% if exhibit %}
+        <a id="document-map">
+            <h3 class="document-map">Map</h3>
+            <a id="map-toggle-fullscreen" href="/neatline/fullscreen/{{ exhibit.slug }}">
+                <span class="map-document-text">Toggle fullscreen</span>
+                <div id="map-toggle-fullscreen-icon" class="material-icons">fullscreen</div>
+            </a>
+            <iframe class="element-map" src="/neatline/fullscreen/{{ exhibit.slug }}" width=100% height="410" frameborder="0" allowfullscreen></iframe>
+        </div>
+    {% endif %}
 </div>

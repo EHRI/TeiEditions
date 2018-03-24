@@ -52,10 +52,16 @@ function tei_editions_render_item_text($item)
 
     $html = [];
 
+    $exhibit = null;
+
     foreach ($files as $file) {
         $path = $file->getWebPath();
 
         if (tei_editions_is_xml_file($path)) {
+            if ($exhibit === null) {
+                $proxy = new TeiEditionsDocumentProxy($path);
+                $exhibit = tei_editions_get_neatline_exhibit($proxy);
+            }
             $lang = tei_editions_get_language($file->original_filename, $file->original_filename);
             $html[$lang] = tei_editions_tei_to_html($path, $file_url_map);
         }
@@ -73,9 +79,21 @@ function tei_editions_render_item_text($item)
     }
 
     return ViewRenderer::render("texts.html.twig", [
-            "item" => $item, "data" => $html, "metadata" => $meta
+            "item" => $item, "data" => $html, "metadata" => $meta,
+            "exhibit" => $exhibit
         ]
     );
+}
+
+/**
+ * @param TeiEditionsDocumentProxy $doc
+ * @return NeatlineExhibit
+ * @throws Omeka_Record_Exception
+ */
+function tei_editions_get_neatline_exhibit(TeiEditionsDocumentProxy $doc)
+{
+    $exhibits = get_db()->getTable('NeatlineExhibit')->findBy(['slug' => $doc->recordId()]);
+    return empty($exhibits) ? null : $exhibits[0];
 }
 
 function tei_editions_render_string_list($list, $class_name = "")
