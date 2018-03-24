@@ -5,21 +5,21 @@
     </div>
 </div>
 
-<div class="document-text" id="tei-text">
+<div class="document-text" id="document-text">
     <h3>Document text</h3>
     <ol class="tabs clearfix" id="language-selector">
         {% for lang, text in data|sort %}
             {% if loop.first %}
-                <li><a class="element-text-language-selected" href="#{{ lang }}">{{ lang|lang2name }}</a></li>
+                <li><a class="element-text-language-selected" href="#document-text-{{ lang }}">{{ lang|lang2name }}</a></li>
             {% else %}
-                <li><a class="element-text-language" href="#{{ lang }}">{{ lang|lang2name }}</a></li>
+                <li><a class="element-text-language" href="#document-text-{{ lang }}">{{ lang|lang2name }}</a></li>
             {% endif %}
         {% endfor %}
     </ol>
 
-    <div class="tei-texts">
+    <div class="all-item-texts">
         {% for lang, text in data %}
-            <div class="tei-text element-text-document" id="{{ lang }}">{{ text|raw }}</div>
+            <div class="text-item element-text-document" id="document-text-{{ lang }}">{{ text|raw }}</div>
         {% endfor %}
     </div>
 </div>

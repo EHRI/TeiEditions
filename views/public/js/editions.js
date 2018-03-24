@@ -1,5 +1,5 @@
 jQuery(function($) {
-  $("#tei-text")
+  $("#document-text")
       .tabs({
         show: false,
         active: 0,
