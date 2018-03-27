@@ -70,17 +70,41 @@ function tei_editions_render_item_text($item)
     // FIXME: testing...
     //$html["Language2"] = "This is a test";
 
+    $ident = metadata($item, ['Dublin Core', "Identifier"], ['no_escape' => true]);
+    $desc = metadata($item, ['Dublin Core', "Description"], ['no_escape' => true]);
+    $src = metadata($item, ['Dublin Core', "Source"], ['no_escape' => true]);
     $meta = [];
-    foreach (["Date", "Publisher", "Format", "Language"] as $key) {
-        $value = metadata($item, ['Dublin Core', $key]);
+    foreach (["Date", "Creator", "Coverage"] as $key) {
+        $value = metadata($item, ['Dublin Core', $key], ['no_escape' => true]);
         if ($value) {
             $meta[$key] = $value;
         }
     }
 
+    $images = [];
+    foreach ($item->getFiles() as $file) {
+        if (!tei_editions_is_xml_file($file)) {
+            $res = '';
+            if ($file->metadata != '') {
+                $info = json_decode($file->metadata, true);
+                if (isset($info["video"]) and isset($info["video"]["resolution_x"])) {
+                    $res = $info["video"]["resolution_x"] . 'x' . $info["video"]["resolution_y"];
+                }
+            }
+            $images[] = [
+                "path" => $file->getWebPath(),
+                "thumb" => $file->getWebPath("thumbnail"),
+                "name" => $file->original_filename,
+                "resolution" => $res
+            ];
+        }
+    }
+
     return ViewRenderer::render("texts.html.twig", [
             "item" => $item, "data" => $html, "metadata" => $meta,
-            "exhibit" => $exhibit
+            "exhibit" => $exhibit, "identifier" => $ident,
+            "description" => $desc, "source" => $src,
+            "images" => $images
         ]
     );
 }

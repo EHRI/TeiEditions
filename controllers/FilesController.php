@@ -36,6 +36,10 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
         $form = $this->_getImportForm();
         $this->view->form = $form;
         $this->_processImportForm($form);
+        // Clear and reindex.
+        Zend_Registry::get('job_dispatcher')->sendLongRunning(
+            'SolrSearch_Job_Reindex'
+        );
     }
 
     /**
@@ -49,6 +53,9 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
         $form = $this->_getUpdateForm();
         $this->view->form = $form;
         $this->_processUpdateForm($form);
+        Zend_Registry::get('job_dispatcher')->sendLongRunning(
+            'SolrSearch_Job_Reindex'
+        );
     }
 
     /**
@@ -290,6 +297,22 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
         }
         @insert_files_for_item($item, "Filesystem",
             ['source' => $path, 'name' => $name]);
+
+        // Ensure files are sorted img first...
+        $others = [];
+        $xml = [];
+        foreach ($item->getFiles() as $file) {
+            if (!tei_editions_is_xml_file($file)) {
+                $others[] = $file;
+            } else {
+                $xml[] = $file;
+            }
+        }
+        $order = 1;
+        foreach (array_merge($others, $xml) as $file) {
+            $file->order = $order++;
+            $file->save();
+        }
     }
 
     /**

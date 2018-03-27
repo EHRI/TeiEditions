@@ -160,6 +160,9 @@ class TeiEditionsPlugin extends Omeka_Plugin_AbstractPlugin
             id          int(10) unsigned NOT NULL auto_increment,
             element_id  int(10) unsigned NOT NULL,
             path        tinytext collate utf8_unicode_ci NOT NULL,
+            FOREIGN KEY (element_id) 
+              REFERENCES {$this->_db->prefix}elements(id)
+              ON DELETE CASCADE, 
             PRIMARY KEY (id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 SQL
@@ -186,7 +189,7 @@ SQL
                 "/tei:TEI/tei:teiHeader/tei:profileDesc/tei:langUsage/tei:language",
                 "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/tei:textLang"
             ],
-            "Coverage" => ["/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:listPlace/tei:place/tei:placeName"]
+            "Coverage" => ["/tei:TEI/tei:teiHeader/tei:profileDesc/tei:creation/tei:placeName"]
         ];
 
         $item_type_mappings = [
@@ -207,13 +210,19 @@ SQL
                     "Persons" => [
                         "description" => "Persons mentioned in the text.",
                         "xpaths" => [
-                            "/tei:TEI/tei:teiHeader/tei:sourceDesc/tei:listPerson/tei:person/tei:persName"
+                            "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:listPerson/tei:person/tei:persName"
                         ]
                     ],
                     "Organisations" => [
                         "description" => "Organisations mentioned in the text.",
                         "xpaths" => [
-                            "/tei:TEI/tei:teiHeader/tei:sourceDesc/tei:listOrg/tei:org/tei:orgName"
+                            "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:listOrg/tei:org/tei:orgName"
+                        ]
+                    ],
+                    "Places" => [
+                        "description" => "Places mentioned in the text.",
+                        "xpaths" => [
+                            "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:listPlace/tei:place/tei:placeName"
                         ]
                     ]
                 ]

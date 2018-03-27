@@ -4,11 +4,13 @@
     clear: both;
 }
 
-.tei-entity {
+.tei-entity-ref {
+    margin-left: 3px; /** FIXME: Hack for elements running together */
     border-bottom: 1px dotted lightgrey;
 }
 
-.tei-entity-data {
+.tei > .tei-entities > .tei-entity {
+    float: left;
     display: none;
 }
 

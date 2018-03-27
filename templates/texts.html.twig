@@ -1,8 +1,34 @@
+<a href="#document-metadata" class="items-content-button">Metadata</a>
+{% if data %}
+    <a href="#document-text" class="items-content-button">Document text</a>
+{% endif %}
+{% if exhibit %}
+<a href="#document-map" class="items-content-button">Map</a>
+{% endif %}
+
 <div id="document-metadata">
     <h3>Metadata</h3>
-    <div class="contentDescription">
-        {{ metadata | join(' | ') }}
+    <div class="element-metadata-field">{{ identifier }}</div>
+    <div class="element-metadata-field">{{ metadata | join(' | ') }}</div>
+    <div class="element-metadata-field">{{ source }}</div>
+    <div class="contentDescription">{{ description }}</div>
+</div>
+
+<div id="content-files">
+    {% if images %}
+    <div id="photogallery" itemscope="" itemtype="http://schema.org/ImageGallery">
+        {% for image in images %}
+        <figure class="galleryitem" itemprop="associatedMedia" itemscope="" itemtype="http://schema.org/ImageObject">
+            <a itemprop="contentUrl" href="{{ image.path }}" data-size="{{ image.resolution }}">
+                <img src="{{ image.thumb }}" alt="{{ image.name }}" title="{{ image.name }}">
+            </a>
+        </figure>
+        {% endfor %}
     </div>
+    <div id="content-files-zoom-icon" class="material-icons">zoom_in</div>
+    <div id="content-files-gallery-icon" class="material-icons">insert_drive_file</div>
+    <div id="content-files-counter">{{ images|length }}</div>
+    {% endif %}
 </div>
 
 <div class="document-text" id="document-text">

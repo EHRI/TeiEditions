@@ -20,6 +20,7 @@ class TeiEditionsDocumentProxy
     {
         $this->uriOrPath = $uriOrPath;
         $this->xml = new DomDocument();
+        $this->xml->preserveWhiteSpace = false;
         $this->xml->load($uriOrPath);
         $this->query = new DOMXPath($this->xml);
         $this->query->registerNamespace("tei",
@@ -37,7 +38,7 @@ class TeiEditionsDocumentProxy
         $out = [];
         $nodes = $this->query->query($xpath);
         for ($i = 0; $i < $nodes->length; $i++) {
-            $out[] = trim($nodes->item($i)->textContent);
+            $out[] = trim($nodes->item($i)->nodeValue);
         }
         return $out;
     }
@@ -158,6 +159,6 @@ class TeiEditionsDocumentProxy
         $xml->loadXML($this->asHtml());
         $query = new DOMXPath($xml);
         $div = $query->query("/div/div[@class='tei-text']");
-        return empty($div) ? "" : $xml->saveHTML($div[0]);
+        return empty($div) ? "" : $xml->saveHTML($div->item(0));
     }
 }
