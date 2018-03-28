@@ -5,7 +5,6 @@
 }
 
 .tei-entity-ref {
-    margin-left: 3px; /** FIXME: Hack for elements running together */
     border-bottom: 1px dotted lightgrey;
 }
 

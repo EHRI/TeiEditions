@@ -9,7 +9,6 @@
                 extension-element-prefixes="xalan redirect func ehri"
                 exclude-result-prefixes="xhtml tei">
     <xsl:output indent="yes" omit-xml-declaration="yes" encoding="utf-8" method="xml" xalan:indent-amount="4"/>
-    <xsl:strip-space elements="*"/>
 
     <func:function name="ehri:slugify">
         <xsl:param name="url"/>
