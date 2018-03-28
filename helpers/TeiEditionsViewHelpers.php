@@ -50,7 +50,7 @@ function tei_editions_render_item_text($item)
         $file_url_map[basename($file->original_filename)] = $file->getWebPath();
     }
 
-    $html = [];
+    $text_html = [];
 
     $exhibit = null;
 
@@ -58,12 +58,12 @@ function tei_editions_render_item_text($item)
         $path = $file->getWebPath();
 
         if (tei_editions_is_xml_file($path)) {
-            if ($exhibit === null) {
+            if ($exhibit === null && plugin_is_active('Neatline')) {
                 $proxy = new TeiEditionsDocumentProxy($path);
                 $exhibit = tei_editions_get_neatline_exhibit($proxy);
             }
             $lang = tei_editions_get_language($file->original_filename, $file->original_filename);
-            $html[$lang] = tei_editions_tei_to_html($path, $file_url_map);
+            $text_html[$lang] = tei_editions_tei_to_html($path, $file_url_map);
         }
     }
 
@@ -101,7 +101,7 @@ function tei_editions_render_item_text($item)
     }
 
     return ViewRenderer::render("texts.html.twig", [
-            "item" => $item, "data" => $html, "metadata" => $meta,
+            "item" => $item, "data" => $text_html, "metadata" => $meta,
             "exhibit" => $exhibit, "identifier" => $ident,
             "description" => $desc, "source" => $src,
             "images" => $images
