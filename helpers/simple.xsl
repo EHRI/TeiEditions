@@ -1,13 +1,4 @@
-<xsl:stylesheet version="1.0"
-                xmlns:xhtml="http://www.w3.org/1999/xhtml"
-                xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:tei="http://www.tei-c.org/ns/1.0"
-                xmlns:redirect="http://xml.apache.org/xalan/redirect"
-                xmlns:xalan="http://xml.apache.org/xalan"
-                xmlns:ehri="https://ehri-project.eu/functions"
-                xmlns:func="http://exslt.org/functions"
-                extension-element-prefixes="xalan redirect func ehri"
-                exclude-result-prefixes="xhtml tei">
+<xsl:stylesheet version="1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:redirect="http://xml.apache.org/xalan/redirect" xmlns:xalan="http://xml.apache.org/xalan" xmlns:ehri="https://ehri-project.eu/functions" xmlns:func="http://exslt.org/functions" extension-element-prefixes="xalan redirect func ehri" exclude-result-prefixes="xhtml tei">
     <xsl:output indent="yes" omit-xml-declaration="yes" encoding="utf-8" method="xml" xalan:indent-amount="4"/>
 
     <func:function name="ehri:slugify">
@@ -62,30 +53,34 @@
             </h5>
             <xsl:if test="./tei:location/tei:geo">
                 <div class="content-info-entity-body">
-                    <p><xsl:value-of select="./tei:location/tei:geo"/></p>
+                    <p>
+                        <xsl:value-of select="./tei:location/tei:geo"/>
+                    </p>
                 </div>
             </xsl:if>
             <xsl:variable name="desc">
                 <xsl:value-of select="./tei:linkGrp/tei:link[@type='desc']/@target"/>
             </xsl:variable>
-            <div class="content-info-entity-footer">
-                <xsl:if test="$link != ''">
-                    <a target="_blank">
-                        <xsl:attribute name="href">
+            <xsl:if test="$link != '' or $desc != ''">
+                <div class="content-info-entity-footer">
+                    <xsl:if test="$link != ''">
+                        <a target="_blank">
+                            <xsl:attribute name="href">
+                                <xsl:value-of select="$link"/>
+                            </xsl:attribute>
                             <xsl:value-of select="$link"/>
-                        </xsl:attribute>
-                        <xsl:value-of select="$link"/>
-                    </a>
-                </xsl:if>
-                <xsl:if test="$desc != ''">
-                    <a class="tei-entity-description" target="_blank">
-                        <xsl:attribute name="href">
+                        </a>
+                    </xsl:if>
+                    <xsl:if test="$desc != ''">
+                        <a class="tei-entity-description" target="_blank">
+                            <xsl:attribute name="href">
+                                <xsl:value-of select="$desc"/>
+                            </xsl:attribute>
                             <xsl:value-of select="$desc"/>
-                        </xsl:attribute>
-                        <xsl:value-of select="$desc"/>
-                    </a>
-                </xsl:if>
-            </div>
+                        </a>
+                    </xsl:if>
+                </div>
+            </xsl:if>
         </div>
     </xsl:template>
 
@@ -108,24 +103,26 @@
             <xsl:variable name="desc">
                 <xsl:value-of select="./tei:linkGrp/tei:link[@type='desc']/@target"/>
             </xsl:variable>
-            <div class="content-info-entity-footer">
-                <xsl:if test="$link != ''">
-                    <a target="_blank">
-                        <xsl:attribute name="href">
+            <xsl:if test="$link != '' or $desc != ''">
+                <div class="content-info-entity-footer">
+                    <xsl:if test="$link != ''">
+                        <a target="_blank">
+                            <xsl:attribute name="href">
+                                <xsl:value-of select="$link"/>
+                            </xsl:attribute>
                             <xsl:value-of select="$link"/>
-                        </xsl:attribute>
-                        <xsl:value-of select="$link"/>
-                    </a>
-                </xsl:if>
-                <xsl:if test="$desc != ''">
-                    <a class="tei-entity-description" target="_blank">
-                        <xsl:attribute name="href">
+                        </a>
+                    </xsl:if>
+                    <xsl:if test="$desc != ''">
+                        <a class="tei-entity-description" target="_blank">
+                            <xsl:attribute name="href">
+                                <xsl:value-of select="$desc"/>
+                            </xsl:attribute>
                             <xsl:value-of select="$desc"/>
-                        </xsl:attribute>
-                        <xsl:value-of select="$desc"/>
-                    </a>
-                </xsl:if>
-            </div>
+                        </a>
+                    </xsl:if>
+                </div>
+            </xsl:if>
         </div>
     </xsl:template>
 
@@ -148,24 +145,26 @@
             <xsl:variable name="desc">
                 <xsl:value-of select="./tei:linkGrp/tei:link[@type='desc']/@target"/>
             </xsl:variable>
-            <div class="content-info-entity-footer">
-                <xsl:if test="$link != ''">
-                    <a target="_blank">
-                        <xsl:attribute name="href">
+            <xsl:if test="$link != '' or $desc != ''">
+                <div class="content-info-entity-footer">
+                    <xsl:if test="$link != ''">
+                        <a target="_blank">
+                            <xsl:attribute name="href">
+                                <xsl:value-of select="$link"/>
+                            </xsl:attribute>
                             <xsl:value-of select="$link"/>
-                        </xsl:attribute>
-                        <xsl:value-of select="$link"/>
-                    </a>
-                </xsl:if>
-                <xsl:if test="$desc != ''">
-                    <a class="tei-entity-description" target="_blank">
-                        <xsl:attribute name="href">
+                        </a>
+                    </xsl:if>
+                    <xsl:if test="$desc != ''">
+                        <a class="tei-entity-description" target="_blank">
+                            <xsl:attribute name="href">
+                                <xsl:value-of select="$desc"/>
+                            </xsl:attribute>
                             <xsl:value-of select="$desc"/>
-                        </xsl:attribute>
-                        <xsl:value-of select="$desc"/>
-                    </a>
-                </xsl:if>
-            </div>
+                        </a>
+                    </xsl:if>
+                </div>
+            </xsl:if>
         </div>
     </xsl:template>
 
@@ -188,24 +187,26 @@
             <xsl:variable name="desc">
                 <xsl:value-of select="./tei:linkGrp/tei:link[@type='desc']/@target"/>
             </xsl:variable>
-            <div class="content-info-entity-footer">
-                <xsl:if test="$link != ''">
-                    <a target="_blank">
-                        <xsl:attribute name="href">
+            <xsl:if test="$link != '' or $desc != ''">
+                <div class="content-info-entity-footer">
+                    <xsl:if test="$link != ''">
+                        <a target="_blank">
+                            <xsl:attribute name="href">
+                                <xsl:value-of select="$link"/>
+                            </xsl:attribute>
                             <xsl:value-of select="$link"/>
-                        </xsl:attribute>
-                        <xsl:value-of select="$link"/>
-                    </a>
-                </xsl:if>
-                <xsl:if test="$desc != ''">
-                    <a class="tei-entity-description" target="_blank">
-                        <xsl:attribute name="href">
+                        </a>
+                    </xsl:if>
+                    <xsl:if test="$desc != ''">
+                        <a class="tei-entity-description" target="_blank">
+                            <xsl:attribute name="href">
+                                <xsl:value-of select="$desc"/>
+                            </xsl:attribute>
                             <xsl:value-of select="$desc"/>
-                        </xsl:attribute>
-                        <xsl:value-of select="$desc"/>
-                    </a>
-                </xsl:if>
-            </div>
+                        </a>
+                    </xsl:if>
+                </div>
+            </xsl:if>
         </div>
     </xsl:template>
 
