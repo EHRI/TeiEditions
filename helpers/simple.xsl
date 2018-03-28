@@ -71,7 +71,7 @@
             </xsl:variable>
             <div class="content-info-entity-footer">
                 <xsl:if test="$link != ''">
-                    <a class="tei-entity-ref" target="_blank">
+                    <a target="_blank">
                         <xsl:attribute name="href">
                             <xsl:value-of select="$link"/>
                         </xsl:attribute>
@@ -111,7 +111,7 @@
             </xsl:variable>
             <div class="content-info-entity-footer">
                 <xsl:if test="$link != ''">
-                    <a class="tei-entity-ref" target="_blank">
+                    <a target="_blank">
                         <xsl:attribute name="href">
                             <xsl:value-of select="$link"/>
                         </xsl:attribute>
@@ -151,7 +151,7 @@
             </xsl:variable>
             <div class="content-info-entity-footer">
                 <xsl:if test="$link != ''">
-                    <a class="tei-entity-ref" target="_blank">
+                    <a target="_blank">
                         <xsl:attribute name="href">
                             <xsl:value-of select="$link"/>
                         </xsl:attribute>
@@ -191,7 +191,7 @@
             </xsl:variable>
             <div class="content-info-entity-footer">
                 <xsl:if test="$link != ''">
-                    <a class="tei-entity-ref" target="_blank">
+                    <a target="_blank">
                         <xsl:attribute name="href">
                             <xsl:value-of select="$link"/>
                         </xsl:attribute>

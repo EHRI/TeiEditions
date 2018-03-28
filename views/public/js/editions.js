@@ -11,22 +11,18 @@ jQuery(function($) {
         }
       });
 
-  var $after = $("#content-files");
-  var $all = $(".tei-entity");
+  var $entities = $(".tei-entities");
+  var infoPanel = $("#content-info");
 
   $(".tei-entity-ref").hoverIntent(function() {
     var url = $(this).data("ref");
-    var $entities = $(".content-info-entity[data-ref='" + url + "']");
-    $all.hide();
-    if ($entities.length > 0) {
-      $entities.show().position({
-          my:        "left top",
-          at:        "left bottom+20",
-          of:        $after,
-          collision: "fit"
-      });
-    } else {
-        console.log("No info for", url);
+    var $entity = $entities.find(".content-info-entity[data-ref='" + url + "']");
+    if ($entity.length > 0) {
+      infoPanel
+          .children()
+          .remove()
+          .end()
+          .append($entity.clone().show());
     }
   });
 });
