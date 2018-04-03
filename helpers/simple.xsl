@@ -40,6 +40,19 @@
         </func:result>
     </func:function>
 
+    <func:function name="ehri:get-id">
+        <func:result>
+            <xsl:choose>
+                <xsl:when test="./tei:linkGrp/tei:link[@type='normal']">
+                    <xsl:value-of select="./tei:linkGrp/tei:link[@type='normal']/@target"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="concat('#', @xml:id)"/>
+                </xsl:otherwise>
+            </xsl:choose>
+        </func:result>
+    </func:function>
+
     <xsl:template name="entity-header">
         <xsl:param name="name"/>
         <h5><xsl:value-of select="normalize-space($name)"/></h5>
@@ -69,7 +82,7 @@
         <xsl:variable name="desc">
             <xsl:value-of select="./tei:linkGrp/tei:link[@type='desc']/@target"/>
         </xsl:variable>
-        <xsl:if test="$link != '' or $desc != ''">
+        <xsl:if test="starts-with($link, 'http') or $desc != ''">
             <div class="content-info-entity-footer">
                 <xsl:if test="$link != ''">
                     <a target="_blank">
@@ -92,9 +105,7 @@
     </xsl:template>
 
     <xsl:template name="place-entity">
-        <xsl:variable name="link">
-            <xsl:value-of select="./tei:linkGrp/tei:link[@type='normal']/@target"/>
-        </xsl:variable>
+        <xsl:variable name="link" select="ehri:get-id()"/>
         <div class="content-info-entity tei-entity tei-place">
             <xsl:attribute name="data-ref">
                 <xsl:value-of select="$link"/>
@@ -110,9 +121,7 @@
     </xsl:template>
 
     <xsl:template name="person-entity">
-        <xsl:variable name="link">
-            <xsl:value-of select="./tei:linkGrp/tei:link[@type='normal']/@target"/>
-        </xsl:variable>
+        <xsl:variable name="link" select="ehri:get-id()"/>
         <div class="content-info-entity tei-entity tei-person">
             <xsl:attribute name="data-ref">
                 <xsl:value-of select="$link"/>
@@ -128,9 +137,7 @@
     </xsl:template>
 
     <xsl:template name="org-entity">
-        <xsl:variable name="link">
-            <xsl:value-of select="./tei:linkGrp/tei:link[@type='normal']/@target"/>
-        </xsl:variable>
+        <xsl:variable name="link" select="ehri:get-id()"/>
         <div class="content-info-entity tei-entity tei-org">
             <xsl:attribute name="data-ref">
                 <xsl:value-of select="$link"/>
@@ -146,12 +153,10 @@
     </xsl:template>
 
     <xsl:template name="term-entity">
-        <xsl:variable name="link">
-            <xsl:value-of select="./tei:linkGrp/tei:link[@type='normal']/@target"/>
-        </xsl:variable>
+        <xsl:variable name="link" select="ehri:get-id()"/>
         <div class="content-info-entity tei-entity tei-term">
             <xsl:attribute name="data-ref">
-                <xsl:value-of select="./tei:linkGrp/tei:link[@type='normal']/@target"/>
+                <xsl:value-of select="$link"/>
             </xsl:attribute>
             <xsl:call-template name="entity-header">
                 <xsl:with-param name="name" select="./tei:name"/>
