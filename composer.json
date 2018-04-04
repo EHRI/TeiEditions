@@ -3,6 +3,7 @@
         "php": "^5.5",
         "phpunit/phpunit": "~4.8.0@stable",
         "twig/twig": "~1.4",
-        "matriphe/iso-639": "^1.2"
+        "matriphe/iso-639": "^1.2",
+        "twig/extensions": "^1.5"
     }
 }
