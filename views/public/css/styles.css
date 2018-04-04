@@ -32,3 +32,16 @@
 #language-selector li {
     float: left;
 }
+
+#document-metadata #content-files {
+    margin: 0;
+}
+
+#content-info .content-info-entity {
+    margin: 0;
+}
+
+#content-info .content-info-entity.affixed {
+    position: fixed;
+    top: 20px;
+}

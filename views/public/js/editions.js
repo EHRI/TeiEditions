@@ -12,17 +12,30 @@ jQuery(function($) {
       });
 
   var $entities = $(".tei-entities");
-  var infoPanel = $("#content-info");
+  var $infoPanel = $("#content-info");
+
+  function affix($elem) {
+      var margin = 20; // FIXME: margin from page top
+      if ($elem.length) {
+          $elem.toggleClass("affixed", $infoPanel.offset().top < window.scrollY + margin);
+      }
+  }
+
+  $(window).scroll(function(e) {
+      affix($infoPanel.find(".content-info-entity"));
+  });
 
   $(".tei-entity-ref").hoverIntent(function() {
     var url = $(this).data("ref");
     var $entity = $entities.find(".content-info-entity[data-ref='" + url + "']");
     if ($entity.length > 0) {
-      infoPanel
+        var $clone = $entity.clone();
+        $infoPanel
           .children()
           .remove()
           .end()
-          .append($entity.clone().show());
+          .append($clone.show());
+        affix($clone)
     }
   });
 });

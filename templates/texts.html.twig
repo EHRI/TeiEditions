@@ -7,6 +7,23 @@
 {% endif %}
 
 <div id="document-metadata">
+    <div id="content-files" class="clearfix">
+        {% if images %}
+            <div id="photogallery" itemscope="" itemtype="http://schema.org/ImageGallery">
+                {% for image in images %}
+                    <figure class="galleryitem" itemprop="associatedMedia" itemscope="" itemtype="http://schema.org/ImageObject">
+                        <a itemprop="contentUrl" href="{{ image.path }}" data-size="{{ image.resolution }}">
+                            <img src="{{ image.thumb }}" alt="{{ image.name }}" title="{{ image.name }}">
+                        </a>
+                    </figure>
+                {% endfor %}
+            </div>
+            <div id="content-files-zoom-icon" class="material-icons">zoom_in</div>
+            <div id="content-files-gallery-icon" class="material-icons">insert_drive_file</div>
+            <div id="content-files-counter">{{ images|length }}</div>
+        {% endif %}
+    </div>
+
     <h3>Metadata</h3>
     <div class="element-metadata-field">{{ identifier }}</div>
     <div class="element-metadata-field">{{ metadata | join(' | ') }}</div>
@@ -14,28 +31,10 @@
     <div class="contentDescription">{{ description }}</div>
 </div>
 
-<div id="content-files">
-    {% if images %}
-    <div id="photogallery" itemscope="" itemtype="http://schema.org/ImageGallery">
-        {% for image in images %}
-        <figure class="galleryitem" itemprop="associatedMedia" itemscope="" itemtype="http://schema.org/ImageObject">
-            <a itemprop="contentUrl" href="{{ image.path }}" data-size="{{ image.resolution }}">
-                <img src="{{ image.thumb }}" alt="{{ image.name }}" title="{{ image.name }}">
-            </a>
-        </figure>
-        {% endfor %}
-    </div>
-    <div id="content-files-zoom-icon" class="material-icons">zoom_in</div>
-    <div id="content-files-gallery-icon" class="material-icons">insert_drive_file</div>
-    <div id="content-files-counter">{{ images|length }}</div>
-    {% endif %}
-</div>
-
-<div id="content-info">
-
-</div>
-
 <div class="document-text" id="document-text">
+    <div id="content-info">
+
+    </div>
     <h3>Document text</h3>
     <ol class="tabs clearfix" id="language-selector">
         {% for lang, text in data|sort %}
@@ -54,7 +53,7 @@
     </div>
 
     {% if exhibit %}
-        <a id="document-map">
+        <div id="document-map">
             <h3 class="document-map">Map</h3>
             <a id="map-toggle-fullscreen" href="/neatline/fullscreen/{{ exhibit.slug }}">
                 <span class="map-document-text">Toggle fullscreen</span>
@@ -64,3 +63,4 @@
         </div>
     {% endif %}
 </div>
+
