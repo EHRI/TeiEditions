@@ -17,6 +17,10 @@
     margin: 5px 0;
 }
 
+.tei > .tei-text ol, .tei > .tei-text ul {
+    list-style-type: none;
+}
+
 #language-selector {
     margin: 0;
     padding: 0;
