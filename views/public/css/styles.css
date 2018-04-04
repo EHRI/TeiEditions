@@ -34,7 +34,10 @@
 }
 
 #document-metadata #content-files {
-    margin: 0;
+    position: relative;
+    right: 0;
+    float: right;
+    margin: 0 -300px 0 0;
 }
 
 #content-info .content-info-entity {
