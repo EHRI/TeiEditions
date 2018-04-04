@@ -11,7 +11,7 @@
         {% if images %}
             <div id="photogallery" itemscope="" itemtype="http://schema.org/ImageGallery">
                 {% for image in images %}
-                    <figure class="galleryitem" itemprop="associatedMedia" itemscope="" itemtype="http://schema.org/ImageObject">
+                    <figure class="gallery-item" itemprop="associatedMedia" itemscope="" itemtype="http://schema.org/ImageObject">
                         <a itemprop="contentUrl" href="{{ image.path }}" data-size="{{ image.resolution }}">
                             <img src="{{ image.thumb }}" alt="{{ image.name }}" title="{{ image.name }}">
                         </a>
