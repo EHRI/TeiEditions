@@ -218,6 +218,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
                             $item->deleteElementTexts();
                             $doc = $this->_getDoc($file->getWebPath(), $file->getProperty('display_title'));
                             $this->_updateItemFromTEI($item, $doc, $neatline);
+                            $this->_updateFileOrder($item);
                             $updated++;
                         }
                     }
@@ -297,22 +298,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
         }
         @insert_files_for_item($item, "Filesystem",
             ['source' => $path, 'name' => $name]);
-
-        // Ensure files are sorted img first...
-        $others = [];
-        $xml = [];
-        foreach ($item->getFiles() as $file) {
-            if (!tei_editions_is_xml_file($file)) {
-                $others[] = $file;
-            } else {
-                $xml[] = $file;
-            }
-        }
-        $order = 1;
-        foreach (array_merge($others, $xml) as $file) {
-            $file->order = $order++;
-            $file->save();
-        }
+        $this->_updateFileOrder($item);
     }
 
     /**
@@ -547,5 +533,29 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
             $exhibit->map_zoom = 7; // guess?
         }
         $exhibit->save(true);
+    }
+
+    /**
+     * Ensure files are sorted with images first, with the others
+     * retaining their order.
+     *
+     * @param Item $item
+     */
+    private function _updateFileOrder(Item $item)
+    {
+        $others = [];
+        $xml = [];
+        foreach ($item->getFiles() as $file) {
+            if (!tei_editions_is_xml_file($file)) {
+                $others[] = $file;
+            } else {
+                $xml[] = $file;
+            }
+        }
+        $order = 1;
+        foreach (array_merge($others, $xml) as $file) {
+            $file->order = $order++;
+            $file->save();
+        }
     }
 }
