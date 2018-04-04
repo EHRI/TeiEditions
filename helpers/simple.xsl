@@ -84,7 +84,7 @@
         </xsl:variable>
         <xsl:if test="starts-with($link, 'http') or $desc != ''">
             <div class="content-info-entity-footer">
-                <xsl:if test="$link != ''">
+                <xsl:if test="starts-with($link, 'http')">
                     <a target="_blank">
                         <xsl:attribute name="href">
                             <xsl:value-of select="$link"/>
