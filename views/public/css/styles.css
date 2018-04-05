@@ -6,6 +6,7 @@
 
 .tei-entity-ref {
     border-bottom: 1px dotted lightgrey;
+    background-color: #fff3f3;
 }
 
 .tei > .tei-entities > .tei-entity {
@@ -50,6 +51,11 @@
     overflow-y: auto;
 }
 
+.element-text-page .element-text-page-icon {
+    float: left;
+    font-size: 16px;
+    margin: 3px 6px 0 3px;
+}
 
 #content-info .content-info-entity.affixed {
     position: fixed;

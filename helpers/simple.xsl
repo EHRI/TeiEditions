@@ -186,6 +186,16 @@
         </div>
     </xsl:template>
 
+    <xsl:template match="tei:pb" name="page">
+        <xsl:variable name="pageno" select="@n"/>
+
+        <xsl:if test="$pageno">
+            <div class="element-text-page">
+                <div class="element-text-page-icon material-icons">insert_drive_file</div>
+                Text from page <xsl:value-of select="$pageno"/>
+            </div>
+        </xsl:if>
+    </xsl:template>
     <xsl:template match="tei:q" name="quote">
         <q>
             <xsl:apply-templates select="node()|@*"/>

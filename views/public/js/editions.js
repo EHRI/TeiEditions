@@ -25,7 +25,7 @@ jQuery(function($) {
       affix($infoPanel.find(".content-info-entity"));
   });
 
-  $(".tei-entity-ref").hoverIntent(function() {
+  $(".tei-entity-ref, .tei-note").hoverIntent(function() {
     var url = $(this).data("ref");
     var $entity = $entities.find(".content-info-entity[data-ref='" + url + "']");
     if ($entity.length > 0) {
