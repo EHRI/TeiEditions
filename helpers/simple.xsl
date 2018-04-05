@@ -65,7 +65,7 @@
         <xsl:if test="$note != '' or $geo != ''">
             <div class="content-info-entity-body">
                 <xsl:if test="$geo">
-                    <p>
+                    <p class="content-info-entity-geo">
                         <xsl:value-of select="$geo"/>
                     </p>
                 </xsl:if>
@@ -78,30 +78,44 @@
 
     <xsl:template name="entity-footer">
         <xsl:param name="link"/>
+        <xsl:param name="name"/>
 
         <xsl:variable name="desc">
             <xsl:value-of select="./tei:linkGrp/tei:link[@type='desc']/@target"/>
         </xsl:variable>
-        <xsl:if test="starts-with($link, 'http') or $desc != ''">
-            <div class="content-info-entity-footer">
-                <xsl:if test="starts-with($link, 'http')">
+        <ul class="content-info-entity-footer">
+            <xsl:if test="starts-with($link, 'http')">
+                <li>
                     <a target="_blank">
                         <xsl:attribute name="href">
                             <xsl:value-of select="$link"/>
                         </xsl:attribute>
-                        <xsl:value-of select="$link"/>
+                        <div class="material-icons">launch</div>
+                        View
                     </a>
-                </xsl:if>
-                <xsl:if test="$desc != ''">
+                </li>
+            </xsl:if>
+            <xsl:if test="$desc != ''">
+                <li>
                     <a class="tei-entity-description" target="_blank">
                         <xsl:attribute name="href">
                             <xsl:value-of select="$desc"/>
                         </xsl:attribute>
-                        <xsl:value-of select="$desc"/>
+                        <div class="material-icons">info_outline</div>
+                        Description
                     </a>
-                </xsl:if>
-            </div>
-        </xsl:if>
+                </li>
+            </xsl:if>
+            <li>
+                <a class="tei-entity-search">
+                    <xsl:attribute name="href">
+                        <xsl:value-of select="concat('/solr-search?q=', $name)"/>
+                    </xsl:attribute>
+                    <div class="material-icons">search</div>
+                    Search
+                </a>
+            </li>
+        </ul>
     </xsl:template>
 
     <xsl:template name="place-entity">
@@ -116,6 +130,7 @@
             <xsl:call-template name="entity-body"/>
             <xsl:call-template name="entity-footer">
                 <xsl:with-param name="link" select="$link"/>
+                <xsl:with-param name="name" select="./tei:placeName"/>
             </xsl:call-template>
         </div>
     </xsl:template>
@@ -132,6 +147,7 @@
             <xsl:call-template name="entity-body"/>
             <xsl:call-template name="entity-footer">
                 <xsl:with-param name="link" select="$link"/>
+                <xsl:with-param name="name" select="./tei:persName"/>
             </xsl:call-template>
         </div>
     </xsl:template>
@@ -148,6 +164,7 @@
             <xsl:call-template name="entity-body"/>
             <xsl:call-template name="entity-footer">
                 <xsl:with-param name="link" select="$link"/>
+                <xsl:with-param name="name" select="./tei:orgName"/>
             </xsl:call-template>
         </div>
     </xsl:template>
@@ -164,6 +181,7 @@
             <xsl:call-template name="entity-body"/>
             <xsl:call-template name="entity-footer">
                 <xsl:with-param name="link" select="$link"/>
+                <xsl:with-param name="name" select="./tei:name"/>
             </xsl:call-template>
         </div>
     </xsl:template>

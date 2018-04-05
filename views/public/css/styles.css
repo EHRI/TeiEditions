@@ -42,9 +42,50 @@
 
 #content-info .content-info-entity {
     margin: 0;
+    max-height: none;
 }
+
+#content-info .content-info-entity .content-info-entity-body {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
 
 #content-info .content-info-entity.affixed {
     position: fixed;
     top: 20px;
+}
+
+#content-info > .content-info-entity > ul.content-info-entity-footer {
+    margin: 0;
+    padding: 0;
+}
+
+#content-info .content-info-entity .content-info-entity-footer li {
+    border-bottom: 1px solid var(--colorBorderContent);
+    background-color: #fefefe;
+}
+
+#content-info > .content-info-entity > ul.content-info-entity-footer :last-child {
+    border-bottom: none;
+}
+
+#content-info .content-info-entity .content-info-entity-footer a {
+    display: block;
+    padding: 5px;
+    vertical-align: middle;
+    line-height: 1.8;
+}
+
+#content-info .content-info-entity .content-info-entity-footer a > * {
+    vertical-align: middle;
+}
+
+#content-info .content-info-entity .content-info-entity-footer a:hover {
+    background-color: rgba(82, 168, 236, 0.1);
+    text-decoration: none;
+}
+
+#content-info .content-info-entity .content-info-entity-footer a .material-icons {
+    margin-right: 4px;
 }
