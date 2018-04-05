@@ -17,10 +17,16 @@
 
 .tei > .tei-text .tei-note-ref {
     vertical-align: super;
-    color: red;
+    color: #FF6464;
     margin-left: -5px;
     display: inline-flex;
     cursor: pointer;
+}
+
+#content-info .tei-note-num {
+    color: #FF6464;
+    margin-right: 5px;
+    display: inline-flex;
 }
 
 .tei-entity-ref {

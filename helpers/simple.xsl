@@ -222,6 +222,7 @@
         <xsl:variable name="num" select="count(../preceding-sibling::*/tei:note) + 1"/>
         <span class="tei-note-ref"><xsl:value-of select="$num"/></span>
         <span class="tei-note">
+            <span class="tei-note-num">Note <xsl:value-of select="$num"/>:</span>
             <xsl:value-of select="."/>
         </span>
     </xsl:template>
