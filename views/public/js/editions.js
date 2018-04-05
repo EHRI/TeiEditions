@@ -22,14 +22,27 @@ jQuery(function($) {
   }
 
   $(window).scroll(function(e) {
-      affix($infoPanel.find(".content-info-entity"));
+      affix($infoPanel.find(".content-info-entity, .tei-note"));
   });
 
-  $(".tei-entity-ref, .tei-note").hoverIntent(function() {
+  $(".tei-entity-ref").hoverIntent(function() {
     var url = $(this).data("ref");
     var $entity = $entities.find(".content-info-entity[data-ref='" + url + "']");
     if ($entity.length > 0) {
-        var $clone = $entity.clone();
+      var $clone = $entity.clone();
+      $infoPanel
+          .children()
+          .remove()
+          .end()
+          .append($clone.show());
+      affix($clone)
+    }
+  });
+
+  $(".tei-note-ref").hoverIntent(function() {
+    var $note = $(this).next(".tei-note");
+    if ($note.length > 0) {
+        var $clone = $note.clone();
         $infoPanel
           .children()
           .remove()

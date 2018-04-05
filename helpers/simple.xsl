@@ -218,6 +218,14 @@
         </p>
     </xsl:template>
 
+    <xsl:template match="tei:note" name="notes">
+        <xsl:variable name="num" select="count(../preceding-sibling::*/tei:note) + 1"/>
+        <span class="tei-note-ref"><xsl:value-of select="$num"/></span>
+        <span class="tei-note">
+            <xsl:value-of select="."/>
+        </span>
+    </xsl:template>
+
     <xsl:template match="tei:term|tei:placeName|tei:persName|tei:orgName">
         <span class="tei-entity-ref">
             <xsl:attribute name="data-ref">

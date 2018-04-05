@@ -4,6 +4,25 @@
     clear: both;
 }
 
+.tei > .tei-text .tei-note {
+    display: none;
+}
+
+#content-info .tei-note {
+    padding: 10px;
+    display: block;
+    background-color: #fff3f3;;
+    font-weight: bold;
+}
+
+.tei > .tei-text .tei-note-ref {
+    vertical-align: super;
+    color: red;
+    margin-left: -5px;
+    display: inline-flex;
+    cursor: pointer;
+}
+
 .tei-entity-ref {
     border-bottom: 1px dotted lightgrey;
     background-color: #fff3f3;
@@ -57,7 +76,7 @@
     margin: 3px 6px 0 3px;
 }
 
-#content-info .content-info-entity.affixed {
+#content-info .content-info-entity.affixed, #content-info .tei-note.affixed {
     position: fixed;
     top: 20px;
 }
