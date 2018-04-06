@@ -1,6 +1,31 @@
 <xsl:stylesheet version="1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:redirect="http://xml.apache.org/xalan/redirect" xmlns:xalan="http://xml.apache.org/xalan" xmlns:ehri="https://ehri-project.eu/functions" xmlns:func="http://exslt.org/functions" extension-element-prefixes="xalan redirect func ehri" exclude-result-prefixes="xhtml tei">
     <xsl:output indent="yes" omit-xml-declaration="yes" encoding="utf-8" method="xml" xalan:indent-amount="4"/>
 
+    <func:function name="ehri:url-label">
+        <xsl:param name="url"/>
+        <xsl:param name="default"/>
+
+        <func:result>
+            <xsl:choose>
+                <xsl:when test="contains($url, 'portal.ehri-project.eu')">
+                    EHRI Portal
+                </xsl:when>
+                <xsl:when test="contains($url, 'geonames.org')">
+                    Geonames
+                </xsl:when>
+                <xsl:when test="contains($url, 'holocaust.cz')">
+                    Holocaust.cz
+                </xsl:when>
+                <xsl:when test="contains($url, 'wikipedia.org')">
+                    Wikipedia
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="$default"/>
+                </xsl:otherwise>
+            </xsl:choose>
+        </func:result>
+    </func:function>
+
     <func:function name="ehri:slugify">
         <xsl:param name="url"/>
 
@@ -55,23 +80,17 @@
 
     <xsl:template name="entity-header">
         <xsl:param name="name"/>
-        <h5><xsl:value-of select="normalize-space($name)"/></h5>
+        <h5>
+            <xsl:value-of select="normalize-space($name)"/>
+        </h5>
     </xsl:template>
 
     <xsl:template name="entity-body">
         <xsl:variable name="note" select="./tei:note"/>
-        <xsl:variable name="geo" select="./tei:location/tei:geo"/>
 
-        <xsl:if test="$note != '' or $geo != ''">
+        <xsl:if test="$note">
             <div class="content-info-entity-body">
-                <xsl:if test="$geo">
-                    <p class="content-info-entity-geo">
-                        <xsl:value-of select="$geo"/>
-                    </p>
-                </xsl:if>
-                <xsl:if test="$note">
-                    <xsl:copy-of select="$note/node()"/>
-                </xsl:if>
+                <xsl:copy-of select="$note/node()"/>
             </div>
         </xsl:if>
     </xsl:template>
@@ -91,7 +110,7 @@
                             <xsl:value-of select="$link"/>
                         </xsl:attribute>
                         <div class="material-icons">launch</div>
-                        View
+                        <xsl:value-of select="ehri:url-label($link, 'View')"/>
                     </a>
                 </li>
             </xsl:if>
@@ -102,7 +121,7 @@
                             <xsl:value-of select="$desc"/>
                         </xsl:attribute>
                         <div class="material-icons">info_outline</div>
-                        Description
+                        <xsl:value-of select="ehri:url-label($desc, 'Wikipedia')"/>
                     </a>
                 </li>
             </xsl:if>
@@ -192,7 +211,8 @@
         <xsl:if test="$pageno">
             <div class="element-text-page">
                 <div class="element-text-page-icon material-icons">insert_drive_file</div>
-                Text from page <xsl:value-of select="$pageno"/>
+                Text from page
+                <xsl:value-of select="$pageno"/>
             </div>
         </xsl:if>
     </xsl:template>
@@ -220,9 +240,12 @@
 
     <xsl:template match="tei:note" name="notes">
         <xsl:variable name="num" select="count(../preceding-sibling::*/tei:note) + 1"/>
-        <span class="tei-note-ref"><xsl:value-of select="$num"/></span>
+        <span class="tei-note-ref">
+            <xsl:value-of select="$num"/>
+        </span>
         <span class="tei-note">
-            <span class="tei-note-num">Note <xsl:value-of select="$num"/>:</span>
+            <span class="tei-note-num">Note <xsl:value-of select="$num"/>:
+            </span>
             <xsl:value-of select="."/>
         </span>
     </xsl:template>
