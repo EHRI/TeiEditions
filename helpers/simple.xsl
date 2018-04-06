@@ -98,6 +98,7 @@
     <xsl:template name="entity-footer">
         <xsl:param name="link"/>
         <xsl:param name="name"/>
+        <xsl:param name="search-type"/>
 
         <xsl:variable name="desc">
             <xsl:value-of select="./tei:linkGrp/tei:link[@type='desc']/@target"/>
@@ -128,7 +129,7 @@
             <li>
                 <a class="tei-entity-search">
                     <xsl:attribute name="href">
-                        <xsl:value-of select="concat('/solr-search?q=', $name)"/>
+                        <xsl:value-of select="concat('/search?q=*&amp;f[]=', $search-type, ':', $name)"/>
                     </xsl:attribute>
                     <div class="material-icons">search</div>
                     Search
@@ -149,7 +150,8 @@
             <xsl:call-template name="entity-body"/>
             <xsl:call-template name="entity-footer">
                 <xsl:with-param name="link" select="$link"/>
-                <xsl:with-param name="name" select="./tei:placeName"/>
+                <xsl:with-param name="name" select="normalize-space(./tei:placeName)"/>
+                <xsl:with-param name="search-type">Place</xsl:with-param>
             </xsl:call-template>
         </div>
     </xsl:template>
@@ -166,7 +168,8 @@
             <xsl:call-template name="entity-body"/>
             <xsl:call-template name="entity-footer">
                 <xsl:with-param name="link" select="$link"/>
-                <xsl:with-param name="name" select="./tei:persName"/>
+                <xsl:with-param name="name" select="normalize-space(./tei:persName)"/>
+                <xsl:with-param name="search-type">Person</xsl:with-param>
             </xsl:call-template>
         </div>
     </xsl:template>
@@ -183,7 +186,8 @@
             <xsl:call-template name="entity-body"/>
             <xsl:call-template name="entity-footer">
                 <xsl:with-param name="link" select="$link"/>
-                <xsl:with-param name="name" select="./tei:orgName"/>
+                <xsl:with-param name="name" select="normalize-space(./tei:orgName)"/>
+                <xsl:with-param name="search-type">Organisation</xsl:with-param>
             </xsl:call-template>
         </div>
     </xsl:template>
@@ -200,7 +204,8 @@
             <xsl:call-template name="entity-body"/>
             <xsl:call-template name="entity-footer">
                 <xsl:with-param name="link" select="$link"/>
-                <xsl:with-param name="name" select="./tei:name"/>
+                <xsl:with-param name="name" select="normalize-space(./tei:name)"/>
+                <xsl:with-param name="search-type">Subject</xsl:with-param>
             </xsl:call-template>
         </div>
     </xsl:template>

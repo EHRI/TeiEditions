@@ -38,7 +38,7 @@ class TeiEditionsDocumentProxy
         $out = [];
         $nodes = $this->query->query($xpath);
         for ($i = 0; $i < $nodes->length; $i++) {
-            $out[] = trim($nodes->item($i)->nodeValue);
+            $out[] = trim(preg_replace('/\s+/', ' ', $nodes->item($i)->textContent));
         }
         return $out;
     }

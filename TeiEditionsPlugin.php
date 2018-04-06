@@ -207,19 +207,19 @@ SQL
             "TEI" => [
                 "description" => "TEI items",
                 "mappings" => [
-                    "Persons" => [
+                    "Person" => [
                         "description" => "Persons mentioned in the text.",
                         "xpaths" => [
                             "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:listPerson/tei:person/tei:persName"
                         ]
                     ],
-                    "Organisations" => [
+                    "Organisation" => [
                         "description" => "Organisations mentioned in the text.",
                         "xpaths" => [
                             "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:listOrg/tei:org/tei:orgName"
                         ]
                     ],
-                    "Places" => [
+                    "Place" => [
                         "description" => "Places mentioned in the text.",
                         "xpaths" => [
                             "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:listPlace/tei:place/tei:placeName"
