@@ -71,13 +71,14 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
                 foreach ($_FILES["file"]["name"] as $idx => $name) {
                     $path = $_FILES["file"]["tmp_name"][$idx];
                     $mime = $_FILES["file"]["type"][$idx];
-                    switch ($mime) {
-                        case "application/zip":
-                            $done += $this->_readAssociatedItemsZip($path);
-                            break;
-                        default:
-                            $this->_addAssociatedFile($path, $name);
-                            $done++;
+                    if ($path === "") {
+                        throw new Exception("upload failed (check max file size?)");
+                    }
+                    if (preg_match('/.+\.zip$/', $path) or $mime === 'application/zip') {
+                        $done += $this->_readAssociatedItemsZip($path);
+                    } else {
+                        $this->_addAssociatedFile($path, $name);
+                        $done++;
                     }
                 }
                 $tx->commit();
@@ -90,6 +91,50 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
 
             $this->_helper->flashMessenger(__("Files successfully imported: $done"), 'success');
         }
+    }
+
+    public function downloadAction() {
+        if ($this->_getParam("id")) {
+            $file = get_db()->getTable("File")->find($this->_getParam("id"));
+            if ($file) {
+                $url = $file->getWebPath();
+                header("Content-Type: " . $file->mimetype);
+                header("Content-Disposition: attachment; filename='" . $file->original_filename . "'");
+                readfile($url);
+                exit();
+            }
+        }
+        $this->_helper->_flashMessenger(
+            __('No file ID provided'), 'error');
+        return;
+    }
+
+    public function zipAction()
+    {
+        $associated = array_key_exists('associated', $_GET);
+        $tmp = tempnam(sys_get_temp_dir(), '');
+        $archive = new ZipArchive();
+        $archive->open($tmp, ZipArchive::CREATE);
+        foreach (get_db()->getTable('Item')->findAll() as $item) {
+            $files = $associated
+                ? tei_editions_get_associated_files($item)
+                : (tei_editions_get_main_tei($item)
+                     ? [tei_editions_get_main_tei($item)]
+                     : []
+                );
+            foreach ($files as $file) {
+                $archive->addFromString($file->original_filename,
+                    file_get_contents($file->getWebPath()));
+            }
+        }
+        $archive->close();
+        $name = $associated ? 'associated' : 'tei';
+        $date = date('c');
+        header("Content-Type: application/zip");
+        header("Content-Disposition: attachment; filename='${name}-${date}.zip'");
+        readfile($tmp);
+        unlink($tmp);
+        exit();
     }
 
     /**

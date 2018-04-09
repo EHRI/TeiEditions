@@ -22,6 +22,7 @@ class ViewRenderer {
             self::$twig->addExtension(new Twig_Extensions_Extension_I18n());
             self::$twig->getExtension('Twig_Extension_Core')->setTimezone('Europe/Amsterdam');
             self::$twig->getExtension('Twig_Extension_Core')->setDateFormat('d/m/Y', '%d days');
+            self::$twig->addExtension(new Twig_Extensions_Extension_I18n());
             self::$iso = $iso = new Matriphe\ISO639\ISO639;
             self::$twig->addFilter(new Twig_SimpleFilter("lang2name", function($code) {
                 $lang = self::$iso->languageByCode1($code);

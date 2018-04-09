@@ -145,6 +145,38 @@ function tei_editions_get_first_file_with_extension(Item $item, $ext, $mime = nu
 }
 
 /**
+ * Get the main (first) TEI file for this item.
+ *
+ * @param Item $item the item
+ * @return File|false the first TEI, or null
+ */
+function tei_editions_get_main_tei(Item $item)
+{
+    return tei_editions_get_first_file_with_extension($item, ".xml");
+}
+
+/**
+ * Get the associated files for this item.
+ *
+ * @param Item $item
+ * @return array an array of File items
+ */
+function tei_editions_get_associated_files(Item $item)
+{
+    $files = [];
+    $seenfirst = false;
+    foreach ($item->getFiles() as $file) {
+        if (!$seenfirst and tei_editions_is_xml_file($file)) {
+            $seenfirst = true;
+            continue;
+        } else {
+            $files[] = $file;
+        }
+    }
+    return $files;
+}
+
+/**
  * Render the first XML file associated with the item as TEI.
  *
  * @param Item $item an Omeka item
