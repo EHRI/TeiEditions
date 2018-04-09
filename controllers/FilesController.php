@@ -255,7 +255,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
                 $selected_items = $form->getValue('item');
 
                 foreach ($this->_getCandidateItems() as $item) {
-                    if (!in_array((string)$item->id, $selected_items)) {
+                    if ($selected_items and !in_array((string)$item->id, $selected_items)) {
                         continue;
                     }
                     foreach ($item->getFiles() as $file) {
