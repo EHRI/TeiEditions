@@ -125,6 +125,26 @@ function tei_editions_check_xpath_is_valid($path)
 }
 
 /**
+ * Get the first File item that ends with the given extension.
+ *
+ * @param Item $item the item
+ * @param string $ext the extension
+ * @param string|null $mime an optional mimetype to match
+ * @return File|bool a matched file, or FALSE
+ */
+function tei_editions_get_first_file_with_extension(Item $item, $ext, $mime = null)
+{
+    foreach ($item->getFiles() as $f) {
+        $fn = $f->original_filename;
+        $pos = strlen($fn) - strlen($ext);
+        if (stripos($fn, $ext) === $pos && (is_null($mime) || $f->mimetype === $mime)) {
+            return $f;
+        }
+    }
+    return false;
+}
+
+/**
  * Render the first XML file associated with the item as TEI.
  *
  * @param Item $item an Omeka item
@@ -170,8 +190,12 @@ function tei_editions_get_tei_path(Item $item)
 function tei_editions_centre_points($points)
 {
     $num = count($points);
-    $lons = array_map(function ($p) {return $p[0];}, $points);
-    $lats = array_map(function ($p) {return $p[1];}, $points);
+    $lons = array_map(function ($p) {
+        return $p[0];
+    }, $points);
+    $lats = array_map(function ($p) {
+        return $p[1];
+    }, $points);
     return array(array_sum($lons) / $num, array_sum($lats) / $num);
 }
 
