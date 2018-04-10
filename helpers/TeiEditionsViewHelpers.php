@@ -22,6 +22,7 @@ class ViewRenderer {
             self::$twig->addExtension(new Twig_Extensions_Extension_I18n());
             self::$twig->getExtension('Twig_Extension_Core')->setTimezone('Europe/Amsterdam');
             self::$twig->getExtension('Twig_Extension_Core')->setDateFormat('d/m/Y', '%d days');
+            self::$twig->addExtension(new Twig_Extensions_Extension_Text());
             self::$twig->addExtension(new Twig_Extensions_Extension_I18n());
             self::$iso = $iso = new Matriphe\ISO639\ISO639;
             self::$twig->addFilter(new Twig_SimpleFilter("lang2name", function($code) {
@@ -31,6 +32,36 @@ class ViewRenderer {
         }
         return self::$twig->render($template, $args);
     }
+}
+
+/**
+ * @param Item $item
+ * @return string
+ * @throws Twig_Error_Loader
+ * @throws Twig_Error_Runtime
+ * @throws Twig_Error_Syntax
+ */
+function tei_editions_render_search_item(Item $item)
+{
+    $url = record_url($item);
+    $img = record_image($item);
+    $ident = metadata($item, ['Dublin Core', "Identifier"], ['no_escape' => true]);
+    $desc = metadata($item, ['Dublin Core', "Description"], ['no_escape' => true]);
+    $src = metadata($item, ['Dublin Core', "Source"], ['no_escape' => true]);
+    $meta = [];
+    foreach (["Date", "Creator", "Coverage"] as $key) {
+        $value = metadata($item, ['Dublin Core', $key], ['no_escape' => true]);
+        if ($value) {
+            $meta[$key] = $value;
+        }
+    }
+
+    return ViewRenderer::render("search_item.html.twig", [
+            "item" => $item, "metadata" => $meta, "url" => $url,
+            "record_image" => $img, "title" => metadata($item, "display_title"),
+            "identifier" => $ident, "description" => $desc, "source" => $src
+        ]
+    );
 }
 
 /**

@@ -121,3 +121,7 @@
 #content-info .content-info-entity .content-info-entity-footer a .material-icons {
     margin-right: 4px;
 }
+
+.record-metadata p {
+    margin: 12px 0;
+}

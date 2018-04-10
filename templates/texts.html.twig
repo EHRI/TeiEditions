@@ -25,10 +25,7 @@
     </div>
 
     <h3>Metadata</h3>
-    <div class="element-metadata-field">{{ identifier }}</div>
-    <div class="element-metadata-field">{{ metadata | join(' | ') }}</div>
-    <div class="element-metadata-field">{{ source }}</div>
-    <div class="contentDescription">{{ description }}</div>
+    {% include "metadata.html.twig" %}
 </div>
 
 <div class="document-text" id="document-text">

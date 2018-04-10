@@ -1,0 +1,15 @@
+<div class="search-result">
+    <a href="{{ url }}">
+        {% if record_image %}
+            {{ record_image|raw }}
+        {% else %}
+            <div class="search-result-image-blank"></div>
+        {% endif %}
+    </a>
+    <div class="search-result-wrapper">
+        <div class="search-result-title">
+            <a class="search-result-link" href="{{ url }}">{{ title }}</a>
+        </div>
+        {% include "metadata.html.twig" %}
+    </div>
+</div>
