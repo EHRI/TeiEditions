@@ -228,7 +228,7 @@ function tei_editions_centre_points($points)
     $lats = array_map(function ($p) {
         return $p[1];
     }, $points);
-    return array(array_sum($lons) / $num, array_sum($lats) / $num);
+    return [array_sum($lons) / $num, array_sum($lats) / $num];
 }
 
 /**
@@ -250,4 +250,38 @@ function tei_editions_degrees_to_metres($lon_lat)
     $y = log(tan((90 + $lon_lat[1]) * pi() / 360)) / (pi() / 180);
     $y = $y * $half_circumference / 180;
     return array($x, $y);
+}
+
+/**
+ * Attempts to approximate the best OpenStreetMap zoom level given a
+ * set of points (in degrees).
+ *
+ * @param array $points an array of lon/lat arrays
+ */
+function tei_editions_approximate_zoom($points, $default)
+{
+    $lons = array_map(function ($p) {
+        return $p[0];
+    }, $points);
+    $lonmin = min($lons);
+    $lonmax = max($lons);
+    $londeg = $lonmax - $lonmin;
+
+    $lats = array_map(function ($p) {
+        return $p[1];
+    }, $points);
+    $latmin = min($lats);
+    $latmax = max($lats);
+    $latdeg = $latmax - $latmin;
+
+    $deg = max($londeg, $latdeg);
+
+    // maximum zoom level of 12
+    for($i = 0; $i < 12; $i++) {
+        if ($deg > 360 / pow(2, $i)) {
+            return $i;
+        }
+    }
+
+    return $default;
 }

@@ -523,7 +523,8 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
         $exhibit->narrative = $doc->asSimpleHtml();
         $exhibit->save(true);
 
-        $points = [];
+        $points_deg = [];
+        $points_metres = [];
         $geo = array_unique($doc->places(), SORT_REGULAR);
         error_log(json_encode($geo), true);
         foreach ($geo as $teiPlace) {
@@ -531,9 +532,10 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
                 $place = new NeatlineRecord;
                 $place->exhibit_id = $exhibit->id;
                 $place->title = $teiPlace["name"];
-                $metres = tei_editions_degrees_to_metres(
-                    [$teiPlace["longitude"], $teiPlace["latitude"]]);
-                $points[] = $metres;
+                $deg = [$teiPlace["longitude"], $teiPlace["latitude"]];
+                $metres = tei_editions_degrees_to_metres($deg);
+                $points_deg[] = $deg;
+                $points_metres[] = $metres;
                 $place->coverage = "Point(" . implode(" ", $metres) . ")";
                 foreach ($teiPlace["urls"] as $url) {
                     $slug = tei_editions_url_to_slug($url);
@@ -545,9 +547,9 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
                 $place->save();
             }
         }
-        if (!empty($points)) {
-            $exhibit->map_focus = implode(",", tei_editions_centre_points($points));
-            $exhibit->map_zoom = 7; // guess?
+        if (!empty($points_metres)) {
+            $exhibit->map_focus = implode(",", tei_editions_centre_points($points_metres));
+            $exhibit->map_zoom = tei_editions_approximate_zoom($points_deg, 7);
         }
         $exhibit->save(true);
     }
