@@ -284,34 +284,6 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
     }
 
     /**
-     * @param $form
-     * @param $path
-     * @param $xpaths
-     * @param $item
-     * @return Item|null
-     * @throws Omeka_Record_Exception|Exception
-     */
-    private function _getItemByIdentifier($identifier)
-    {
-        $element = get_db()->getTable('Element')->findBy([
-            'element_set_id' => 1, // FIXME: hard-coded set name
-            'name' => 'Identifier'
-        ])[0]; // hack!
-        $text = get_db()->getTable('ElementText')->findBy([
-            'element_id' => $element->id,
-            'text' => $identifier
-        ]);
-        if (!empty($text)) {
-            $item = get_db()->getTable('Item')->find($text[0]->record_id);
-            if (!is_null($item) && $item !== false) {
-                return $item;
-            }
-        }
-
-        return null;
-    }
-
-    /**
      * @param TeiEditionsDocumentProxy $doc
      * @param bool $created
      * @return Item
@@ -320,7 +292,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
      */
     private function _getOrCreateItem(TeiEditionsDocumentProxy $doc, &$created)
     {
-        $item = $this->_getItemByIdentifier($doc->recordId());
+        $item = tei_editions_get_item_by_identifier($doc->recordId());
         $created = is_null($item);
         return $created ? new Item : $item;
     }
@@ -486,7 +458,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
     private function _addAssociatedFile($path, $name)
     {
         $id = tei_editions_get_identifier($name);
-        $item = $this->_getItemByIdentifier($id);
+        $item = tei_editions_get_item_by_identifier($id);
         if (is_null($item)) {
             throw new Exception("Unable to locate item with identifier: " . $id . " (file: $path)");
         }

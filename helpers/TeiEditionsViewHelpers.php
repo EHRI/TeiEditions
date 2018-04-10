@@ -35,6 +35,28 @@ class ViewRenderer {
 }
 
 /**
+ * A shortcode function for rendering an item summary via it's identifier.
+ *
+ * @param $args
+ * @param $view
+ * @return string
+ */
+function tei_editions_item_shortcode($args, $view)
+{
+    try {
+        $identifier = $args["identifier"];
+        $item = tei_editions_get_item_by_identifier($identifier);
+        if (is_null($item)) {
+            return "<div class='shortcode-error'>Unable to find item with identifier: \"$identifier\"</div>";
+        }
+        return tei_editions_render_search_item($item);
+    } catch (Exception $e) {
+        error_log($e->getMessage());
+        return "<div class='shortcode-error'>Error rendering shortcode...</div>";
+    }
+}
+
+/**
  * @param Item $item
  * @return string
  * @throws Twig_Error_Loader
@@ -143,6 +165,33 @@ function tei_editions_render_item_text($item)
         ]
     );
 }
+
+/**
+ * Get an Item by its DC Identifier.
+ *
+ * @param string $identifier the identifier value
+ * @return Item|null
+ * @throws Omeka_Record_Exception|Exception
+ */
+function tei_editions_get_item_by_identifier($identifier)
+{
+    $element = get_db()->getTable('Element')->findBy([
+        'name' => 'Identifier'
+    ])[0]; // hack!
+    $text = get_db()->getTable('ElementText')->findBy([
+        'element_id' => $element->id,
+        'text' => $identifier
+    ]);
+    if (!empty($text)) {
+        $item = get_db()->getTable('Item')->find($text[0]->record_id);
+        if (!is_null($item) && $item !== false) {
+            return $item;
+        }
+    }
+
+    return null;
+}
+
 
 /**
  * @param TeiEditionsDocumentProxy $doc

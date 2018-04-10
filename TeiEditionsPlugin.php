@@ -35,6 +35,12 @@ class TeiEditionsPlugin extends Omeka_Plugin_AbstractPlugin
      */
     protected $_options = array();
 
+    public function setUp()
+    {
+        add_shortcode('editions_item', 'tei_editions_item_shortcode');
+        parent::setUp();
+    }
+
     /**
      * @param $element_id
      * @param $xpath

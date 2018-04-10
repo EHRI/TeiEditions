@@ -122,6 +122,11 @@
     margin-right: 4px;
 }
 
-.record-metadata p {
-    margin: 12px 0;
+#exhibit-blocks > .exhibit-block .search-result > .search-result-wrapper > .record-metadata > p {
+    margin: 12px 0 0 30px;
+    font-size: 12px;
+}
+
+#exhibit-blocks > .exhibit-block .search-result {
+    width: 100%;
 }
