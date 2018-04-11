@@ -325,7 +325,8 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
      */
     private function _getOrCreateNeatlineExhibit(TeiEditionsDocumentProxy $doc)
     {
-        $exhibits = get_db()->getTable('NeatlineExhibit')->findBy(['slug' => $doc->recordId()]);
+        $exhibits = get_db()->getTable('NeatlineExhibit')
+            ->findBy(['slug' => strtolower($doc->recordId())]);
         return empty($exhibits) ? new NeatlineExhibit : $exhibits[0];
     }
 
@@ -518,7 +519,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
         $exhibit->deleteChildRecords();
         $title = metadata($item, 'display_title');
         $exhibit->title = $title;
-        $exhibit->slug = $doc->recordId();
+        $exhibit->slug = strtolower($doc->recordId());
         $exhibit->spatial_layer = 'OpenStreetMap';
         $exhibit->narrative = $doc->asSimpleHtml();
         $exhibit->save(true);
