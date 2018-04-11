@@ -214,10 +214,10 @@ function tei_editions_get_tei_path(Item $item)
 }
 
 /**
- * Average an array of long/lat arrays.
+ * Find the centre of an array of long/lat arrays.
  *
  * @param $points
- * @return array average long/lat values
+ * @return array min point long/lat values
  */
 function tei_editions_centre_points($points)
 {
@@ -228,7 +228,11 @@ function tei_editions_centre_points($points)
     $lats = array_map(function ($p) {
         return $p[1];
     }, $points);
-    return [array_sum($lons) / $num, array_sum($lats) / $num];
+
+    $lonmid = (min($lons) + max($lons)) / 2;
+    $latmid = (min($lats) + max($lats)) / 2;
+
+    return [$lonmid, $latmid];
 }
 
 /**
@@ -270,7 +274,9 @@ function tei_editions_point_spread($points)
         $pnmax = max($pn);
         return $pnmax - $pnmin;
     };
-    return [$degsep(0), $degsep(1)];
+    // NB: lat is doubled to assume a map of 1/2 dimensions.
+    // This is unfortunate.
+    return [$degsep(0), $degsep(1) * 2];
 }
 
 /**
