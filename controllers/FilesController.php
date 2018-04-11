@@ -522,12 +522,14 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
         $exhibit->slug = strtolower($doc->recordId());
         $exhibit->spatial_layer = 'OpenStreetMap';
         $exhibit->narrative = $doc->asSimpleHtml();
-        $exhibit->save(true);
+        if (plugin_is_active('NeatlineText')) {
+            $exhibit->widgets = 'Text';
+        }
+        $exhibit->save($throwIfInvalid = true);
 
         $points_deg = [];
         $points_metres = [];
         $geo = array_unique($doc->places(), SORT_REGULAR);
-        error_log(json_encode($geo), true);
         foreach ($geo as $teiPlace) {
             if (isset($teiPlace["longitude"]) and isset($teiPlace["latitude"])) {
                 $place = new NeatlineRecord;
@@ -548,11 +550,12 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
                 $place->save();
             }
         }
+
         if (!empty($points_metres)) {
             $exhibit->map_focus = implode(",", tei_editions_centre_points($points_metres));
             $exhibit->map_zoom = tei_editions_approximate_zoom($points_deg, 7);
         }
-        $exhibit->save(true);
+        $exhibit->save($throwIfInvalid = true);
     }
 
     /**

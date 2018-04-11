@@ -108,7 +108,6 @@ function tei_editions_render_item_text($item)
     }
 
     $text_html = [];
-
     $exhibit = null;
 
     foreach ($files as $file) {
@@ -123,9 +122,6 @@ function tei_editions_render_item_text($item)
             $text_html[$lang] = tei_editions_tei_to_html($path, $file_url_map);
         }
     }
-
-    // FIXME: testing...
-    //$html["Language2"] = "This is a test";
 
     $ident = metadata($item, ['Dublin Core', "Identifier"], ['no_escape' => true]);
     $desc = metadata($item, ['Dublin Core', "Description"], ['no_escape' => true]);

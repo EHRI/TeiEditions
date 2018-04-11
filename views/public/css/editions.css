@@ -130,3 +130,11 @@
 #exhibit-blocks > .exhibit-block .search-result {
     width: 100%;
 }
+
+#neatline-narrative .element-text-page {
+    font-weight: bold;
+}
+
+#neatline-narrative .element-text-page-icon {
+    display: none;
+}
