@@ -329,6 +329,11 @@ SQL
         queue_css_file('editions', $media = "all", $conditional = false, $dir = 'css');
         queue_js_file("jquery.hoverIntent.min", $dir = "js");
         queue_js_file("editions", $dir = "js");
+        // prevent text widgets showing on Neatline embedded maps by adding
+        // a param: neatline-embed=true
+        if (array_key_exists("neatline-embed", $_GET)) {
+            queue_css_file('neatline-overrides', $media = "all", $conditional = false, $dir = 'css');
+        }
     }
 
     /**

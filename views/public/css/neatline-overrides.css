@@ -1,0 +1,6 @@
+body.neatline.fullscreen div#neatline-map {
+    width: 100%;
+}
+body.neatline.fullscreen div#neatline-narrative {
+    display: none;
+}
