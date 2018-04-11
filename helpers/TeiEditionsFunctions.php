@@ -253,6 +253,27 @@ function tei_editions_degrees_to_metres($lon_lat)
 }
 
 /**
+ * Get the degrees separation of a lon/lat square formed
+ * by a set of points.
+ *
+ * @param array $points a set of lon/lat arrays
+ * @return array the degrees separation in the lon/lat planes
+ */
+function tei_editions_point_spread($points)
+{
+    $degsep = function($i) use ($points) {
+        $axis = function ($p) use ($i) {
+            return $p[$i];
+        };
+        $pn = array_map($axis, $points);
+        $pnmin = min($pn);
+        $pnmax = max($pn);
+        return $pnmax - $pnmin;
+    };
+    return [$degsep(0), $degsep(1)];
+}
+
+/**
  * Attempts to approximate the best OpenStreetMap zoom level given a
  * set of points (in degrees).
  *
@@ -260,21 +281,7 @@ function tei_editions_degrees_to_metres($lon_lat)
  */
 function tei_editions_approximate_zoom($points, $default)
 {
-    $lons = array_map(function ($p) {
-        return $p[0];
-    }, $points);
-    $lonmin = min($lons);
-    $lonmax = max($lons);
-    $londeg = $lonmax - $lonmin;
-
-    $lats = array_map(function ($p) {
-        return $p[1];
-    }, $points);
-    $latmin = min($lats);
-    $latmax = max($lats);
-    $latdeg = $latmax - $latmin;
-
-    $deg = max($londeg, $latdeg);
+    $deg = max(tei_editions_point_spread($points));
 
     // maximum zoom level of 12
     for($i = 0; $i < 12; $i++) {
