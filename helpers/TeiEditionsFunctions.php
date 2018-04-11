@@ -77,7 +77,7 @@ function full_path_to($file)
 function tei_editions_tei_to_html($path, $img_map)
 {
 
-    $tohtml = dirname(__FILE__) . '/simple.xsl';
+    $tohtml = dirname(__FILE__) . '/editions.xsl';
 
     $xsldoc = new DOMDocument();
     $xsldoc->load($tohtml);
