@@ -223,7 +223,7 @@
     </xsl:template>
     <xsl:template match="tei:q" name="quote">
         <q>
-            <xsl:apply-templates select="node()|@*"/>
+            <xsl:apply-templates/>
         </q>
     </xsl:template>
 
@@ -239,7 +239,7 @@
 
     <xsl:template match="tei:p" name="identity">
         <p>
-            <xsl:apply-templates select="node()|@*"/>
+            <xsl:apply-templates/>
         </p>
     </xsl:template>
 
