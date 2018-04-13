@@ -509,6 +509,20 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
     }
 
     /**
+     * @return NeatlineExhibit|null
+     */
+    private function _getTemplateNeatline()
+    {
+        $id = get_option('tei_editions_template_neatline');
+        if ($id) {
+            if ($t = get_db()->getTable('NeatlineExhibit')->findBy($id)) {
+                return $t[0];
+            }
+        }
+        return null;
+    }
+
+    /**
      * @param Item $item
      * @param TeiEditionsDocumentProxy $doc
      * @throws Omeka_Record_Exception
@@ -525,7 +539,27 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
         if (plugin_is_active('NeatlineText')) {
             $exhibit->widgets = 'Text';
         }
+
+        if ($template = $this->_getTemplateNeatline()) {
+            $exhibit->styles = $template->styles;
+            $exhibit->spatial_layer = $template->spatial_layer;
+            $exhibit->spatial_layers = $template->spatial_layers;
+            $exhibit->spatial_querying = $template->spatial_querying;
+            $exhibit->wms_layers = $template->wms_layers;
+            $exhibit->wms_address = $template->wms_address;
+        }
+
         $exhibit->save($throwIfInvalid = true);
+
+        // copy records from the template...
+        if ($id = get_option('tei_editions_template_neatline')) {
+            foreach (get_db()->getTable('NeatlineRecord')->findBy(['exhibit_id' => $id]) as $t) {
+                $record = clone $t;
+                $record->id = null;
+                $record->exhibit_id = $exhibit->id;
+                $record->save();
+            }
+        }
 
         $points_deg = [];
         $points_metres = [];

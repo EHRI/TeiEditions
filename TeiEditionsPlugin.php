@@ -322,6 +322,7 @@ SQL
     public function hookConfig()
     {
         set_option('tei_editions_default_item_type', (int)$_POST['tei_editions_default_item_type']);
+        set_option('tei_editions_template_neatline', (int)$_POST['tei_editions_template_neatline']);
     }
 
     public function hookPublicHead($args)
