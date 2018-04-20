@@ -23,12 +23,12 @@ jQuery(function($) {
 
   function showInPanel($elem) {
     if ($elem.length > 0) {
-      var $clone = $elem.clone();
+      var $clone = $elem.clone().css({display:"block"});
       $infoPanel
           .children()
           .remove()
           .end()
-          .append($clone.show());
+          .append($clone);
       affix($clone)
     }
   }
