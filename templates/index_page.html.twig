@@ -1,0 +1,5 @@
+<ul class="index-page">
+    {% for item in items %}
+        <li><a href="/search?{{ {'f[]':"#{element}:#{item}"}|url_encode }}">{{ item }}</a></li>
+    {% endfor %}
+</ul>

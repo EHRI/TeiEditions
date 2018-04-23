@@ -35,6 +35,24 @@ class ViewRenderer {
 }
 
 /**
+ * A shortcode function for rendering an index list for a given element.
+ *
+ * @param $args
+ * @param $view
+ * @return string
+ * @throws Twig_Error_Loader
+ * @throws Twig_Error_Runtime
+ * @throws Twig_Error_Syntax
+ */
+function tei_editions_index_shortcode($args, $view)
+{
+    $element = $args["element"];
+    return ViewRenderer::render("index_page.html.twig", [
+        "element" => $element,
+        "items" => tei_editions_get_elements($element)
+    ]);
+}
+/**
  * A shortcode function for rendering an item summary via it's identifier.
  *
  * @param $args
@@ -160,6 +178,19 @@ function tei_editions_render_item_text($item)
             "images" => $images
         ]
     );
+}
+
+function tei_editions_get_elements($element_name)
+{
+    $db = get_db();
+    return $db->query("SELECT DISTINCT text
+                      FROM {$db->prefix}element_texts t
+                      JOIN {$db->prefix}elements e
+                        ON t.element_id = e.id
+                      WHERE e.name  = ?
+                      ORDER BY text",
+        ["name" => $element_name]
+    )->fetchAll($style = 0, $col = 0);
 }
 
 /**
