@@ -52,6 +52,25 @@ function tei_editions_index_shortcode($args, $view)
         "items" => tei_editions_get_elements($element)
     ]);
 }
+
+/**
+ * A shortcode function for rendering a list of recent items.
+ *
+ * @param $args
+ * @param $view
+ * @return string
+ * @throws
+ */
+function tei_editions_recent_items_shortcode($args, $view)
+{
+    $html = "<div class=\"recently-added-wrapper\">\n";
+    foreach (get_recent_items($args["num"]) as $item) {
+        $html .= tei_editions_render_search_item($item) . "\n";
+    }
+    $html .= "</div>\n";
+    return $html;
+}
+
 /**
  * A shortcode function for rendering an item summary via it's identifier.
  *
