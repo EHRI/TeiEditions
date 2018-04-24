@@ -10,6 +10,6 @@
         <div class="search-result-title">
             <a class="search-result-link" href="{{ url }}">{{ title }}</a>
         </div>
-        {% include "metadata.html.twig" %}
+        {% include "metadata.html.twig" with {'truncate': true} %}
     </div>
 </div>
