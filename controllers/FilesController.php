@@ -132,6 +132,8 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
         $date = date('c');
         header("Content-Type: application/zip");
         header("Content-Disposition: attachment; filename='${name}-${date}.zip'");
+        header("Content-Length: " . filesize($tmp));
+        ob_end_flush();
         readfile($tmp);
         unlink($tmp);
         exit();
