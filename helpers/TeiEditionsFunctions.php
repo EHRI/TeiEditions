@@ -77,6 +77,7 @@ function full_path_to($file)
 function tei_editions_tei_to_html($path, $img_map)
 {
 
+    $lang = explode('-', get_html_lang())[0];
     $tohtml = dirname(__FILE__) . '/editions.xsl';
 
     $xsldoc = new DOMDocument();
@@ -91,6 +92,7 @@ function tei_editions_tei_to_html($path, $img_map)
     $xmldoc = tei_editions_replace_urls_xml($xmldoc, $img_map);
 
     $proc = new XSLTProcessor;
+    $proc->setParameter('', "lang", $lang);
     $proc->importStylesheet($xsldoc);
     return $proc->transformToXml($xmldoc);
 }

@@ -43,6 +43,17 @@ class TeiEditionsDocumentProxy
         return $out;
     }
 
+    public function manuscriptIds()
+    {
+        $path = "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:msDesc/tei:msIdentifier/*/@ref";
+        $values = [];
+        $list = $this->query->query($path);
+        for ($i = 0; $i < $list->length; $i++) {
+            $values[] = $list->item($i)->textContent;
+        }
+        return $values;
+    }
+
     /**
      * Get the TEI xml:id value
      *

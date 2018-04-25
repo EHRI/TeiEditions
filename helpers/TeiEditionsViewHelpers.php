@@ -123,6 +123,21 @@ function tei_editions_render_search_item(Item $item)
     );
 }
 
+function tei_editions_manuscript_identifiers($item)
+{
+    $content = "";
+    if (($tei = tei_editions_get_main_tei($item)) and
+        plugin_is_active('EhriData')) {
+
+        $doc = new TeiEditionsDocumentProxy($tei->getWebPath());
+        foreach ($doc->manuscriptIds() as $url) {
+            $id = substr($url, strrpos($url, '/') + 1);
+            $content .= "[ehri_item_data id=$id]\n";
+        }
+    }
+    return get_view()->shortcodes($content);
+}
+
 /**
  * @param $item
  * @return string
@@ -163,6 +178,7 @@ function tei_editions_render_item_text($item)
     $ident = metadata($item, ['Dublin Core', "Identifier"], ['no_escape' => true]);
     $desc = metadata($item, ['Dublin Core', "Description"], ['no_escape' => true]);
     $src = metadata($item, ['Dublin Core', "Source"], ['no_escape' => true]);
+    $refs = tei_editions_manuscript_identifiers($item);
     $meta = [];
     foreach (["Date", "Creator", "Coverage"] as $key) {
         $value = metadata($item, ['Dublin Core', $key], ['no_escape' => true]);
@@ -194,7 +210,7 @@ function tei_editions_render_item_text($item)
             "item" => $item, "data" => $text_html, "metadata" => $meta,
             "exhibit" => $exhibit, "identifier" => $ident,
             "description" => $desc, "source" => $src,
-            "images" => $images
+            "images" => $images, "refs" => $refs
         ]
     );
 }

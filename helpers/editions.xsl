@@ -1,6 +1,31 @@
 <xsl:stylesheet version="1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:redirect="http://xml.apache.org/xalan/redirect" xmlns:xalan="http://xml.apache.org/xalan" xmlns:ehri="https://ehri-project.eu/functions" xmlns:func="http://exslt.org/functions" extension-element-prefixes="xalan redirect func ehri" exclude-result-prefixes="xhtml tei">
     <xsl:output indent="yes" omit-xml-declaration="yes" encoding="utf-8" method="xml" xalan:indent-amount="4"/>
 
+    <xsl:param name="lang" select="'en'"/>
+
+    <ehri:strings>
+        <search xml:lang="en">Search in this edition</search>
+        <search xml:lang="de">Suche in der Edition</search>
+        <ehriPortal xml:lang="en">View in EHRI Portal</ehriPortal>
+        <ehriPortal xml:lang="de">Im EHRI Portal anzeigen</ehriPortal>
+        <geonames xml:lang="en">View in Geonames</geonames>
+        <geonames xml:lang="de">In Geonames anzeigen</geonames>
+        <wikipedia xml:lang="en">View in Wikipedia</wikipedia>
+        <wikipedia xml:lang="de">In Wikipedia anzeigen</wikipedia>
+        <holocaustCz xml:lang="en">View in Holocaust.cz</holocaustCz>
+        <holocaustCz xml:lang="de">In Holocaust.cz anzeigen</holocaustCz>
+        <person xml:lang="en">Person</person>
+        <person xml:lang="de">Person</person>
+        <place xml:lang="en">Place</place>
+        <place xml:lang="de">Ort</place>
+        <organisation xml:lang="en">Organisation</organisation>
+        <organisation xml:lang="en">Organisation</organisation>
+        <subject xml:lang="en">Subject</subject>
+        <subject xml:lang="de">Thema</subject>
+    </ehri:strings>
+
+    <xsl:variable name="messages" select="document('')/*/ehri:strings"/>
+
     <func:function name="ehri:url-label">
         <xsl:param name="url"/>
         <xsl:param name="default"/>
@@ -8,16 +33,16 @@
         <func:result>
             <xsl:choose>
                 <xsl:when test="contains($url, 'portal.ehri-project.eu')">
-                    EHRI Portal
+                    <xsl:value-of select="$messages/ehriPortal[lang($lang)]"/>
                 </xsl:when>
                 <xsl:when test="contains($url, 'geonames.org')">
-                    Geonames
+                    <xsl:value-of select="$messages/geonames[lang($lang)]"/>
                 </xsl:when>
                 <xsl:when test="contains($url, 'holocaust.cz')">
-                    Holocaust.cz
+                    <xsl:value-of select="$messages/holocaustCz[lang($lang)]"/>
                 </xsl:when>
                 <xsl:when test="contains($url, 'wikipedia.org')">
-                    Wikipedia
+                    <xsl:value-of select="$messages/wikipedia[lang($lang)]"/>
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:value-of select="$default"/>
@@ -79,8 +104,10 @@
     </func:function>
 
     <xsl:template name="entity-header">
+        <xsl:param name="type"/>
         <xsl:param name="name"/>
         <h5>
+            <xsl:value-of select="normalize-space($type)"/>:
             <xsl:value-of select="normalize-space($name)"/>
         </h5>
     </xsl:template>
@@ -104,6 +131,15 @@
             <xsl:value-of select="./tei:linkGrp/tei:link[@type='desc']/@target"/>
         </xsl:variable>
         <ul class="content-info-entity-footer">
+            <li>
+                <a class="tei-entity-search">
+                    <xsl:attribute name="href">
+                        <xsl:value-of select="concat('/search?q=*&amp;f[]=', $search-type, ':', $name)"/>
+                    </xsl:attribute>
+                    <div class="material-icons">search</div>
+                    <xsl:value-of select="$messages/search[lang($lang)]"/>
+                </a>
+            </li>
             <xsl:if test="starts-with($link, 'http')">
                 <li>
                     <a target="_blank">
@@ -122,19 +158,10 @@
                             <xsl:value-of select="$desc"/>
                         </xsl:attribute>
                         <div class="material-icons">info_outline</div>
-                        <xsl:value-of select="ehri:url-label($desc, 'Wikipedia')"/>
+                        <xsl:value-of select="ehri:url-label($desc, $messages/wikipedia[lang($lang)])"/>
                     </a>
                 </li>
             </xsl:if>
-            <li>
-                <a class="tei-entity-search">
-                    <xsl:attribute name="href">
-                        <xsl:value-of select="concat('/search?q=*&amp;f[]=', $search-type, ':', $name)"/>
-                    </xsl:attribute>
-                    <div class="material-icons">search</div>
-                    Search
-                </a>
-            </li>
         </ul>
     </xsl:template>
 
@@ -145,6 +172,7 @@
                 <xsl:value-of select="$link"/>
             </xsl:attribute>
             <xsl:call-template name="entity-header">
+                <xsl:with-param name="type" select="$messages/place[lang($lang)]"/>
                 <xsl:with-param name="name" select="./tei:placeName"/>
             </xsl:call-template>
             <xsl:call-template name="entity-body"/>
@@ -163,13 +191,17 @@
                 <xsl:value-of select="$link"/>
             </xsl:attribute>
             <xsl:call-template name="entity-header">
+                <xsl:with-param name="type" select="$messages/person[lang($lang)]"/>
                 <xsl:with-param name="name" select="./tei:persName"/>
             </xsl:call-template>
             <xsl:call-template name="entity-body"/>
             <xsl:call-template name="entity-footer">
                 <xsl:with-param name="link" select="$link"/>
                 <xsl:with-param name="name" select="normalize-space(./tei:persName)"/>
-                <xsl:with-param name="search-type">Person</xsl:with-param>
+                <xsl:with-param name="search-type">
+                    <!--<xsl:value-of select="$messages/person[lang($lang)]"/>-->
+                    Person
+                </xsl:with-param>
             </xsl:call-template>
         </div>
     </xsl:template>
@@ -181,13 +213,17 @@
                 <xsl:value-of select="$link"/>
             </xsl:attribute>
             <xsl:call-template name="entity-header">
+                <xsl:with-param name="type" select="$messages/organisation[lang($lang)]"/>
                 <xsl:with-param name="name" select="./tei:orgName"/>
             </xsl:call-template>
             <xsl:call-template name="entity-body"/>
             <xsl:call-template name="entity-footer">
                 <xsl:with-param name="link" select="$link"/>
                 <xsl:with-param name="name" select="normalize-space(./tei:orgName)"/>
-                <xsl:with-param name="search-type">Organisation</xsl:with-param>
+                <xsl:with-param name="search-type">
+                    <!--<xsl:value-of select="$messages/organisation[lang($lang)]"/>-->
+                </xsl:with-param>
+                Organisation
             </xsl:call-template>
         </div>
     </xsl:template>
@@ -199,13 +235,17 @@
                 <xsl:value-of select="$link"/>
             </xsl:attribute>
             <xsl:call-template name="entity-header">
+                <xsl:with-param name="type" select="$messages/subject[lang($lang)]"/>
                 <xsl:with-param name="name" select="./tei:name"/>
             </xsl:call-template>
             <xsl:call-template name="entity-body"/>
             <xsl:call-template name="entity-footer">
                 <xsl:with-param name="link" select="$link"/>
                 <xsl:with-param name="name" select="normalize-space(./tei:name)"/>
-                <xsl:with-param name="search-type">Subject</xsl:with-param>
+                <xsl:with-param name="search-type">
+                    <!--<xsl:value-of select="$messages/subject[lang($lang)]"/>-->
+                    Subject
+                </xsl:with-param>
             </xsl:call-template>
         </div>
     </xsl:template>

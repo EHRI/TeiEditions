@@ -5,6 +5,9 @@
 {% if exhibit %}
     <a href="#document-map" class="items-content-button">Map</a>
 {% endif %}
+{% if refs %}
+    <a href="#document-refs" class="items-content-button">References</a>
+{% endif %}
 
 <div id="document-metadata" class="clearfix">
     <div id="content-files">
@@ -60,3 +63,11 @@
         </div>
     {% endif %}
 </div>
+
+
+{% if refs %}
+    <div id="document-refs">
+        <h3>References</h3>
+        {{ refs|raw }}
+    </div>
+{% endif %}
