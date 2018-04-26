@@ -19,7 +19,7 @@
         <place xml:lang="en">Place</place>
         <place xml:lang="de">Ort</place>
         <organisation xml:lang="en">Organisation</organisation>
-        <organisation xml:lang="en">Organisation</organisation>
+        <organisation xml:lang="de">Organisation</organisation>
         <subject xml:lang="en">Subject</subject>
         <subject xml:lang="de">Thema</subject>
     </ehri:strings>

@@ -37,7 +37,7 @@
     </div>
     <h3>Document text</h3>
     <ol class="tabs clearfix" id="language-selector">
-        {% for lang, text in data|sort %}
+        {% for lang, text in data %}
             {% if loop.first %}
                 <li><a class="element-text-language-selected" href="#document-text-{{ lang }}">{{ lang|lang2name }}</a></li>
             {% else %}

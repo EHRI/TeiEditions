@@ -29,11 +29,6 @@
     display: inline-flex;
 }
 
-.tei-entity-ref {
-    border-bottom: 1px dotted lightgrey;
-    background-color: #fff3f3;
-}
-
 .tei > .tei-entities > .tei-entity {
     float: left;
     display: none;
