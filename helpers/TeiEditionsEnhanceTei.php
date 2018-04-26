@@ -243,14 +243,20 @@ function tei_editions_get_references(SimpleXMLElement $tei, $tag_name)
 {
     $names = array();
     $urls = array();
-    $nodes = $tei->xpath("/t:TEI/t:text/t:body/*//t:$tag_name");
-    foreach ($nodes as $node) {
-        $text = $node->xpath("text()");
-        $ref = $node->xpath("@ref");
-        if ($ref) {
-            $urls[(string)($ref[0])] = (string)$text[0];
-        } else {
-            $names[(string)($text[0])] = null;
+    $paths = [
+        "/t:TEI/t:teiHeader/t:profileDesc/t:creation//t:$tag_name",
+        "/t:TEI/t:text/t:body/*//t:$tag_name"
+    ];
+    foreach ($paths as $path) {
+        $nodes = $tei->xpath($path);
+        foreach ($nodes as $node) {
+            $text = $node->xpath("text()");
+            $ref = $node->xpath("@ref");
+            if ($ref) {
+                $urls[(string)($ref[0])] = (string)$text[0];
+            } else {
+                $names[(string)($text[0])] = null;
+            }
         }
     }
 
