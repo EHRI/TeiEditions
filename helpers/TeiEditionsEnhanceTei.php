@@ -243,7 +243,7 @@ function tei_editions_get_references(SimpleXMLElement $tei, $tag_name)
 {
     $names = array();
     $urls = array();
-    $nodes = $tei->xpath("/t:TEI/t:text/t:body/*/t:$tag_name");
+    $nodes = $tei->xpath("/t:TEI/t:text/t:body/*//t:$tag_name");
     foreach ($nodes as $node) {
         $text = $node->xpath("text()");
         $ref = $node->xpath("@ref");
@@ -271,10 +271,10 @@ function tei_editions_add_bio_data(SimpleXMLElement $item, $data)
     if (isset($data['datesOfExistence']) OR isset($data['biographicalHistory'])) {
         $note = $item->addChild('note');
         if (isset($data['datesOfExistence'])) {
-            $note->addChild("p", $data['datesOfExistence']);
+            $note->addChild("p", htmlspecialchars($data['datesOfExistence']));
         }
         if (isset($data['biographicalHistory'])) {
-            $note->addChild("p", $data['biographicalHistory']);
+            $note->addChild("p", htmlspecialchars($data['biographicalHistory']));
         }
         return $note;
     }
@@ -287,7 +287,7 @@ function tei_editions_add_place(SimpleXMLElement $place_list, $name, $url, $data
     error_log("Adding place: $name");
 
     $place = $place_list->addChild('place');
-    $place->addChild('placeName', trim($name));
+    $place->addChild('placeName', htmlspecialchars(trim($name)));
 
     // longitude and latitude
     if (isset($data["longitude"]) and isset($data["latitude"])) {
@@ -337,7 +337,7 @@ function tei_editions_add_term(SimpleXMLElement $list, $name, $url, $data)
     error_log("Adding term: $name");
 
     $item = $list->addChild('item');
-    $item->addChild('name', trim($name));
+    $item->addChild('name', htmlspecialchars(trim($name)));
 
     if ($url) {
         tei_editions_add_link_group($item, $url);
@@ -377,7 +377,7 @@ function tei_editions_add_person(SimpleXMLElement $list, $name, $url, $data)
     error_log("Adding person: $name");
 
     $item = $list->addChild('person');
-    $item->addChild('persName', trim($name));
+    $item->addChild('persName', htmlspecialchars(trim($name)));
 
     tei_editions_add_bio_data($item, $data);
     if ($url) {
@@ -419,7 +419,7 @@ function tei_editions_add_org(SimpleXMLElement $list, $name, $url, $data)
     error_log("Adding org: $name");
 
     $item = $list->addChild('org');
-    $item->addChild('orgName', trim($name));
+    $item->addChild('orgName', htmlspecialchars(trim($name)));
 
     tei_editions_add_bio_data($item, $data);
     if ($url) {
