@@ -1,0 +1,15 @@
+<ol class="tabs clearfix" id="language-selector">
+    {% for lang, text in data %}
+    {% if loop.first %}
+    <li><a class="element-text-language-selected" href="#document-text-{{ lang }}">{{ lang|lang2name }}</a></li>
+    {% else %}
+    <li><a class="element-text-language" href="#document-text-{{ lang }}">{{ lang|lang2name }}</a></li>
+    {% endif %}
+    {% endfor %}
+</ol>
+
+<div class="all-item-texts">
+    {% for lang, text in data %}
+    <div class="text-item element-text-document" id="document-text-{{ lang }}">{{ text|raw }}</div>
+    {% endfor %}
+</div>

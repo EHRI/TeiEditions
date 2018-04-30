@@ -123,7 +123,7 @@ function tei_editions_render_search_item(Item $item)
     );
 }
 
-function tei_editions_manuscript_identifiers($item)
+function tei_editions_render_document_references($item)
 {
     $content = "";
     if (($tei = tei_editions_get_main_tei($item)) and
@@ -145,51 +145,11 @@ function tei_editions_manuscript_identifiers($item)
  * @throws Twig_Error_Runtime
  * @throws Twig_Error_Syntax
  */
-function tei_editions_render_item_text($item)
+function tei_editions_render_document_images($item)
 {
-    if (is_string($item)) {
-        $view = get_view();
-        $item = $view->{$view->singularize($item)};
-    }
-
-    $files = $item->getFiles();
-
-    $file_url_map = array();
-    foreach ($files as $file) {
-        $file_url_map[basename($file->original_filename)] = $file->getWebPath();
-    }
-
-    $text_html = [];
-    $exhibit = null;
-
-    foreach ($files as $file) {
-        $path = $file->getWebPath();
-
-        if (tei_editions_is_xml_file($path)) {
-            if ($exhibit === null && plugin_is_active('Neatline')) {
-                $proxy = new TeiEditionsDocumentProxy($path);
-                $exhibit = tei_editions_get_neatline_exhibit($proxy);
-            }
-            $lang = tei_editions_get_language($file->original_filename, $file->original_filename);
-            $text_html[$lang] = tei_editions_tei_to_html($path, $file_url_map);
-        }
-    }
-
-    $ident = metadata($item, ['Dublin Core', "Identifier"], ['no_escape' => true]);
-    $desc = metadata($item, ['Dublin Core', "Description"], ['no_escape' => true]);
-    $src = metadata($item, ['Dublin Core', "Source"], ['no_escape' => true]);
-    $refs = tei_editions_manuscript_identifiers($item);
-    $meta = [];
-    foreach (["Date", "Creator", "Coverage"] as $key) {
-        $value = metadata($item, ['Dublin Core', $key], ['no_escape' => true]);
-        if ($value) {
-            $meta[$key] = $value;
-        }
-    }
-
     $images = [];
     foreach ($item->getFiles() as $file) {
-        if (!tei_editions_is_xml_file($file)) {
+        if (preg_match('/.+\.(png|jpg|tif)$/', $file->original_filename)) {
             $res = '';
             if ($file->metadata != '') {
                 $info = json_decode($file->metadata, true);
@@ -206,13 +166,70 @@ function tei_editions_render_item_text($item)
         }
     }
 
-    return ViewRenderer::render("texts.html.twig", [
-            "item" => $item, "data" => $text_html, "metadata" => $meta,
-            "exhibit" => $exhibit, "identifier" => $ident,
-            "description" => $desc, "source" => $src,
-            "images" => $images, "refs" => $refs
+    return ViewRenderer::render("images.twig.html", ["images" => $images]);
+}
+
+/**
+ * @param $item
+ * @return string
+ * @throws Twig_Error_Loader
+ * @throws Twig_Error_Runtime
+ * @throws Twig_Error_Syntax
+ */
+function tei_editions_render_item_metadata($item)
+{
+    $ident = metadata($item, ['Dublin Core', "Identifier"], ['no_escape' => true]);
+    $desc = metadata($item, ['Dublin Core', "Description"], ['no_escape' => true]);
+    $src = metadata($item, ['Dublin Core', "Source"], ['no_escape' => true]);
+    $meta = [];
+    foreach (["Date", "Creator", "Coverage"] as $key) {
+        $value = metadata($item, ['Dublin Core', $key], ['no_escape' => true]);
+        if ($value) {
+            $meta[$key] = $value;
+        }
+    }
+
+    return ViewRenderer::render("metadata.html.twig", [
+            "item" => $item,
+            "metadata" => $meta,
+            "identifier" => $ident,
+            "description" => $desc,
+            "source" => $src
         ]
     );
+}
+
+/**
+ * @param $item
+ * @return string
+ * @throws Twig_Error_Loader
+ * @throws Twig_Error_Runtime
+ * @throws Twig_Error_Syntax
+ */
+function tei_editions_render_document_texts($item) {
+    if (is_string($item)) {
+        $view = get_view();
+        $item = $view->{$view->singularize($item)};
+    }
+
+    $files = $item->getFiles();
+
+    $file_url_map = array();
+    foreach ($files as $file) {
+        $file_url_map[basename($file->original_filename)] = $file->getWebPath();
+    }
+
+    $text_html = [];
+    foreach ($files as $file) {
+        $path = $file->getWebPath();
+
+        if (tei_editions_is_xml_file($path)) {
+            $lang = tei_editions_get_language($file->original_filename, $file->original_filename);
+            $text_html[$lang] = tei_editions_tei_to_html($path, $file_url_map);
+        }
+    }
+
+    return ViewRenderer::render("document_texts.twig.html", ["data" => $text_html]);
 }
 
 function tei_editions_get_elements($element_name)
@@ -260,9 +277,10 @@ function tei_editions_get_item_by_identifier($identifier)
  * @return NeatlineExhibit
  * @throws Omeka_Record_Exception
  */
-function tei_editions_get_neatline_exhibit(TeiEditionsDocumentProxy $doc)
+function tei_editions_get_neatline_exhibit(Item $item)
 {
-    $exhibits = get_db()->getTable('NeatlineExhibit')->findBy(['slug' => $doc->recordId()]);
+    $exhibits = get_db()->getTable('NeatlineExhibit')
+        ->findBy(['slug' => metadata($item, ['Dublin Core', 'Identifier'])]);
     return empty($exhibits) ? null : $exhibits[0];
 }
 
