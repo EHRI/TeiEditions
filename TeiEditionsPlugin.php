@@ -325,6 +325,7 @@ SQL
     {
         set_option('tei_editions_default_item_type', (int)$_POST['tei_editions_default_item_type']);
         set_option('tei_editions_template_neatline', (int)$_POST['tei_editions_template_neatline']);
+        set_option('tei_editions_feedback_email', $_POST['tei_editions_feedback_email']);
     }
 
     public function hookPublicHead($args)

@@ -22,3 +22,14 @@
             get_table_options('NeatlineExhibit')); ?>
     </div>
 </div>
+<div class="field">
+    <div class="two columns alpha">
+        <label for="tei_editions_template_neatline"><?php echo __('Feedback Email'); ?></label>
+    </div>
+    <div class="inputs five columns omega">
+        <p class="explanation">
+            <?php echo __("Email recipients for the feedback submission system, comma-separated."); ?>
+        </p>
+        <?php echo get_view()->formText('tei_editions_feedback_email', get_option('tei_editions_feedback_email'), null, null); ?>
+    </div>
+</div>
