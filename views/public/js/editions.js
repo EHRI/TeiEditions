@@ -16,13 +16,13 @@ jQuery(function($) {
 
   function affix($elem) {
       var margin = 20; // FIXME: margin from page top
-      if ($elem.length) {
+      if ($elem.length && $infoPanel.length) {
           $elem.toggleClass("affixed", $infoPanel.offset().top < window.scrollY + margin);
       }
   }
 
   function showInPanel($elem) {
-    if ($elem.length > 0) {
+    if ($elem.length && $infoPanel.length) {
       var $clone = $elem.clone().css({display:"block"});
       $infoPanel
           .children()

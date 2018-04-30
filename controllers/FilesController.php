@@ -525,19 +525,17 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
     }
 
     /**
-     * @param Item $item
+     * @param Item $entity
      * @param TeiEditionsDocumentProxy $doc
      * @throws Omeka_Record_Exception
      */
-    private function _updateNeatlineExhibit(Item $item, TeiEditionsDocumentProxy $doc)
+    private function _updateNeatlineExhibit(Item $entity, TeiEditionsDocumentProxy $doc)
     {
-        $teiPlaces = array_filter(array_unique($doc->places(), SORT_REGULAR), function ($p) {
-            return isset($p["longitude"]) and isset($p["latitude"]);
-        });
+        $entities = array_unique($doc->entities(), SORT_REGULAR);
 
         // if there are no mapped places, delete existing exhibits and return
         // early.
-        if (empty($teiPlaces)) {
+        if (empty($entities)) {
             $exhibits = get_db()->getTable('NeatlineExhibit')
                 ->findBy(['slug' => strtolower($doc->recordId())]);
             foreach ($exhibits as $exhibit) {
@@ -548,7 +546,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
 
         $exhibit = $this->_getOrCreateNeatlineExhibit($doc);
         $exhibit->deleteChildRecords();
-        $title = metadata($item, 'display_title');
+        $title = metadata($entity, 'display_title');
         $exhibit->title = $title;
         $exhibit->slug = strtolower($doc->recordId());
         $exhibit->spatial_layer = 'OpenStreetMap';
@@ -581,23 +579,8 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
 
         $points_deg = [];
         $points_metres = [];
-        foreach ($teiPlaces as $teiPlace) {
-            $place = new NeatlineRecord;
-            $place->exhibit_id = $exhibit->id;
-            $place->title = $teiPlace["name"];
-            $deg = [$teiPlace["longitude"], $teiPlace["latitude"]];
-            $metres = tei_editions_degrees_to_metres($deg);
-            $points_deg[] = $deg;
-            $points_metres[] = $metres;
-            $place->coverage = "Point(" . implode(" ", $metres) . ")";
-            foreach ($teiPlace["urls"] as $url) {
-                $slug = tei_editions_url_to_slug($url);
-                if ($slug) {
-                    $place->slug = $slug;
-                    break;
-                }
-            }
-            $place->save();
+        foreach ($entities as $entity) {
+            $this->_createRecord($exhibit, $entity, $points_deg, $points_metres);
         }
 
         if (!empty($points_metres)) {
@@ -629,5 +612,63 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
             $file->order = $order++;
             $file->save();
         }
+    }
+
+    /**
+     * @param $exhibit
+     * @param $item
+     * @param $points_deg
+     * @param $points_metres
+     */
+    private function _createRecord($exhibit, $item, &$points_deg, &$points_metres)
+    {
+        $record = new NeatlineRecord;
+        $record->exhibit_id = $exhibit->id;
+        $record->title = $item["name"];
+        if (isset($item["longitude"]) and isset($item["latitude"])) {
+            $deg = [$item["longitude"], $item["latitude"]];
+            $metres = tei_editions_degrees_to_metres($deg);
+            $points_deg[] = $deg;
+            $points_metres[] = $metres;
+            $record->coverage = "Point(" . implode(" ", $metres) . ")";
+        }
+        $record->tags = $this->_getRecordTags($item["urls"]);
+        if (isset($item["note"])) {
+            $record->body = $item["note"];
+        }
+        foreach ($item["urls"] as $url) {
+            $slug = tei_editions_url_to_slug($url);
+            if ($slug) {
+                $record->slug = $slug;
+                break;
+            }
+        }
+        $record->save();
+    }
+
+    private function _getRecordTags($urls)
+    {
+        $tags = [];
+        foreach ($urls as $url) {
+            if (preg_match('/geonames/', $url)) {
+                $tags[] = "location";
+            }
+            if (preg_match('/ehri_camps/', $url)) {
+                $tags[] = "camp";
+            }
+            if (preg_match('/ehri_ghettos/', $url)) {
+                $tags[] = "ghetto";
+            }
+            if (preg_match('/ehri_pers/', $url)) {
+                $tags[] = "person";
+            }
+            if (preg_match('/ehri_cb/', $url)) {
+                $tags[] = "organisation";
+            }
+            if (preg_match('/ehri_terms/', $url)) {
+                $tags[] = "subject";
+            }
+        }
+        return implode(',', array_unique($tags));
     }
 }

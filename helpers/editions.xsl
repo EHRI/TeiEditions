@@ -65,16 +65,16 @@
         <func:result>
             <xsl:choose>
                 <xsl:when test="starts-with($url, $ehri-auth)">
-                    <xsl:value-of select="concat('authority-', substring-after($url, $ehri-auth))"/>
+                    <xsl:value-of select="concat('ehri-authority-', substring-after($url, $ehri-auth))"/>
                 </xsl:when>
                 <xsl:when test="starts-with($url, $ehri-term)">
-                    <xsl:value-of select="concat('keyword-', substring-after($url, $ehri-term))"/>
+                    <xsl:value-of select="concat('ehri-term-', substring-after($url, $ehri-term))"/>
                 </xsl:when>
                 <xsl:when test="starts-with($url, $ehri-unit)">
-                    <xsl:value-of select="concat('unit-', substring-after($url, $ehri-unit))"/>
+                    <xsl:value-of select="concat('ehri-unit-', substring-after($url, $ehri-unit))"/>
                 </xsl:when>
                 <xsl:when test="starts-with($url, $ehri-inst)">
-                    <xsl:value-of select="concat('inst-', substring-after($url, $ehri-inst))"/>
+                    <xsl:value-of select="concat('ehri-institution-', substring-after($url, $ehri-inst))"/>
                 </xsl:when>
                 <xsl:when test="starts-with($url, $geonames1)">
                     <xsl:value-of select="concat('geonames-', substring-after($url, $geonames1))"/>
@@ -198,10 +198,7 @@
             <xsl:call-template name="entity-footer">
                 <xsl:with-param name="link" select="$link"/>
                 <xsl:with-param name="name" select="normalize-space(./tei:persName)"/>
-                <xsl:with-param name="search-type">
-                    <!--<xsl:value-of select="$messages/person[lang($lang)]"/>-->
-                    Person
-                </xsl:with-param>
+                <xsl:with-param name="search-type">Person</xsl:with-param>
             </xsl:call-template>
         </div>
     </xsl:template>
@@ -220,10 +217,7 @@
             <xsl:call-template name="entity-footer">
                 <xsl:with-param name="link" select="$link"/>
                 <xsl:with-param name="name" select="normalize-space(./tei:orgName)"/>
-                <xsl:with-param name="search-type">
-                    <!--<xsl:value-of select="$messages/organisation[lang($lang)]"/>-->
-                </xsl:with-param>
-                Organisation
+                <xsl:with-param name="search-type">Organisation</xsl:with-param>
             </xsl:call-template>
         </div>
     </xsl:template>
@@ -242,10 +236,7 @@
             <xsl:call-template name="entity-footer">
                 <xsl:with-param name="link" select="$link"/>
                 <xsl:with-param name="name" select="normalize-space(./tei:name)"/>
-                <xsl:with-param name="search-type">
-                    <!--<xsl:value-of select="$messages/subject[lang($lang)]"/>-->
-                    Subject
-                </xsl:with-param>
+                <xsl:with-param name="search-type">Subject</xsl:with-param>
             </xsl:call-template>
         </div>
     </xsl:template>
