@@ -39,7 +39,7 @@ jQuery(function($) {
 
   $(".tei-entity-ref").hoverIntent(function() {
     var url = $(this).data("ref");
-    showInPanel($entities.find(".content-info-entity[data-ref='" + url + "']"));
+    showInPanel($entities.find(".content-info-entity[data-ref='" + url + "']").last());
   });
 
   $(".tei-note-ref").hoverIntent(function() {

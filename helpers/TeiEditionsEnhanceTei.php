@@ -60,6 +60,11 @@ function tei_editions_url_slug_mappings()
 
 function tei_editions_url_to_slug($url)
 {
+    // if it starts with a hash it's a local reference
+    if (!empty($url) and $url[0] == '#') {
+        return substr($url, 1);
+    }
+
     foreach (tei_editions_url_slug_mappings() as $name => $patterns) {
         foreach ($patterns as $pattern) {
             $regex = '~' . str_replace('<id>', '([^/]+)', $pattern) . '~';
@@ -83,7 +88,8 @@ function tei_editions_slug_to_url($slug)
             }
         }
     }
-    return null;
+    // assume a local slug
+    return '#' . $slug;
 }
 
 /**

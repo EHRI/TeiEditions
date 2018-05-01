@@ -633,15 +633,11 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
             $record->coverage = "Point(" . implode(" ", $metres) . ")";
         }
         $record->tags = $this->_getRecordTags($item["urls"]);
-        if (isset($item["note"])) {
-            $record->body = $item["note"];
+        if (isset($item["body"])) {
+            $record->body = $item["body"];
         }
-        foreach ($item["urls"] as $url) {
-            $slug = tei_editions_url_to_slug($url);
-            if ($slug) {
-                $record->slug = $slug;
-                break;
-            }
+        if (isset($item["slug"])) {
+            $record->slug = $item["slug"];
         }
         $record->save();
     }

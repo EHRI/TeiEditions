@@ -8,7 +8,7 @@
     display: none;
 }
 
-#content-info .tei-note {
+.tei-note {
     padding: 10px;
     display: block;
     background-color: #fff3f3;;
@@ -61,15 +61,25 @@
     margin: 0 -300px 0 0;
 }
 
-#content-info .content-info-entity {
+.content-info-entity {
     margin: 0;
     max-height: none;
 }
 
-#content-info .content-info-entity .content-info-entity-body {
-    max-height: 400px;
+.content-info-entity-body {
+    padding: 0;
+}
+
+/** Neatline overrides **/
+.content > .content-info-entity-body {
+    border: 1px solid var(--colorBorderContent);
+}
+
+.content-info-entity-body > .content-info-entity-note {
+    max-height: 360px;
     overflow-y: auto;
-    padding: 0 18px;
+    padding: 0 18px 18px 18px;
+    border-bottom: 1px solid var(--colorBorderContent);
 }
 
 .element-text-page .element-text-page-icon {
@@ -78,42 +88,43 @@
     margin: 3px 6px 0 3px;
 }
 
-#content-info .content-info-entity.affixed, #content-info .tei-note.affixed {
+.content-info-entity.affixed, #content-info .tei-note.affixed {
     position: fixed;
     top: 20px;
 }
 
-#content-info > .content-info-entity > ul.content-info-entity-footer {
+.content-info-entity-body > ul.content-info-entity-footer {
+    border-top: none;
     margin: 0;
     padding: 0;
 }
 
-#content-info .content-info-entity .content-info-entity-footer li {
+.content-info-entity-body .content-info-entity-footer li {
     border-bottom: 1px solid var(--colorBorderContent);
     background-color: #fefefe;
 }
 
-#content-info > .content-info-entity > ul.content-info-entity-footer :last-child {
+.content-info-entity-body > ul.content-info-entity-footer :last-child {
     border-bottom: none;
 }
 
-#content-info .content-info-entity .content-info-entity-footer a {
+.content-info-entity-body .content-info-entity-footer a {
     display: block;
     padding: 5px 18px;
     vertical-align: middle;
     line-height: 1.8;
 }
 
-#content-info .content-info-entity .content-info-entity-footer a > * {
+.content-info-entity-body .content-info-entity-footer a > * {
     vertical-align: middle;
 }
 
-#content-info .content-info-entity .content-info-entity-footer a:hover {
+.content-info-entity-body .content-info-entity-footer a:hover {
     background-color: rgba(82, 168, 236, 0.1);
     text-decoration: none;
 }
 
-#content-info .content-info-entity .content-info-entity-footer a .material-icons {
+.content-info-entity-body .content-info-entity-footer a .material-icons {
     margin-right: 4px;
 }
 

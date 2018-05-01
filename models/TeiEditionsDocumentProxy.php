@@ -152,11 +152,15 @@ class TeiEditionsDocumentProxy
                 for ($i = 0; $i < $links->length; $i++) {
                     $urls[] = $links->item($i)->value;
                 }
-                $item = ["name" => $name, "urls" => $urls];
-                $note = $this->query->evaluate("./tei:note[1]", $entity);
-                if ($note->length) {
-                    $item["note"] = $note->item(0)->C14N();
-                }
+                $slug = !empty($urls)
+                    ? tei_editions_url_to_slug($urls[0])
+                    : @$this->query->evaluate("./@xml:id", $entity)->item(0)->textContent;
+                $item = [
+                    "name" => $name,
+                    "urls" => $urls,
+                    "slug" => $slug,
+                    "body" => $this->_getEntityBodyHtml($urls, $slug)
+                ];
 
                 $lat_long = $this->query->evaluate("./tei:location/tei:geo[1]", $entity);
                 if ($lat_long->length) {
@@ -169,6 +173,16 @@ class TeiEditionsDocumentProxy
             }
         }
         return array_values($out);
+    }
+
+    private function _getEntityBodyHtml($urls, $slug) {
+        $url = empty($urls) ? ('#' . $slug) : $urls[0];
+        $xml = new DomDocument;
+        $xml->loadXML($this->asHtml());
+        $query = new DOMXPath($xml);
+        $path = "/div/div[@class='tei-entities']/div[@data-ref='$url']/div[@class='content-info-entity-body']";
+        $node = $query->query($path);
+        return empty($node) ? "" : $xml->saveXML($node->item(0));
     }
 
     public function asHtml()

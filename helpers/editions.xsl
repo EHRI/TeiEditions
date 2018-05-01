@@ -52,7 +52,9 @@
     </func:function>
 
     <func:function name="ehri:slugify">
-        <xsl:param name="url"/>
+        <xsl:param name="elem"/>
+
+        <xsl:variable name="url" select="$elem/attribute::ref"/>
 
         <xsl:variable name="ehri-auth" select="'https://portal.ehri-project.eu/authorities/'"/>
         <xsl:variable name="ehri-term" select="'https://portal.ehri-project.eu/keywords/'"/>
@@ -64,6 +66,9 @@
 
         <func:result>
             <xsl:choose>
+                <xsl:when test="starts-with($url, '#')">
+                    <xsl:value-of select="substring-after($url, '#')"/>
+                </xsl:when>
                 <xsl:when test="starts-with($url, $ehri-auth)">
                     <xsl:value-of select="concat('ehri-authority-', substring-after($url, $ehri-auth))"/>
                 </xsl:when>
@@ -113,56 +118,57 @@
     </xsl:template>
 
     <xsl:template name="entity-body">
-        <xsl:variable name="note" select="./tei:note"/>
-
-        <xsl:if test="$note">
-            <div class="content-info-entity-body">
-                <xsl:copy-of select="$note/node()"/>
-            </div>
-        </xsl:if>
-    </xsl:template>
-
-    <xsl:template name="entity-footer">
         <xsl:param name="link"/>
         <xsl:param name="name"/>
         <xsl:param name="search-type"/>
 
-        <xsl:variable name="desc">
-            <xsl:value-of select="./tei:linkGrp/tei:link[@type='desc']/@target"/>
-        </xsl:variable>
-        <ul class="content-info-entity-footer">
-            <li>
-                <a class="tei-entity-search">
-                    <xsl:attribute name="href">
-                        <xsl:value-of select="concat('/search?q=*&amp;f[]=', $search-type, ':', $name)"/>
-                    </xsl:attribute>
-                    <div class="material-icons">search</div>
-                    <xsl:value-of select="$messages/search[lang($lang)]"/>
-                </a>
-            </li>
-            <xsl:if test="starts-with($link, 'http')">
+        <xsl:variable name="note" select="./tei:note"/>
+
+
+        <div class="content-info-entity-body">
+            <xsl:if test="$note">
+                <div class="content-info-entity-note">
+                    <xsl:copy-of select="$note/node()"/>
+                </div>
+            </xsl:if>
+
+            <xsl:variable name="desc">
+                <xsl:value-of select="./tei:linkGrp/tei:link[@type='desc']/@target"/>
+            </xsl:variable>
+            <ul class="content-info-entity-footer">
                 <li>
-                    <a target="_blank">
+                    <a class="tei-entity-search">
                         <xsl:attribute name="href">
-                            <xsl:value-of select="$link"/>
+                            <xsl:value-of select="concat('/search?q=*&amp;f[]=', $search-type, ':', $name)"/>
                         </xsl:attribute>
-                        <div class="material-icons">launch</div>
-                        <xsl:value-of select="ehri:url-label($link, 'View')"/>
+                        <div class="material-icons">search</div>
+                        <xsl:value-of select="$messages/search[lang($lang)]"/>
                     </a>
                 </li>
-            </xsl:if>
-            <xsl:if test="$desc != ''">
-                <li>
-                    <a class="tei-entity-description" target="_blank">
-                        <xsl:attribute name="href">
-                            <xsl:value-of select="$desc"/>
-                        </xsl:attribute>
-                        <div class="material-icons">info_outline</div>
-                        <xsl:value-of select="ehri:url-label($desc, $messages/wikipedia[lang($lang)])"/>
-                    </a>
-                </li>
-            </xsl:if>
-        </ul>
+                <xsl:if test="starts-with($link, 'http')">
+                    <li>
+                        <a target="_blank">
+                            <xsl:attribute name="href">
+                                <xsl:value-of select="$link"/>
+                            </xsl:attribute>
+                            <div class="material-icons">launch</div>
+                            <xsl:value-of select="ehri:url-label($link, 'View')"/>
+                        </a>
+                    </li>
+                </xsl:if>
+                <xsl:if test="$desc != ''">
+                    <li>
+                        <a class="tei-entity-description" target="_blank">
+                            <xsl:attribute name="href">
+                                <xsl:value-of select="$desc"/>
+                            </xsl:attribute>
+                            <div class="material-icons">info_outline</div>
+                            <xsl:value-of select="ehri:url-label($desc, $messages/wikipedia[lang($lang)])"/>
+                        </a>
+                    </li>
+                </xsl:if>
+            </ul>
+        </div>
     </xsl:template>
 
     <xsl:template name="place-entity">
@@ -175,8 +181,7 @@
                 <xsl:with-param name="type" select="$messages/place[lang($lang)]"/>
                 <xsl:with-param name="name" select="./tei:placeName"/>
             </xsl:call-template>
-            <xsl:call-template name="entity-body"/>
-            <xsl:call-template name="entity-footer">
+            <xsl:call-template name="entity-body">
                 <xsl:with-param name="link" select="$link"/>
                 <xsl:with-param name="name" select="normalize-space(./tei:placeName)"/>
                 <xsl:with-param name="search-type">Place</xsl:with-param>
@@ -194,8 +199,7 @@
                 <xsl:with-param name="type" select="$messages/person[lang($lang)]"/>
                 <xsl:with-param name="name" select="./tei:persName"/>
             </xsl:call-template>
-            <xsl:call-template name="entity-body"/>
-            <xsl:call-template name="entity-footer">
+            <xsl:call-template name="entity-body">
                 <xsl:with-param name="link" select="$link"/>
                 <xsl:with-param name="name" select="normalize-space(./tei:persName)"/>
                 <xsl:with-param name="search-type">Person</xsl:with-param>
@@ -213,8 +217,7 @@
                 <xsl:with-param name="type" select="$messages/organisation[lang($lang)]"/>
                 <xsl:with-param name="name" select="./tei:orgName"/>
             </xsl:call-template>
-            <xsl:call-template name="entity-body"/>
-            <xsl:call-template name="entity-footer">
+            <xsl:call-template name="entity-body">
                 <xsl:with-param name="link" select="$link"/>
                 <xsl:with-param name="name" select="normalize-space(./tei:orgName)"/>
                 <xsl:with-param name="search-type">Organisation</xsl:with-param>
@@ -232,8 +235,7 @@
                 <xsl:with-param name="type" select="$messages/subject[lang($lang)]"/>
                 <xsl:with-param name="name" select="./tei:name"/>
             </xsl:call-template>
-            <xsl:call-template name="entity-body"/>
-            <xsl:call-template name="entity-footer">
+            <xsl:call-template name="entity-body">
                 <xsl:with-param name="link" select="$link"/>
                 <xsl:with-param name="name" select="normalize-space(./tei:name)"/>
                 <xsl:with-param name="search-type">Subject</xsl:with-param>
@@ -292,7 +294,7 @@
                 <xsl:value-of select="attribute::ref"/>
             </xsl:attribute>
             <xsl:attribute name="data-neatline-slug">
-                <xsl:value-of select="ehri:slugify(./attribute::ref)"/>
+                <xsl:value-of select="ehri:slugify(.)"/>
             </xsl:attribute>
             <xsl:apply-templates/>
         </span>
