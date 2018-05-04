@@ -23,6 +23,7 @@ class TeiEditions_FeedbackController extends Omeka_Controller_AbstractActionCont
     public function sendAction()
     {
         $form = $this->_getForm();
+        $this->view->form = $form;
 
         if ($this->getRequest()->isPost()) {
             if ($form->isValid($_POST)) {
@@ -43,11 +44,16 @@ BODY;
                 }
                 $mail->setSubject("Feedback about page: " . $form->getElement('title')->getValue());
                 $mail->send();
-                $this->_helper->flashMessenger(__("Thanks for your feedback!"), 'success');
+                if (!empty($_SERVER['HTTP_X_REQUESTED_WITH'])
+                        && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest' ) {
+                    //request is ajax
+                    $this->_helper->json(["ok" => true]);
+                } else {
+                    $this->_helper->flashMessenger(__("Thanks for your feedback!"), 'success');
+                    $this->redirect("/");
+                }
             }
         }
-
-        $this->view->form = $form;
     }
 
     /**
