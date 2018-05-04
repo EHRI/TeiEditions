@@ -10,16 +10,14 @@ echo head($head);
 <?php echo flash(); ?>
 
 <?php if (!has_loop_records('tei_editions_field_mappings')): ?>
-    <p><?php echo __('There are no field mappings.'); ?> <a href="<?php echo html_escape(url('editions/fields/add')); ?>"><?php echo __('Add a Field Mapping.'); ?></a></p>
-
+    <p><?php echo __('There are no field mappings.'); ?>
+        <a href="<?php echo html_escape(url(array('controller' => 'fields', 'action' => 'add'))); ?>"><?php echo __('Add a Field Mapping.'); ?></a>
+    </p>
 <?php else: ?>
-
     <div id="tei-fields">
-
         <form id="tei-fields-form" method="post">
-
             <div>
-                <table class="tie-fields-mappings">
+                <table class="tei-fields-mappings">
                     <thead>
                     <tr>
                         <th><?php echo __('Field'); ?></th>
@@ -30,7 +28,6 @@ echo head($head);
                     </thead>
 
                     <tbody>
-
                     <?php foreach (loop('tei_editions_field_mappings') as $mapping): ?>
                         <tr>
                             <td><?php echo $mapping->getElementName();?></td>
@@ -43,16 +40,14 @@ echo head($head);
                         </tr>
 
                     <?php endforeach; ?>
-
                     </tbody>
-
                 </table>
             </div>
         </form>
     </div>
 <?php endif; ?>
 
-<a class="add-page button small green" href="<?php echo html_escape(url(array('action' => 'add'))); ?>"><?php echo __('Add a Field Mapping'); ?></a>
+<a class="add-page button small green" href="<?php echo html_escape(url(array('controller' => 'fields', 'action' => 'add'))); ?>"><?php echo __('Add a Field Mapping'); ?></a>
 
 
 <?php echo foot(); ?>
