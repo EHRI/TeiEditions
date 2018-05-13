@@ -65,7 +65,7 @@ function tei_editions_recent_items_shortcode($args, $view)
 {
     $html = "<div class=\"recently-added-wrapper\">\n";
     foreach (get_recent_items($args["num"]) as $item) {
-        $html .= tei_editions_render_search_item($item) . "\n";
+        $html .= tei_editions_render_item_summary($item) . "\n";
     }
     $html .= "</div>\n";
     return $html;
@@ -86,7 +86,10 @@ function tei_editions_item_shortcode($args, $view)
         if (is_null($item)) {
             return "<div class='shortcode-error'>Unable to find item with identifier: \"$identifier\"</div>";
         }
-        return tei_editions_render_search_item($item);
+        return sprintf(
+            "<div class=\"editions-item\">%s</div>",
+            tei_editions_render_item_summary($item)
+        );
     } catch (Exception $e) {
         error_log($e->getMessage());
         return "<div class='shortcode-error'>Error rendering shortcode...</div>";
@@ -100,7 +103,7 @@ function tei_editions_item_shortcode($args, $view)
  * @throws Twig_Error_Runtime
  * @throws Twig_Error_Syntax
  */
-function tei_editions_render_search_item(Item $item)
+function tei_editions_render_item_summary(Item $item)
 {
     $url = record_url($item);
     $img = record_image($item);
@@ -115,7 +118,7 @@ function tei_editions_render_search_item(Item $item)
         }
     }
 
-    return ViewRenderer::render("search_item.html.twig", [
+    return ViewRenderer::render("item_summary.html.twig", [
             "item" => $item, "metadata" => $meta, "url" => $url,
             "record_image" => $img, "title" => metadata($item, "display_title"),
             "identifier" => $ident, "description" => $desc, "source" => $src

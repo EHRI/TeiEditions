@@ -533,7 +533,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
     {
         $entities = array_unique($doc->entities(), SORT_REGULAR);
         $withgeo = array_filter($entities, function($i) {
-            return isset($i["longitude"]) and isset($i["latitude"]);
+            return isset($i['longitude']) and isset($i['latitude']);
         });
 
         // if there are no mapped places, delete existing exhibits and return
