@@ -36,9 +36,10 @@ class TeiEditionsDocumentProxyTest extends PHPUnit_Framework_Testcase
             "urls" => [
                 "http://www.geonames.org/588335/",
                 "http://ru.wikipedia.org/wiki/%D0%A2%D0%B0%D1%80%D1%82%D1%83"
-            ]
+            ],
+            "slug" => "geonames-588335",
         ];
-        $this->assertEquals([$tartu], $doc->places());
+        $this->assertEquals([$tartu], $doc->entities());
     }
 
     public function testGetXmlId()

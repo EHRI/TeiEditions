@@ -583,7 +583,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
         $points_deg = [];
         $points_metres = [];
         foreach ($entities as $entity) {
-            $this->_createRecord($exhibit, $entity, $points_deg, $points_metres);
+            $this->_createRecord($doc, $exhibit, $entity, $points_deg, $points_metres);
         }
 
         if (!empty($points_metres)) {
@@ -618,12 +618,14 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
     }
 
     /**
-     * @param $exhibit
-     * @param $item
+     * @param TeiEditionsDocumentProxy $doc
+     * @param NeatlineExhibit $exhibit
+     * @param array $item
      * @param $points_deg
      * @param $points_metres
      */
-    private function _createRecord($exhibit, $item, &$points_deg, &$points_metres)
+    private function _createRecord(TeiEditionsDocumentProxy $doc, NeatlineExhibit $exhibit, $item,
+                                   &$points_deg, &$points_metres)
     {
         $record = new NeatlineRecord;
         $record->exhibit_id = $exhibit->id;
@@ -636,8 +638,9 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
             $record->coverage = "Point(" . implode(" ", $metres) . ")";
         }
         $record->tags = $this->_getRecordTags($item["urls"]);
-        if (isset($item["body"])) {
-            $record->body = $item["body"];
+        $body = $doc->entityBodyHtml($item["urls"], $item["slug"]);
+        if ($body) {
+            $record->body = $body;
         }
         if (isset($item["slug"])) {
             $record->slug = $item["slug"];

@@ -77,7 +77,10 @@ function full_path_to($file)
 function tei_editions_tei_to_html($path, $img_map)
 {
 
-    $lang = explode('-', get_html_lang())[0];
+    $html_lang = function_exists("get_html_lang")
+        ? get_html_lang()
+        : "en-GB";
+    $lang = explode('-', $html_lang)[0];
     $tohtml = dirname(__FILE__) . '/editions.xsl';
 
     $xsldoc = new DOMDocument();
