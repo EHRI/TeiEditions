@@ -25,7 +25,9 @@
             </projectDesc>
         </encodingDesc>
         <profileDesc>
-            <creation><date when="2017-04-29">29th April 2017</date>,
+            <creation>
+                <idno>test</idno>
+                <date when="2017-04-29">29th April 2017</date>,
                 <placeName ref="http://www.geonames.org/2643743/">London</placeName></creation>
         </profileDesc>
         <revisionDesc>

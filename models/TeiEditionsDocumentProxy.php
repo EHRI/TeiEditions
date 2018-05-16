@@ -147,33 +147,33 @@ class TeiEditionsDocumentProxy
             $names = $this->query->evaluate("./tei:{$nameTag}[1]", $entity);
             if ($names->length) {
                 $name = $names->item(0)->textContent;
-                $links = $this->query->evaluate("./tei:linkGrp/tei:link/@target", $entity);
+                $links = $this->query->evaluate("./tei:linkGrp/tei:link", $entity);
                 $urls = [];
                 for ($i = 0; $i < $links->length; $i++) {
-                    $urls[] = $links->item($i)->value;
+                    $type = $this->query->evaluate("./@type", $links->item($i))[0]->textContent;
+                    $url = $this->query->evaluate("./@target", $links->item($i))[0]->textContent;
+                    $urls[$type] = $url;
                 }
-                $slug = !empty($urls)
-                    ? tei_editions_url_to_slug($urls[0])
+                $slug = isset($urls["normal"])
+                    ? tei_editions_url_to_slug($urls["normal"])
                     : @$this->query->evaluate("./@xml:id", $entity)->item(0)->textContent;
-                $item = [
-                    "name" => $name,
-                    "urls" => $urls,
-                    "slug" => $slug,
-                ];
+                $item = new TeiEditionsEntity;
+                $item->name = $name;
+                $item->slug = $slug;
+                $item->urls = $urls;
 
                 $desc = $this->query->evaluate("./tei:note/p", $entity);
                 if ($desc->length) {
-                    $item["desc"] = [];
                     for ($i = 0; $i < $desc->length; $i++) {
-                        $item["desc"][] = $desc->item($i)->textContent;
+                        $item->notes[] = $desc->item($i)->textContent;
                     }
                 }
 
                 $lat_long = $this->query->evaluate("./tei:location/tei:geo[1]", $entity);
                 if ($lat_long->length) {
                     $parts = explode(" ", $lat_long->item(0)->textContent);
-                    $item["latitude"] = $parts[0];
-                    $item["longitude"] = $parts[1];
+                    $item->latitude = $parts[0];
+                    $item->longitude = $parts[1];
                 }
 
                 $out[$name] = $item;
@@ -184,7 +184,7 @@ class TeiEditionsDocumentProxy
 
     public function entityBodyHtml($urls, $slug)
     {
-        $url = empty($urls) ? ('#' . $slug) : $urls[0];
+        $url = isset($urls["normal"]) ? $urls["normal"] : ('#' . $slug);
         $xml = new DomDocument;
         $xml->loadXML($this->asHtml());
         $query = new DOMXPath($xml);

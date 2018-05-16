@@ -1,5 +1,6 @@
 <?php
 
+include_once dirname(__FILE__) . "/../models/TeiEditionsEntity.php";
 include_once dirname(__FILE__) . "/../models/TeiEditionsDocumentProxy.php";
 
 
@@ -29,15 +30,14 @@ class TeiEditionsDocumentProxyTest extends PHPUnit_Framework_Testcase
     public function testGetPlaces()
     {
         $doc = new TeiEditionsDocumentProxy($this->file);
-        $tartu = [
-            "name" => "Tartu",
-            "longitude" => 26.72509,
-            "latitude" => 58.38062,
-            "urls" => [
-                "http://www.geonames.org/588335/",
-                "http://ru.wikipedia.org/wiki/%D0%A2%D0%B0%D1%80%D1%82%D1%83"
-            ],
-            "slug" => "geonames-588335",
+        $tartu = new TeiEditionsEntity;
+        $tartu->name =  "Tartu";
+        $tartu->slug = "geonames-588335";
+        $tartu->longitude = 26.72509;
+        $tartu->latitude = 58.38062;
+        $tartu->urls = [
+            "normal" => "http://www.geonames.org/588335/",
+            "desc" => "http://ru.wikipedia.org/wiki/%D0%A2%D0%B0%D1%80%D1%82%D1%83"
         ];
         $this->assertEquals([$tartu], $doc->entities());
     }

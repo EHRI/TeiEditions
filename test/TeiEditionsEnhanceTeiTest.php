@@ -39,7 +39,7 @@ class TeiEditionsEnhanceTeiTest extends PHPUnit_Framework_Testcase
         $refs = tei_editions_get_references($this->tei, "placeName");
         $this->assertEquals(
             array(
-                "Tartu" => null,
+                "Tartu" => "#test_1",
                 "London" => "http://www.geonames.org/2643743/",
                 "Munich" => "http://www.geonames.org/6559171/"
             ),
@@ -71,6 +71,10 @@ class TeiEditionsEnhanceTeiTest extends PHPUnit_Framework_Testcase
         $this->assertEquals(
             "Mach Alexander",
             $this->tei->xpath("//t:fileDesc/t:sourceDesc/t:listPerson/t:person[1]/t:persName/text()")[0]
+        );
+        $this->assertRegExp(
+          "/11\/10\/1902\s+15\/10\/1980/",
+            (string)$this->tei->xpath("//t:fileDesc/t:sourceDesc/t:listPerson/t:person[1]/t:note/t:p[1]/text()")[0]
         );
         $this->assertEquals(
             "Československá vláda v exilu",

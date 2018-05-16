@@ -533,7 +533,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
     {
         $entities = array_unique($doc->entities(), SORT_REGULAR);
         $withgeo = array_filter($entities, function($i) {
-            return isset($i['longitude']) and isset($i['latitude']);
+            return $i->hasGeo();
         });
 
         // if there are no mapped places, delete existing exhibits and return
@@ -620,30 +620,32 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
     /**
      * @param TeiEditionsDocumentProxy $doc
      * @param NeatlineExhibit $exhibit
-     * @param array $item
+     * @param TeiEditionsEntity $item
      * @param $points_deg
      * @param $points_metres
      */
-    private function _createRecord(TeiEditionsDocumentProxy $doc, NeatlineExhibit $exhibit, $item,
+    private function _createRecord(TeiEditionsDocumentProxy $doc,
+                                   NeatlineExhibit $exhibit,
+                                   TeiEditionsEntity $item,
                                    &$points_deg, &$points_metres)
     {
         $record = new NeatlineRecord;
         $record->exhibit_id = $exhibit->id;
-        $record->title = $item["name"];
-        if (isset($item["longitude"]) and isset($item["latitude"])) {
-            $deg = [$item["longitude"], $item["latitude"]];
+        $record->title = $item->name;
+        if ($item->hasGeo()) {
+            $deg = [$item->longitude, $item->latitude];
             $metres = tei_editions_degrees_to_metres($deg);
             $points_deg[] = $deg;
             $points_metres[] = $metres;
             $record->coverage = "Point(" . implode(" ", $metres) . ")";
         }
-        $record->tags = $this->_getRecordTags($item["urls"]);
-        $body = $doc->entityBodyHtml($item["urls"], $item["slug"]);
+        $record->tags = $this->_getRecordTags($item->urls);
+        $body = $doc->entityBodyHtml($item->urls, $item->slug);
         if ($body) {
             $record->body = $body;
         }
-        if (isset($item["slug"])) {
-            $record->slug = $item["slug"];
+        if (isset($item->slug)) {
+            $record->slug = $item->slug;
         }
         $record->save();
     }
