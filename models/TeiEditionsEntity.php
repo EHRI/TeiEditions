@@ -20,4 +20,12 @@ class TeiEditionsEntity
             ? $this->urls["normal"]
             : ("#" . $this->slug);
     }
+    
+    static function create($name, $url) {
+        $e = new TeiEditionsEntity;
+        $e->name = $name;
+        $e->urls = ["normal" => $url];
+        $e->slug = tei_editions_url_to_slug($url);
+        return $e;
+    }
 }

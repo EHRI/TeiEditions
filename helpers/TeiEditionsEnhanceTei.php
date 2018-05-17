@@ -29,231 +29,17 @@ TEI elements and services handled:
 
 */
 
-include_once dirname(__FILE__) . "/../models/TeiEditionsEntity.php";
+include_once dirname(__FILE__) . "/../models/TeiEditionsDataFetcher.php";
+include_once dirname(__FILE__) . "/../models/TeiEditionsDocumentProxy.php";
 
-function tei_editions_iso639_3to2($three)
-{
-    $lookup = [
-        "eng" => "en",
-        "deu" => "de",
-        "ces" => "cs",
-        "hun" => "hu",
-        "heb" => "he",
-        "fre" => "fr",
-        "slo" => "sk",
-        "slk" => "sk",
-        "nld" => "nl",
-        "pol" => "pl",
-        "rus" => "ru",
-        "ron" => "ro"
-    ];
-    return isset($lookup[$three]) ? $lookup[$three] : $three;
-}
-
-function tei_editions_url_slug_mappings()
-{
-    return [
-        'geonames' => ['http://sws.geonames.org/<id>/', 'http://www.geonames.org/<id>/.*'],
-        'ehri-authority' => ['https://portal.ehri-project.eu/authorities/<id>'],
-        'ehri-term' => ['https://portal.ehri-project.eu/keywords/<id>'],
-        'ehri-unit' => ['https://portal.ehri-project.eu/units/<id>'],
-        'ehri-institution' => ['https://portal.ehri-project.eu/institutions/<id>'],
-        'holocaust-cz' => ['https://www.holocaust.cz/databaze-obeti/obet/<id>']
-    ];
-}
-
-function tei_editions_url_to_slug($url)
-{
-    // if it starts with a hash it's a local reference
-    if (!empty($url) and $url[0] == '#') {
-        return substr($url, 1);
-    }
-
-    foreach (tei_editions_url_slug_mappings() as $name => $patterns) {
-        foreach ($patterns as $pattern) {
-            $regex = '~' . str_replace('<id>', '([^/]+)', $pattern) . '~';
-            $matches = [];
-            if (preg_match($regex, $url, $matches)) {
-                return implode('-', array($name, $matches[1]));
-            }
-        }
-    }
-    return null;
-}
-
-function tei_editions_slug_to_url($slug)
-{
-    foreach (tei_editions_url_slug_mappings() as $name => $patterns) {
-        foreach ($patterns as $pattern) {
-            $pos = strpos($slug, $name);
-            if ($pos !== false) {
-                $id = substr($slug, strlen($name) + 1);
-                return str_replace('<id>', $id, $pattern);
-            }
-        }
-    }
-    // assume a local slug
-    return '#' . $slug;
-}
-
-/**
- * @param $req string the GraphQL request body
- * @param $params array the GraphQL parameters
- * @return array the return data
- */
-function tei_editions_make_graphql_request($req, $params)
-{
-    $data = array("query" => $req, "variables" => $params);
-    $json = json_encode($data);
-
-    $curl = curl_init("https://portal.ehri-project.eu/api/graphql");
-    curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "POST");
-    curl_setopt($curl, CURLOPT_POSTFIELDS, $json);
-    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($curl, CURLOPT_HTTPHEADER, array(
-        'Content-Type: application/json',
-        'Content-Length: ' . strlen($json)
-    ));
-    $res = curl_exec($curl);
-    curl_close($curl);
-    return json_decode($res, true);
-}
-
-function tei_editions_get_wikidata_info($url)
-{
-    $json_url = preg_match("\.json$", $url) ? $url : "$url.json";
-    $curl = curl_init($json_url);
-    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-    $res = curl_exec($curl);
-    curl_close($curl);
-    return json_decode($res, true);
-}
-
-function tei_editions_parse_geonames_rdf_place_name(SimpleXMLElement $xml, $lang)
-{
-    // try and translate the language code.
-    $shortlang = tei_editions_iso639_3to2($lang);
-    $paths = [
-        "/rdf:RDF/gn:Feature/gn:officialName[@xml:lang = '$shortlang']/text()",
-        "/rdf:RDF/gn:Feature/gn:alternateName[@xml:lang = '$shortlang']/text()",
-        "/rdf:RDF/gn:Feature/gn:name/text()"
-    ];
-
-    foreach ($paths as $path) {
-        $value = $xml->xpath($path);
-        if (!empty($value)) {
-            return (string)$value[0];
-        }
-    }
-
-    return null;
-}
-
-function tei_editions_get_place($url, $lang = null)
-{
-    if (!preg_match("/(geonames)/", $url)) {
-        return false;
-    }
-
-    // correct geonames url
-    $id = explode("/", str_replace("http://www.geonames.org/", "", $url))[0];
-
-    $geonames_url = "http://sws.geonames.org/$id/about.rdf";
-
-    // fetch geonames RDF
-    $data = file_get_contents($geonames_url);
-    $xml = new SimpleXMLElement($data);
-    if ($xml === FALSE) {
-        error_log("Error reading URL!");
-        return false;
-    }
-
-    // interpret geonames RDF
-    $xml->registerXPathNamespace('rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#');
-    $xml->registerXPathNamespace('gn', 'http://www.geonames.org/ontology#');
-    $xml->registerXPathNamespace('wgs84_pos', 'http://www.w3.org/2003/01/geo/wgs84_pos#');
-
-    $lat = (array)$xml->xpath("/rdf:RDF/gn:Feature/wgs84_pos:lat")[0][0];
-    $lon = (array)$xml->xpath("/rdf:RDF/gn:Feature/wgs84_pos:long")[0][0];
-    $wiki = @(array)$xml->xpath("/rdf:RDF/gn:Feature/gn:wikipediaArticle/@rdf:resource")[0][0];
-
-    return array(
-        "id" => $id,
-        "url" => $geonames_url,
-        "name" => tei_editions_parse_geonames_rdf_place_name($xml, $lang),
-        "latitude" => $lat[0],
-        "longitude" => $lon[0],
-        "wikipedia" => @$wiki[0]
-    );
-}
-
-function tei_editions_get_historical_agent($url, $lang = null)
-{
-    // build query
-    $req = 'query getAgent($id: ID!, $lang: String) {
-            HistoricalAgent(id: $id) {
-                id
-                identifier
-                description(languageCode: $lang) {
-                    name
-                    lastName
-                    firstName
-                    biographicalHistory
-                    datesOfExistence
-                    source
-                    otherFormsOfName
-                    parallelFormsOfName
-                }
-            }
-        }';
-
-    // execute query and extract JSON
-    $id = basename($url);
-    $result = tei_editions_make_graphql_request($req, array("id" => $id, "lang" => $lang));
-    return isset($result['data']['HistoricalAgent']['description'])
-        ? array_merge(
-            array("id" => $id, "url" => $url),
-            $result['data']['HistoricalAgent']['description']
-        )
-        : false;
-}
-
-function tei_editions_get_concept($url, $lang = null)
-{
-    // build query
-    $req = 'query getConcept($id: ID!, $lang: String) {
-        CvocConcept(id: $id) {
-            description(languageCode: $lang) {
-                name                
-            }
-            longitude
-            latitude
-            seeAlso
-        }
-    }';
-
-    // execute query and extract JSON
-    $id = basename($url);
-    $result = tei_editions_make_graphql_request($req, array("id" => $id, "lang" => $lang));
-    return isset($result['data']['CvocConcept']["description"])
-        ? array(
-            "id" => $id,
-            "url" => $url,
-            "name" => $result['data']['CvocConcept']['description']['name'],
-            "longitude" => $result['data']['CvocConcept']['longitude'],
-            "latitude" => $result['data']['CvocConcept']['latitude'],
-            "wikipedia" => array_reduce($result['data']['CvocConcept']['seeAlso'], function ($acc, $i) {
-                return strpos($i, "wikipedia") ? $i : $acc;
-            })
-        )
-        : false;
-}
 
 function tei_editions_get_references(SimpleXMLElement $tei, $tag_name)
 {
     $names = array();
     $urls = array();
-    $docid = (string)$tei->xpath("/t:TEI/t:teiHeader/t:profileDesc/t:creation/t:idno/text()")[0];
+    if (!($docid = (string)@$tei->xpath("/t:TEI/t:teiHeader/t:profileDesc/t:creation/t:idno/text()")[0])) {
+        $docid = (string)$tei->xpath("/t:TEI/@xml:id")[0];
+    }
     $idx = 0;
     $paths = [
         "/t:TEI/t:teiHeader/t:profileDesc/t:creation//t:$tag_name",
@@ -288,8 +74,8 @@ function tei_editions_add_entity(SimpleXMLElement $tei, $listTag, $itemTag, $nam
 
     // Special case - if we have a local URL anchor, it refers to an xml:id
     // otherwise, add a link group.
-    if (!empty($entity->urls) && isset($entity->urls["normal"]) && $entity->urls["normal"][0] == '#') {
-        $item->addAttribute("id", substr($entity->urls["normal"], 1));
+    if ($entity->ref()[0] == '#') {
+        $item->addAttribute("id", substr($entity->ref(), 1));
     } else if (!empty($entity->urls)) {
         $link_grp = $item->addChild('linkGrp');
         foreach ($entity->urls as $type => $url) {
@@ -310,201 +96,49 @@ function tei_editions_add_entity(SimpleXMLElement $tei, $listTag, $itemTag, $nam
     }
 }
 
-function tei_editions_add_link_group(SimpleXMLElement $item, $url)
-{
-    $link_grp = $item->addChild('linkGrp');
-    $link = $link_grp->addChild('link');
-    $link->addAttribute('type', 'normal');
-    $link->addAttribute('target', $url);
-    return $link_grp;
-}
-
-function tei_editions_add_bio_data(SimpleXMLElement $item, $data)
-{
-    if (isset($data['datesOfExistence']) OR isset($data['biographicalHistory'])) {
-        $note = $item->addChild('note');
-        if (isset($data['datesOfExistence'])) {
-            $note->addChild("p", htmlspecialchars($data['datesOfExistence']));
-        }
-        if (isset($data['biographicalHistory'])) {
-            $note->addChild("p", htmlspecialchars($data['biographicalHistory']));
-        }
-        return $note;
-    }
-    return null;
-}
-
-function tei_editions_add_place(SimpleXMLElement $tei, $name, $url, $data)
-{
-    $entity = new TeiEditionsEntity;
-    $entity->name = isset($data["name"]) ? $data["name"] : $name;
-    error_log("Adding place: {$entity->name}");
-
-    // longitude and latitude
-    if (isset($data["longitude"]) and isset($data["latitude"])) {
-        $entity->latitude = $data["latitude"];
-        $entity->longitude = $data["longitude"];
-    }
-
-    if ($url) {
-        // URIs and links
-        $entity->urls["normal"] = $url;
-        if (isset($data["wikipedia"])) {
-            $entity->urls["desc"] = $data["wikipedia"];
-        }
-    }
-
-    tei_editions_add_entity($tei, "listPlace", "place", "placeName", $entity);
-}
-
-function tei_editions_process_tei_places(SimpleXMLElement $tei, $lang, $dict)
+function tei_editions_process_tei_places(SimpleXMLElement $tei, TeiEditionsDataFetcher $enhancer)
 {
     // get place URLs
     $refs = tei_editions_get_references($tei, "placeName");
-
-    if ($refs) {
-        foreach ($refs as $name => $url) {
-            $data = array();
-            if ($url) {
-                $lookup = tei_editions_get_place($url, $lang);
-                if ($lookup) {
-                    $data = $lookup;
-                }
-            }
-
-            tei_editions_add_place($tei, $name, $url, $data);
-        }
+    foreach ($enhancer->fetchPlaces($refs) as $place) {
+        tei_editions_add_entity($tei, "listPlace", "place", "placeName", $place);
     }
 }
 
-function tei_editions_add_term(SimpleXMLElement $tei, $name, $url, $data)
-{
-    $entity = new TeiEditionsEntity;
-    $entity->name = isset($data["name"]) ? $data["name"] : $name;
-    error_log("Adding term: {$entity->name}");
-
-    if ($url) {
-        $entity->urls["normal"] = $url;
-    }
-
-    tei_editions_add_entity($tei, "list", "item", "name", $entity);
-}
-
-function tei_editions_process_tei_terms(SimpleXMLElement $tei, $lang, $dict)
+function tei_editions_process_tei_terms(SimpleXMLElement $tei, TeiEditionsDataFetcher $enhancer)
 {
     // query for terms URLs
     $refs = tei_editions_get_references($tei, "term");
-
-    if ($refs) {
-        foreach ($refs as $name => $url) {
-            $data = array();
-            if ($url) {
-                foreach (array_unique([$lang, "eng", null]) as $ln) {
-                    $lookup = tei_editions_get_concept($url, $ln);
-                    if ($lookup) {
-                        $data = $lookup;
-                        break;
-                    }
-                }
-            }
-
-            tei_editions_add_term($tei, $name, $url, $data);
-        }
+    foreach ($enhancer->fetchConcepts($refs) as $term) {
+        tei_editions_add_entity($tei, "list", "item", "name", $term);
     }
 }
 
-function tei_editions_add_person(SimpleXMLElement $tei, $name, $url, $data)
-{
-    $entity = new TeiEditionsEntity;
-    $entity->name = isset($data["name"]) ? $data["name"] : $name;
-    error_log("Adding person: {$entity->name}");
-
-    if ($url) {
-        $entity->urls["normal"] = $url;
-    }
-    if (isset($data['datesOfExistence'])) {
-        $entity->notes[] = $data['datesOfExistence'];
-    }
-    if (isset($data['biographicalHistory'])) {
-        $entity->notes[] = $data['biographicalHistory'];
-    }
-
-    tei_editions_add_entity($tei, "listPerson", "person", "persName", $entity);
-}
-
-
-function tei_editions_process_tei_people(SimpleXMLElement $tei, $lang, $dict)
+function tei_editions_process_tei_people(SimpleXMLElement $tei, TeiEditionsDataFetcher $enhancer)
 {
     // query for terms URLs
     $refs = tei_editions_get_references($tei, "persName");
-
-    if ($refs) {
-        foreach ($refs as $name => $url) {
-            $data = array();
-            if ($url) {
-                foreach (array_unique([$lang, "eng", null]) as $ln) {
-                    $lookup = tei_editions_get_historical_agent($url, $ln);
-                    if ($lookup) {
-                        $data = $lookup;
-                        break;
-                    }
-                }
-            }
-
-            tei_editions_add_person($tei, $name, $url, $data);
-        }
+    foreach ($enhancer->fetchHistoricalAgents($refs) as $person) {
+        tei_editions_add_entity($tei, "listPerson", "person", "persName", $person);
     }
 }
 
-function tei_editions_add_org(SimpleXMLElement $tei, $name, $url, $data)
-{
-    $entity = new TeiEditionsEntity;
-    $entity->name = isset($data["name"]) ? $data["name"] : $name;
-    error_log("Adding person: {$entity->name}");
-
-    if ($url) {
-        $entity->urls["normal"] = $url;
-    }
-    if (isset($data['datesOfExistence'])) {
-        $entity->notes[] = $data['datesOfExistence'];
-    }
-    if (isset($data['biographicalHistory'])) {
-        $entity->notes[] = $data['biographicalHistory'];
-    }
-
-    tei_editions_add_entity($tei, "listOrg", "org", "orgName", $entity);
-}
-
-
-function tei_editions_process_tei_orgs(SimpleXMLElement $tei, $lang, $dict)
+function tei_editions_process_tei_orgs(SimpleXMLElement $tei, TeiEditionsDataFetcher $enhancer)
 {
     // query for terms URLs
     $refs = tei_editions_get_references($tei, "orgName");
-
-    if ($refs) {
-        foreach ($refs as $name => $url) {
-            $data = array();
-            if ($url) {
-                foreach (array_unique([$lang, "eng", null]) as $ln) {
-                    $lookup = tei_editions_get_historical_agent($url, $ln);
-                    if ($lookup) {
-                        $data = $lookup;
-                        break;
-                    }
-                }
-            }
-
-            tei_editions_add_org($tei, $name, $url, $data);
-        }
+    foreach ($enhancer->fetchHistoricalAgents($refs) as $org) {
+        tei_editions_add_entity($tei, "listOrg", "org", "orgName", $org);
     }
 }
 
 function tei_editions_enhance_tei(SimpleXMLElement $tei, $lang, $dict = [])
 {
-    tei_editions_process_tei_places($tei, $lang, $dict);
-    tei_editions_process_tei_terms($tei, $lang, $dict);
-    tei_editions_process_tei_people($tei, $lang, $dict);
-    tei_editions_process_tei_orgs($tei, $lang, $dict);
+    $enhancer = new TeiEditionsDataFetcher($dict, $lang);
+    tei_editions_process_tei_places($tei, $enhancer);
+    tei_editions_process_tei_terms($tei, $enhancer);
+    tei_editions_process_tei_people($tei, $enhancer);
+    tei_editions_process_tei_orgs($tei, $enhancer);
 }
 
 /**
@@ -519,7 +153,7 @@ function load_dict($dictfiles)
     foreach ($dictfiles as $file) {
         $doc = new TeiEditionsDocumentProxy($file);
         foreach ($doc->entities() as $entity) {
-            $entities[$entity["slug"]] = $entity;
+            $entities[$entity->ref()] = $entity;
         }
     }
     return $entities;

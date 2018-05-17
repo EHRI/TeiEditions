@@ -126,7 +126,7 @@ class TeiEditionsDocumentProxy
     /**
      * List places, people, orgs, and term entities.
      *
-     * @return array
+     * @return array|TeiEditionsEntity
      */
     function entities()
     {

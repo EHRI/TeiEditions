@@ -47,6 +47,72 @@ function tei_editions_get_language($name, $default)
     }
 }
 
+function tei_editions_iso639_3to2($three)
+{
+    $lookup = [
+        "eng" => "en",
+        "deu" => "de",
+        "ces" => "cs",
+        "hun" => "hu",
+        "heb" => "he",
+        "fre" => "fr",
+        "slo" => "sk",
+        "slk" => "sk",
+        "nld" => "nl",
+        "pol" => "pl",
+        "rus" => "ru",
+        "ron" => "ro"
+    ];
+    return isset($lookup[$three]) ? $lookup[$three] : $three;
+}
+
+function tei_editions_url_slug_mappings()
+{
+    static $mapping = [
+        'geonames' => ['http://sws.geonames.org/<id>/', 'http://www.geonames.org/<id>/.*'],
+        'ehri-authority' => ['https://portal.ehri-project.eu/authorities/<id>'],
+        'ehri-term' => ['https://portal.ehri-project.eu/keywords/<id>'],
+        'ehri-unit' => ['https://portal.ehri-project.eu/units/<id>'],
+        'ehri-institution' => ['https://portal.ehri-project.eu/institutions/<id>'],
+        'holocaust-cz' => ['https://www.holocaust.cz/databaze-obeti/obet/<id>']
+    ];
+    return $mapping;
+}
+
+function tei_editions_slug_to_url($slug)
+{
+    foreach (tei_editions_url_slug_mappings() as $name => $patterns) {
+        foreach ($patterns as $pattern) {
+            $pos = strpos($slug, $name);
+            if ($pos !== false) {
+                $id = substr($slug, strlen($name) + 1);
+                return str_replace('<id>', $id, $pattern);
+            }
+        }
+    }
+    // assume a local slug
+    return '#' . $slug;
+}
+
+function tei_editions_url_to_slug($url)
+{
+    // if it starts with a hash it's a local reference
+    if (!empty($url) and $url[0] == '#') {
+        return substr($url, 1);
+    }
+
+    foreach (tei_editions_url_slug_mappings() as $name => $patterns) {
+        foreach ($patterns as $pattern) {
+            $regex = '~' . str_replace('<id>', '([^/]+)', $pattern) . '~';
+            $matches = [];
+            if (preg_match($regex, $url, $matches)) {
+                return implode('-', array($name, $matches[1]));
+            }
+        }
+    }
+    return null;
+}
+
 
 /**
  * Determine if an URL is an XML file.
