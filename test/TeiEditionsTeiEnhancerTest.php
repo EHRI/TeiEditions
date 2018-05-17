@@ -1,6 +1,6 @@
 <?php
 
-include_once dirname(__FILE__) . "/../helpers/TeiEditionsEnhanceTei.php";
+include_once dirname(__FILE__) . "/../models/TeiEditionsTeiEnhancer.php";
 
 
 class TeiEditionsEnhanceTeiTest extends PHPUnit_Framework_Testcase
@@ -16,27 +16,11 @@ class TeiEditionsEnhanceTeiTest extends PHPUnit_Framework_Testcase
         $this->tei->registerXPathNamespace('t', 'http://www.tei-c.org/ns/1.0');
     }
 
-    public function test_tei_editions_url_to_slug()
+    public function test_getReferences()
     {
-        $this->assertEquals('http://sws.geonames.org/12345/',
-            tei_editions_slug_to_url('geonames-12345'));
-        $this->assertEquals('https://portal.ehri-project.eu/authorities/12345',
-            tei_editions_slug_to_url('ehri-authority-12345'));
-    }
-
-    public function test_tei_editions_slug_to_url()
-    {
-        $this->assertEquals('geonames-12345',
-            tei_editions_url_to_slug('http://sws.geonames.org/12345/'));
-        $this->assertEquals('geonames-2782113',
-            tei_editions_url_to_slug('http://www.geonames.org/2782113/republic-of-austria.html'));
-        $this->assertEquals('ehri-authority-12345',
-            tei_editions_url_to_slug('https://portal.ehri-project.eu/authorities/12345'));
-    }
-
-    public function test_tei_editions_get_references()
-    {
-        $refs = tei_editions_get_references($this->tei, "placeName");
+        $src = new TeiEditionsDataFetcher([], null);
+        $tester = new TeiEditionsTeiEnhancer($this->tei, $src);
+        $refs = $tester->getReferences("placeName");
         $this->assertEquals(
             array(
                 "Tartu" => "#test_1",
@@ -47,10 +31,11 @@ class TeiEditionsEnhanceTeiTest extends PHPUnit_Framework_Testcase
         );
     }
 
-    public function test_tei_editions_enhance_tei()
+    public function test_addRefs()
     {
         // TODO: fix this so we can mock the data lookups!
-        tei_editions_enhance_tei($this->tei, "eng");
+        $src = new TeiEditionsDataFetcher([], "eng");
+        (new TeiEditionsTeiEnhancer($this->tei, $src))->addRefs();
 
         $this->assertEquals(
             "Tartu",
@@ -82,10 +67,11 @@ class TeiEditionsEnhanceTeiTest extends PHPUnit_Framework_Testcase
         );
     }
 
-    public function test_tei_editions_enhance_tei_lang()
+    public function test_addRefsWithLang()
     {
         // TODO: fix this so we can mock the data lookups!
-        tei_editions_enhance_tei($this->tei, "deu");
+        $src = new TeiEditionsDataFetcher([], "deu");
+        (new TeiEditionsTeiEnhancer($this->tei, $src))->addRefs();
 
         $this->assertEquals(
             "München",
