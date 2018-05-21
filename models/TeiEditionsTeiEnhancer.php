@@ -99,10 +99,14 @@ class TeiEditionsTeiEnhancer
         $item = $list->addChild($itemTag);
         $item->addChild($nameTag, htmlspecialchars($entity->name));
 
+        if ($entity->hasGeo()) {
+            $location = $item->addChild('location');
+            $location->addChild('geo', $entity->latitude . " " . $entity->longitude);
+        }
         // Special case - if we have a local URL anchor, it refers to an xml:id
         // otherwise, add a link group.
         if ($entity->ref()[0] == '#') {
-            $item->addAttribute("id", substr($entity->ref(), 1));
+            $item->addAttribute("xml:id", substr($entity->ref(), 1), "http://www.w3.org/XML/1998/namespace");
         } else if (!empty($entity->urls)) {
             $link_grp = $item->addChild('linkGrp');
             foreach ($entity->urls as $type => $url) {
@@ -116,10 +120,6 @@ class TeiEditionsTeiEnhancer
             foreach ($entity->notes as $p) {
                 $desc->addChild("p", htmlspecialchars($p));
             }
-        }
-        if ($entity->hasGeo()) {
-            $location = $item->addChild('location');
-            $location->addChild('geo', $entity->latitude . " " . $entity->longitude);
         }
     }
 
