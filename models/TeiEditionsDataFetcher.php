@@ -23,13 +23,15 @@ class TeiEditionsDataFetcher
     {
         $entities = [];
         foreach ($nametourl as $name => $url) {
-            if ($e = $this->_getPlace($url, $this->lang)) {
-                $entities[] = $e;
-            } else {
-                $entities[] = TeiEditionsEntity::create($name, $url);
+            // HACK! if we can't get a place, try to look up the
+            // item as a concept
+            if (!($e = $this->_getPlace($url, $this->lang))
+                    && !($e = $this->_getConcept($url, $this->lang))) {
+                $e = TeiEditionsEntity::create($name, $url);
             }
+            $entities[$e->ref()] = $e;
         }
-        return $entities;
+        return array_values($entities);
     }
 
     /**
@@ -39,13 +41,12 @@ class TeiEditionsDataFetcher
     {
         $entities = [];
         foreach ($nametourl as $name => $url) {
-            if ($e = $this->_getHistoricalAgent($url, $this->lang)) {
-                $entities[] = $e;
-            } else {
-                $entities[] = TeiEditionsEntity::create($name, $url);
+            if (!($e = $this->_getHistoricalAgent($url, $this->lang))) {
+                $e = TeiEditionsEntity::create($name, $url);
             }
+            $entities[$e->ref()] = $e;
         }
-        return $entities;
+        return array_values($entities);
     }
 
     /**
@@ -55,13 +56,12 @@ class TeiEditionsDataFetcher
     {
         $entities = [];
         foreach ($nametourl as $name => $url) {
-            if ($e = $this->_getConcept($url, $this->lang)) {
-                $entities[] = $e;
-            } else {
-                $entities[] = TeiEditionsEntity::create($name, $url);
+            if (!($e = $this->_getConcept($url, $this->lang))) {
+                $e = TeiEditionsEntity::create($name, $url);
             }
+            $entities[$e->ref()] = $e;
         }
-        return $entities;
+        return array_values($entities);
     }
 
     /**
