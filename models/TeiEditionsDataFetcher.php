@@ -173,7 +173,7 @@ class TeiEditionsDataFetcher
            $geonames_url
         );
         if ($wikiurl = @$wiki[0]) {
-            $entity->urls[] = $wikiurl;
+            $entity->urls["desc"] = $wikiurl;
         }
         $entity->latitude = (float)$lat[0];
         $entity->longitude = (float)$lon[0];

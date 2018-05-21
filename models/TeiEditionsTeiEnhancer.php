@@ -51,14 +51,13 @@ class TeiEditionsTeiEnhancer
      * @param string $tag_name the tag name to locate
      * @return array an array of [name => urls]
      */
-    function getReferences($tag_name)
+    function getReferences($tag_name, &$idx = 0)
     {
         $names = array();
         $urls = array();
         if (!($docid = (string)@$this->tei->xpath("/t:TEI/t:teiHeader/t:profileDesc/t:creation/t:idno/text()")[0])) {
             $docid = (string)$this->tei->xpath("/t:TEI/@xml:id")[0];
         }
-        $idx = 0;
         $paths = [
             "/t:TEI/t:teiHeader/t:profileDesc/t:creation//t:$tag_name",
             "/t:TEI/t:text/t:body/*//t:$tag_name"
@@ -132,25 +131,28 @@ class TeiEditionsTeiEnhancer
      */
     public function addRefs()
     {
-        $placeRefs = $this->getReferences("placeName");
+        // Index for generated entity IDs
+        $idx = 0;
+
+        $placeRefs = $this->getReferences("placeName", $idx);
         foreach ($this->dataSrc->fetchPlaces($placeRefs) as $place) {
             error_log("Found place: " . $place->name);
             $this->addEntity("listPlace", "place", "placeName", $place);
         }
 
-        $termRefs = $this->getReferences("term");
+        $termRefs = $this->getReferences("term", $idx);
         foreach ($this->dataSrc->fetchConcepts($termRefs) as $term) {
             error_log("Found term: " . $term->name);
             $this->addEntity("list", "item", "name", $term);
         }
 
-        $personRefs = $this->getReferences("persName");
+        $personRefs = $this->getReferences("persName", $idx);
         foreach ($this->dataSrc->fetchHistoricalAgents($personRefs) as $person) {
             error_log("Found person: " . $person->name);
             $this->addEntity( "listPerson", "person", "persName", $person);
         }
 
-        $orgRefs = $this->getReferences("orgName");
+        $orgRefs = $this->getReferences("orgName", $idx);
         foreach ($this->dataSrc->fetchHistoricalAgents($orgRefs) as $org) {
             error_log("Found org: " . $org->name);
             $this->addEntity("listOrg", "org", "orgName", $org);
