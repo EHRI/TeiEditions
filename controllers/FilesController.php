@@ -93,7 +93,8 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
         }
     }
 
-    public function downloadAction() {
+    public function downloadAction()
+    {
         if ($this->_getParam("id")) {
             $file = get_db()->getTable("File")->find($this->_getParam("id"));
             if ($file) {
@@ -119,8 +120,8 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
             $files = $associated
                 ? tei_editions_get_associated_files($item)
                 : (tei_editions_get_main_tei($item)
-                     ? [tei_editions_get_main_tei($item)]
-                     : []
+                    ? [tei_editions_get_main_tei($item)]
+                    : []
                 );
             foreach ($files as $file) {
                 $archive->addFromString($file->original_filename,
@@ -265,8 +266,8 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
                             $item->deleteElementTexts();
                             $doc = $this->_getDoc($file->getWebPath(), $file->getProperty('display_title'));
                             $this->_updateItemFromTEI($item, $doc, $neatline);
-                            $this->_updateFileOrder($item);
                             $updated++;
+                            break;
                         }
                     }
                 }
@@ -300,24 +301,46 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
     }
 
     /**
-     * @param Item $item
-     * @param string $path
-     * @param string $name
-     * @param bool $created
+     * Add a file to the item, or update it from the given
+     * path if the original filename already exists.
+     *
+     * @param Item $item the item
+     * @param string $path the file path
+     * @param string $name the file name
      */
-    private function _updateItemFile(Item $item, $path, $name, $created)
+    private function _addOrUpdateItemFile(Item $item, $path, $name)
     {
-        if (!$created) {
-            foreach ($item->getFiles() as $file) {
-                if ($file->original_filename == $name) {
-                    $file->unlinkFile();
-                    $file->delete();
-                }
+        $primaryXml = null;
+        foreach ($item->getFiles() as $file) {
+            if (is_null($primaryXml) && tei_editions_is_xml_file($file)) {
+                $primaryXml = $file->original_filename;
+            }
+            if ($file->original_filename == $name) {
+                $file->unlinkFile();
+                $file->delete();
             }
         }
         @insert_files_for_item($item, "Filesystem",
             ['source' => $path, 'name' => $name]);
-        $this->_updateFileOrder($item);
+
+        $others = [];
+        $xml = [];
+        foreach ($item->getFiles() as $file) {
+            if (tei_editions_is_xml_file($file)) {
+                if ($primaryXml && $file->original_filename == $primaryXml) {
+                    array_unshift($xml, $file);
+                } else {
+                    $xml[] = $file;
+                }
+            } else {
+                $others[] = $file;
+            }
+        }
+        $order = 1;
+        foreach (array_merge($others, $xml) as $file) {
+            $file->order = $order++;
+            $file->save();
+        }
     }
 
     /**
@@ -465,7 +488,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
         if (is_null($item)) {
             throw new Exception("Unable to locate item with identifier: " . $id . " (file: $path)");
         }
-        $this->_updateItemFile($item, $path, $name, false);
+        $this->_addOrUpdateItemFile($item, $path, $name);
     }
 
     private function _tempDir($mode = 0700)
@@ -487,6 +510,8 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
     }
 
     /**
+     * Update an item from the given TEI XML file.
+     *
      * @param string $path
      * @param string $name
      * @param bool $neatline
@@ -502,7 +527,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
         $doc = $this->_getDoc($path, $name);
         $item = $this->_getOrCreateItem($doc, $create);
         $this->_updateItemFromTEI($item, $doc, $neatline);
-        $this->_updateItemFile($item, $path, $name, $create);
+        $this->_addOrUpdateItemFile($item, $path, $name);
         if ($create) {
             $created++;
         } else {
@@ -532,7 +557,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
     private function _updateNeatlineExhibit(Item $entity, TeiEditionsDocumentProxy $doc)
     {
         $entities = array_unique($doc->entities(), SORT_REGULAR);
-        $withgeo = array_filter($entities, function($i) {
+        $withgeo = array_filter($entities, function ($i) {
             return $i->hasGeo();
         });
 
@@ -591,30 +616,6 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
             $exhibit->map_zoom = tei_editions_approximate_zoom($points_deg, 7);
         }
         $exhibit->save($throwIfInvalid = true);
-    }
-
-    /**
-     * Ensure files are sorted with images first, with the others
-     * retaining their order.
-     *
-     * @param Item $item
-     */
-    private function _updateFileOrder(Item $item)
-    {
-        $others = [];
-        $xml = [];
-        foreach ($item->getFiles() as $file) {
-            if (!tei_editions_is_xml_file($file)) {
-                $others[] = $file;
-            } else {
-                $xml[] = $file;
-            }
-        }
-        $order = 1;
-        foreach (array_merge($others, $xml) as $file) {
-            $file->order = $order++;
-            $file->save();
-        }
     }
 
     /**
