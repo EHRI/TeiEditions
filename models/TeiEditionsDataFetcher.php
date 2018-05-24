@@ -170,7 +170,7 @@ class TeiEditionsDataFetcher
 
         $entity = TeiEditionsEntity::create(
            $this->_parseGeonamesPlaceName($xml, $lang),
-           $geonames_url
+           $url
         );
         if ($wikiurl = @$wiki[0]) {
             $entity->urls["desc"] = $wikiurl;
