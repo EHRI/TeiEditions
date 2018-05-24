@@ -72,6 +72,23 @@ function tei_editions_recent_items_shortcode($args, $view)
 }
 
 /**
+ * A shortcode function for rendering a group of item summaries via
+ * a comma-delimited list of identifiers.
+ *
+ * @param $args
+ * @param $view
+ * @return string
+ */
+function tei_editions_items_shortcode($args, $view)
+{
+    return sprintf(
+        "<div class=\"editions-item-group\">%s</div>",
+        implode("\n", array_map(function($identifier) use ($view) {
+            return tei_editions_item_shortcode(["identifier" => trim($identifier)], $view);
+        }, explode(',', $args["identifiers"])))
+    );
+}
+/**
  * A shortcode function for rendering an item summary via it's identifier.
  *
  * @param $args
