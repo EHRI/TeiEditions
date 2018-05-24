@@ -162,7 +162,7 @@ class TeiEditionsDocumentProxy
                 $item->slug = $slug;
                 $item->urls = $urls;
 
-                $desc = $this->query->evaluate("./tei:note/p", $entity);
+                $desc = $this->query->evaluate("./tei:note/tei:p", $entity);
                 if ($desc->length) {
                     for ($i = 0; $i < $desc->length; $i++) {
                         $item->notes[] = $desc->item($i)->textContent;
