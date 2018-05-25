@@ -270,6 +270,12 @@
         </ol>
     </xsl:template>
 
+    <xsl:template match="tei:del" name="deleted">
+        <del>
+            <xsl:apply-templates/>
+        </del>
+    </xsl:template>
+
     <xsl:template match="tei:p" name="identity">
         <p>
             <xsl:apply-templates/>
