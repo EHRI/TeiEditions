@@ -270,6 +270,38 @@
         </ol>
     </xsl:template>
 
+    <xsl:template match="tei:table" name="table">
+        <table>
+            <xsl:apply-templates/>
+        </table>
+    </xsl:template>
+
+    <xsl:template match="tei:row" name="table-row">
+        <tr>
+            <xsl:apply-templates/>
+        </tr>
+    </xsl:template>
+
+    <xsl:template match="tei:cell" name="table-cell">
+        <xsl:choose>
+            <xsl:when test="./parent::node()[@role='label']">
+                <th>
+                    <xsl:apply-templates/>
+                </th>
+            </xsl:when>
+            <xsl:otherwise>
+                <td>
+                    <xsl:if test="./@role">
+                        <xsl:attribute name="class">
+                            <xsl:value-of select="./@role"/>
+                        </xsl:attribute>
+                    </xsl:if>
+                    <xsl:apply-templates/>
+                </td>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+
     <xsl:template match="tei:del" name="deleted">
         <del>
             <xsl:apply-templates/>

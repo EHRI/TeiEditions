@@ -42,6 +42,10 @@
     list-style-type: none;
 }
 
+.tei > .tei-text table tr td {
+    padding: 5px 10px;
+}
+
 #language-selector {
     margin: 0;
     padding: 0;
