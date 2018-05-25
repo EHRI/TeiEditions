@@ -42,8 +42,17 @@
     list-style-type: none;
 }
 
+.tei > .tei-text table {
+    width: 100%;
+}
+
+.tei > .tei-text table tr th {
+    text-align: left;
+}
+
+.tei > .tei-text table tr th,
 .tei > .tei-text table tr td {
-    padding: 5px 10px;
+    padding: 5px;
 }
 
 #language-selector {
