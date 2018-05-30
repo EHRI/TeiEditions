@@ -124,12 +124,14 @@ function tei_editions_render_item_summary(Item $item)
 {
     $url = record_url($item);
     $img = record_image($item);
-    $ident = metadata($item, ['Dublin Core', "Identifier"], ['no_escape' => true]);
-    $desc = metadata($item, ['Dublin Core', "Description"], ['no_escape' => true]);
-    $src = metadata($item, ['Dublin Core', "Source"], ['no_escape' => true]);
+    $options = ['no_escape' => true];
+    $title = metadata($item, "display_title", $options);
+    $ident = metadata($item, ['Dublin Core', "Identifier"], $options);
+    $desc = metadata($item, ['Dublin Core', "Description"], $options);
+    $src = metadata($item, ['Dublin Core', "Source"], $options);
     $meta = [];
     foreach (["Date", "Creator", "Coverage"] as $key) {
-        $value = metadata($item, ['Dublin Core', $key], ['no_escape' => true]);
+        $value = metadata($item, ['Dublin Core', $key], $options);
         if ($value) {
             $meta[$key] = $value;
         }
@@ -137,7 +139,7 @@ function tei_editions_render_item_summary(Item $item)
 
     return ViewRenderer::render("item_summary.html.twig", [
             "item" => $item, "metadata" => $meta, "url" => $url,
-            "record_image" => $img, "title" => metadata($item, "display_title"),
+            "record_image" => $img, "title" => $title,
             "identifier" => $ident, "description" => $desc, "source" => $src
         ]
     );
