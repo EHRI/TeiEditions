@@ -577,6 +577,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
         $title = metadata($entity, 'display_title');
         $exhibit->title = $title;
         $exhibit->slug = strtolower($doc->recordId());
+        $exhibit->public = true;
         $exhibit->spatial_layer = 'OpenStreetMap';
         $exhibit->narrative = $doc->asSimpleHtml();
         if (plugin_is_active('NeatlineText')) {
