@@ -124,7 +124,6 @@
 
         <xsl:variable name="note" select="./tei:note"/>
 
-
         <div class="content-info-entity-body">
             <xsl:if test="$note">
                 <div class="content-info-entity-note">
@@ -137,7 +136,7 @@
             </xsl:variable>
             <ul class="content-info-entity-footer">
                 <li>
-                    <a class="tei-entity-search">
+                    <a class="tei-entity-search" target="_parent">
                         <xsl:attribute name="href">
                             <xsl:value-of select="concat('/search?q=*&amp;f[]=', $search-type, ':', $name)"/>
                         </xsl:attribute>
