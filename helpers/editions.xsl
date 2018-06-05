@@ -22,6 +22,8 @@
         <organisation xml:lang="de">Organisation</organisation>
         <subject xml:lang="en">Subject</subject>
         <subject xml:lang="de">Thema</subject>
+        <textFromPage xml:lang="en">Text from page </textFromPage>
+        <textFromPage xml:lang="de">Text von Seite </textFromPage>
     </ehri:strings>
 
     <xsl:variable name="messages" select="document('')/*/ehri:strings"/>
@@ -248,7 +250,7 @@
         <xsl:if test="$pageno">
             <div class="element-text-page">
                 <div class="element-text-page-icon material-icons">insert_drive_file</div>
-                Text from page
+                <xsl:value-of select="$messages/textFromPage[lang($lang)]"/>
                 <xsl:value-of select="$pageno"/>
             </div>
         </xsl:if>
