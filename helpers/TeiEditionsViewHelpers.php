@@ -27,7 +27,7 @@ class ViewRenderer {
             self::$iso = $iso = new Matriphe\ISO639\ISO639;
             self::$twig->addFilter(new Twig_SimpleFilter("lang2name", function($code) {
                 $lang = self::$iso->languageByCode1($code);
-                return $lang ? $lang : $code;
+                return $lang ? __($lang) : $code;
             }));
         }
         return self::$twig->render($template, $args);
