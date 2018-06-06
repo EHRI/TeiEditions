@@ -323,6 +323,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
         @insert_files_for_item($item, "Filesystem",
             ['source' => $path, 'name' => $name]);
 
+        $images = [];
         $others = [];
         $xml = [];
         foreach ($item->getFiles() as $file) {
@@ -332,12 +333,14 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
                 } else {
                     $xml[] = $file;
                 }
+            } else if (substr($file->mime_type, 0, 5) == "image" ) {
+                $images[] = $file;
             } else {
                 $others[] = $file;
             }
         }
         $order = 1;
-        foreach (array_merge($others, $xml) as $file) {
+        foreach (array_merge($images, $others, $xml) as $file) {
             $file->order = $order++;
             $file->save();
         }
