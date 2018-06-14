@@ -54,50 +54,39 @@ populate Omeka metadata fields. These XML-Omeka-element mappings are configurabl
 follows:
 
 <dl>
-<dt>Identifier</dt>
-<dd>`/tei:TEI/tei:teiHeader/tei:profileDesc/tei:creation/tei:idno`</dd>
-
-<dt>Title</dt> 
-<dd>`/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title`<dd>
-
-<dt>Subject</dt> 
-<dd>`/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:list/tei:item/tei:name`<dd>
-
-<dt>Description</dt> 
-<dd>`/tei:TEI/tei:teiHeader/tei:profileDesc/tei:abstract`<dd>
-
-<dt>Creator</dt>
-<dd>
-   `/tei:TEI/tei:teiHeader/tei:profileDesc/tei:creation/tei:persName`,
-   `/tei:TEI/tei:teiHeader/tei:profileDesc/tei:creation/tei:orgName`
-</dd>
-
-<dt>Source</dt>
-<dd>
-   `/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl`, 
-   `/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:msDesc/tei:msIdentifier/tei:collection/@ref`
-</dd>
-
-<dt>Publisher</dt> 
-<dd>`/tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:publisher/tei:ref`<dd>
-
-<dt>Date</dt> 
-<dd>`/tei:TEI/tei:teiHeader/tei:profileDesc/tei:creation/tei:date/@when`<dd>
-
-<dt>Rights</dt> 
-<dd>`/tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability/tei:licence`<dd>
-
-<dt>Format</dt> 
-<dd>`/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:msDesc/tei:physDesc`<dd>
-
-<dt>Language</dt>
-<dd>
-    `/tei:TEI/tei:teiHeader/tei:profileDesc/tei:langUsage/tei:language`,
-    `/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/tei:textLang`   
-</dd>
-
-<dt>Coverage</dt> 
-<dd>`/tei:TEI/tei:teiHeader/tei:profileDesc/tei:creation/tei:placeName<dd>`
+    <dt>Identifier</dt>
+    <dd><code>tei:TEI/tei:teiHeader/tei:profileDesc/tei:creation/tei:idno</code></dd>
+    <dt>Title</dt> 
+    <dd><code>tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title</code><dd>
+    <dt>Subject</dt> 
+    <dd><code>tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:list/tei:item/tei:name</code><dd>
+    <dt>Description</dt> 
+    <dd><code>tei:TEI/tei:teiHeader/tei:profileDesc/tei:abstract</code><dd>
+    <dt>Creator</dt>
+    <dd>
+       <code>tei:TEI/tei:teiHeader/tei:profileDesc/tei:creation/tei:persName</code>,
+       <code>tei:TEI/tei:teiHeader/tei:profileDesc/tei:creation/tei:orgName</code>
+    </dd>
+    <dt>Source</dt>
+    <dd>
+       <code>tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl</code>, 
+       <code>tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:msDesc/tei:msIdentifier/tei:collection/@ref</code>
+    </dd>
+    <dt>Publisher</dt> 
+    <dd><code>tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:publisher/tei:ref</code><dd>
+    <dt>Date</dt> 
+    <dd><code>tei:TEI/tei:teiHeader/tei:profileDesc/tei:creation/tei:date/@when</code><dd>
+    <dt>Rights</dt> 
+    <dd><code>tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability/tei:licence</code><dd>
+    <dt>Format</dt> 
+    <dd><code>tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:msDesc/tei:physDesc</code><dd>
+    <dt>Language</dt>
+    <dd>
+        <code>tei:TEI/tei:teiHeader/tei:profileDesc/tei:langUsage/tei:language</code>,
+        <code>tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/tei:textLang</code>   
+    </dd>
+    <dt>Coverage</dt> 
+    <dd><code>/tei:TEI/tei:teiHeader/tei:profileDesc/tei:creation/tei:placeName<dd></code>
 </dl>
 
 
