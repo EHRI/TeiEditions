@@ -7,7 +7,6 @@
  */
 
 require_once dirname(__FILE__) . '/helpers/TeiEditionsFunctions.php';
-require_once dirname(__FILE__) . '/helpers/enhance-tei.php';
 require_once dirname(__FILE__) . '/helpers/TeiEditionsViewHelpers.php';
 
 /**
@@ -45,8 +44,10 @@ class TeiEditionsPlugin extends Omeka_Plugin_AbstractPlugin
     }
 
     /**
-     * @param $element_id
-     * @param $xpath
+     * Create a new XPath-to-element mapping.
+     *
+     * @param string $element_id the element id
+     * @param string $xpath the XPath
      * @return TeiEditionsFieldMapping
      * @throws Omeka_Record_Exception
      * @throws Omeka_Validate_Exception
@@ -61,8 +62,10 @@ class TeiEditionsPlugin extends Omeka_Plugin_AbstractPlugin
     }
 
     /**
-     * @param $name
-     * @param $description
+     * Create a new element
+     *
+     * @param string $name the element name
+     * @param string $description the element description
      * @return Element
      * @throws Omeka_Record_Exception
      * @throws Omeka_Validate_Exception
@@ -78,7 +81,10 @@ class TeiEditionsPlugin extends Omeka_Plugin_AbstractPlugin
     }
 
     /**
-     * @param $name
+     * Retrieve or create a new item type.
+     *
+     * @param string $name the item type name
+     * @param string $description a description
      * @return ItemType
      * @throws Omeka_Record_Exception
      * @throws Omeka_Validate_Exception
@@ -99,7 +105,9 @@ class TeiEditionsPlugin extends Omeka_Plugin_AbstractPlugin
     }
 
     /**
-     * @param $dc_mappings
+     * Create mappings for DC metadata
+     *
+     * @param array $dc_mappings
      * @return array
      * @throws Omeka_Record_Exception
      * @throws Omeka_Validate_Exception
@@ -121,7 +129,9 @@ class TeiEditionsPlugin extends Omeka_Plugin_AbstractPlugin
     }
 
     /**
-     * @param $item_type_mappings
+     * Create mappings for Item Type metadata
+     *
+     * @param array $item_type_mappings
      * @throws Omeka_Record_Exception
      * @throws Omeka_Validate_Exception
      */
@@ -291,6 +301,10 @@ SQL
     {
     }
 
+    /**
+     * @param array $args
+     * @throws Zend_Config_Exception
+     */
     public function hookDefineRoutes($args)
     {
         $args['router']->addConfig(new Zend_Config_Ini(
@@ -309,7 +323,7 @@ SQL
     /**
      * Define the ACL.
      *
-     * @param Omeka_Acl
+     * @param array $args
      */
     public function hookDefineAcl($args)
     {
@@ -343,7 +357,7 @@ SQL
     /**
      * Add a link to the administrative navigation bar.
      *
-     * @param string $nav The array of label/URI pairs.
+     * @param array $nav The array of label/URI pairs.
      * @return array
      */
     public function filterAdminNavigationMain($nav)
