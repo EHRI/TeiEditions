@@ -1,10 +1,22 @@
 <?php
+/**
+ * TeiEditions
+ *
+ * @copyright Copyright 2018 King's College London Department of Digital Humanities
+ * @license http://www.gnu.org/licenses/gpl-3.0.txt GNU GPLv3
+ */
 
 include_once dirname(__FILE__) . '/TeiEditionsEntity.php';
 include_once dirname(__FILE__) . '/../helpers/TeiEditionsFunctions.php';
-include_once dirname(__FILE__) . '/../helpers/TeiEditionsEnhanceTei.php';
 
 
+/**
+ * A class for fetching information about entities given
+ * URL references. Currently supported URLs are:
+ *
+ *  - Geonames
+ *  - EHRI Portal authorities and keywords
+ */
 class TeiEditionsDataFetcher
 {
     private $dict;
@@ -17,7 +29,9 @@ class TeiEditionsDataFetcher
     }
 
     /**
-     * @param $nametourl
+     * Fetch info about places given an array of URL references.
+     *
+     * @param array $nametourl an array mapping place names to URLs
      */
     public function fetchPlaces($nametourl)
     {
@@ -35,7 +49,10 @@ class TeiEditionsDataFetcher
     }
 
     /**
-     * @param $nametourl
+     * Fetch info about people, corporate bodies, and families
+     * given an array of URL references.
+     *
+     * @param array $nametourl an array mapping agent names to URLs
      */
     public function fetchHistoricalAgents($nametourl)
     {
@@ -50,7 +67,9 @@ class TeiEditionsDataFetcher
     }
 
     /**
-     * @param $nametourl
+     * Fetch info about keywords/concepts given an array of URL references.
+     *
+     * @param array $nametourl an array mapping concept names to URLs
      */
     public function fetchConcepts($nametourl)
     {
@@ -76,6 +95,8 @@ class TeiEditionsDataFetcher
     }
 
     /**
+     * Make a request to the EHRI GraphQL API.
+     *
      * @param $req string the GraphQL request body
      * @param $params array the GraphQL parameters
      * @return array the return data
@@ -98,18 +119,10 @@ class TeiEditionsDataFetcher
         return json_decode($res, true);
     }
 
-    private function _getWikidataInfo($url)
-    {
-        $json_url = preg_match("\.json$", $url) ? $url : "$url.json";
-        $curl = curl_init($json_url);
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        $res = curl_exec($curl);
-        curl_close($curl);
-        return json_decode($res, true);
-    }
-
     /**
-     * @param SimpleXMLElement $xml
+     * Extract the place name from Geonames XML.
+     *
+     * @param SimpleXMLElement $xml the RDF XML
      * @return string|false
      */
     private function _parseGeonamesPlaceName(SimpleXMLElement $xml, $lang = null)
@@ -133,7 +146,9 @@ class TeiEditionsDataFetcher
     }
 
     /**
-     * @param $url
+     * Fetch info about a place given an URL reference.
+     *
+     * @param string $url the canonical URL
      * @return TeiEditionsEntity|false
      */
     private function _getPlace($url, $lang = null)
@@ -181,7 +196,10 @@ class TeiEditionsDataFetcher
     }
 
     /**
-     * @param $url
+     * Fetch info about a person, corporate body, or family
+     * given an URL reference.
+     *
+     * @param string $url the canonical URL
      * @return TeiEditionsEntity|false
      */
     private function _getHistoricalAgent($url, $lang = null)
@@ -218,14 +236,12 @@ class TeiEditionsDataFetcher
             }
             return false;
         }
-
-        $entity = TeiEditionsEntity::create(
-            $result['data']['HistoricalAgent']['description']['name'],
-            $url
-        );
+        $item = $result['data']['HistoricalAgent'];
+        $desc = $item['description'];
+        $entity = TeiEditionsEntity::create($desc['name'], $url);
         $entity->notes = array_filter([
-            @$result['data']['HistoricalAgent']['description']['datesOfExistence'],
-            @$result['data']['HistoricalAgent']['description']['biographicalHistory'],
+            @$desc['datesOfExistence'],
+            @$desc['biographicalHistory'],
         ], function ($n) {
             return !is_null($n);
         });
@@ -233,7 +249,9 @@ class TeiEditionsDataFetcher
     }
 
     /**
-     * @param $url
+     * Fetch info about a keyword/concept given an URL reference.
+     *
+     * @param string $url the canonical URL
      * @return TeiEditionsEntity|false
      */
     private function _getConcept($url, $lang = null)
@@ -265,19 +283,18 @@ class TeiEditionsDataFetcher
             }
             return false;
         }
+        $item = $result['data']['CvocConcept'];
+        $desc = $item['description'];
 
-        $entity = TeiEditionsEntity::create(
-            $result['data']['CvocConcept']['description']['name'],
-            $url
-        );
-        $entity->notes = $result['data']['CvocConcept']['description']['scopeNote'];
-        foreach ($result['data']['CvocConcept']['seeAlso'] as $seeAlso) {
+        $entity = TeiEditionsEntity::create($desc['name'], $url);
+        $entity->notes = $desc['scopeNote'];
+        foreach ($item['seeAlso'] as $seeAlso) {
             if (preg_match('/wikipedia/', $seeAlso)) {
                 $entity->urls['desc'] = $seeAlso;
             }
         }
-        $entity->longitude = $result['data']['CvocConcept']['longitude'];
-        $entity->latitude = $result['data']['CvocConcept']['latitude'];
+        $entity->longitude = $item['longitude'];
+        $entity->latitude =  $item['latitude'];
         return $entity;
     }
 }

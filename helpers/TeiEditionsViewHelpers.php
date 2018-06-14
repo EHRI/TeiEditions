@@ -1,4 +1,10 @@
 <?php
+/**
+ * TeiEditions
+ *
+ * @copyright Copyright 2018 King's College London Department of Digital Humanities
+ * @license http://www.gnu.org/licenses/gpl-3.0.txt GNU GPLv3
+ */
 
 require_once dirname(__FILE__) . '/../vendor/autoload.php';
 

@@ -1,10 +1,9 @@
 <?php
-
 /**
- * @package     omeka
- * @subpackage  solr-search
- * @copyright   2012 Rector and Board of Visitors, University of Virginia
- * @license     http://www.apache.org/licenses/LICENSE-2.0.html
+ * TeiEditions
+ *
+ * @copyright Copyright 2018 King's College London Department of Digital Humanities
+ * @license http://www.gnu.org/licenses/gpl-3.0.txt GNU GPLv3
  */
 
 
