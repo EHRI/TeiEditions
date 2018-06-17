@@ -7,7 +7,7 @@ The plugin allows you to:
 
  - create Omeka items from uploaded TEI files, with Omeka metadata elements populated via customisable XPath mappings
  - associate images and other tertiary files
- - create Neatline exhibits from location data in the TEI headers
+ - create Neatline exhibits from location data and other metadata in the TEI headers
 
 It also adds various view helpers for rendering TEI-derived info and a few Neatline
 shortcodes for use within SimplePages and ExhibitBuilder text blocks.
