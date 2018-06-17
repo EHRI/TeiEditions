@@ -103,6 +103,8 @@ one new Omeka item per master TEI file with metadata populated as per the above 
 
 Documents can either be ingested one-by-one or as a zip file containing multiple files.
 
+The plugin counts on any changes to documents being made in the TEI files rather than directly in Omeka. Updated TEI files can be reingested any number of times and metadata in Omeka fields will be updated accordingly.
+
 ### Uploading associated files
 
 Once Omeka items have been created from the master TEI documents it is possible to upload any associated
