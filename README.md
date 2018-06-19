@@ -12,6 +12,9 @@ The plugin allows you to:
 It also adds various view helpers for rendering TEI-derived info and a few Neatline
 shortcodes for use within SimplePages and ExhibitBuilder text blocks.
 
+An accompanying Omeka theme that makes use of this plugin is 
+[separately available](https://github.com/EHRI/ehri-editions-theme).
+
 TEI Header Enrichment
 ---------------------
 

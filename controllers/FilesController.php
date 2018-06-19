@@ -6,6 +6,10 @@
  * @license http://www.gnu.org/licenses/gpl-3.0.txt GNU GPLv3
  */
 
+include_once dirname(dirname(__FILE__)) . '/forms/TeiEditions_IngestForm.php';
+include_once dirname(dirname(__FILE__)) . '/forms/TeiEditions_UpdateForm.php';
+include_once dirname(dirname(__FILE__)) . '/forms/TeiEditions_AssociateForm.php';
+
 /**
  * The TeiEditions TEI file upload controller.
  *
@@ -33,7 +37,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
     public function importAction()
     {
         // Set the created by user ID.
-        $form = $this->_getImportForm();
+        $form = new TeiEditions_IngestForm();
         $this->view->form = $form;
         $this->_processImportForm($form);
         // Clear and reindex.
@@ -50,7 +54,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
     public function updateAction()
     {
         // Set the created by user ID.
-        $form = $this->_getUpdateForm();
+        $form = new TeiEditions_UpdateForm();
         $this->view->form = $form;
         $this->_processUpdateForm($form);
         Zend_Registry::get('job_dispatcher')->sendLongRunning(
@@ -63,23 +67,24 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
      */
     public function associateAction()
     {
-        if ($this->getRequest()->isPost()) {
+        $form = new TeiEditions_AssociateForm();
+        $this->view->form = $form;
 
+        if ($this->getRequest()->isPost()) {
             $done = 0;
             $tx = get_db()->getAdapter()->beginTransaction();
             try {
-                foreach ($_FILES["file"]["name"] as $idx => $name) {
-                    $path = $_FILES["file"]["tmp_name"][$idx];
-                    $mime = $_FILES["file"]["type"][$idx];
-                    if ($path === "") {
-                        throw new Exception("upload failed (check max file size?)");
-                    }
-                    if (preg_match('/.+\.zip$/', $path) or $mime === 'application/zip') {
-                        $done += $this->_readAssociatedItemsZip($path);
-                    } else {
-                        $this->_addAssociatedFile($path, $name);
-                        $done++;
-                    }
+                $name = $_FILES["file"]["name"];
+                $path = $_FILES["file"]["tmp_name"];
+                $mime = $_FILES["file"]["type"];
+                if ($path === "") {
+                    throw new Exception("upload failed (check max file size?)");
+                }
+                if (preg_match('/.+\.zip$/', $path) or $mime === 'application/zip') {
+                    $done += $this->_readAssociatedItemsZip($path);
+                } else {
+                    $this->_addAssociatedFile($path, $name);
+                    $done++;
                 }
                 $tx->commit();
             } catch (Exception $e) {
@@ -141,65 +146,10 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
     }
 
     /**
-     * @return Omeka_Form_Admin
-     * @throws Zend_Form_Exception
-     */
-    private function _getImportForm()
-    {
-        $formOptions = ['type' => 'tei_editions_upload'];
-        $form = new Omeka_Form_Admin($formOptions);
-
-        $form->addElement('checkbox', 'create_exhibit', [
-            'id' => 'tei-editions-upload-create-exhibit',
-            'label' => __('Create Neatline Exhibit'),
-            'class' => 'checkbox',
-            'description' => __('Create a Neatline Exhibit containing records for each place element contained in the TEI')
-        ]);
-
-        return $form;
-    }
-
-    /**
-     * @return Omeka_Form
-     * @throws Zend_Form_Exception
-     */
-    private function _getUpdateForm()
-    {
-        $formOptions = ['type' => 'tei_editions_update'];
-        $form = new Omeka_Form($formOptions);
-
-        // The pick an item drop-down select:
-        $select = $form->createElement('select', 'item', [
-            'required' => false,
-            'multiple' => 'multiple',
-            'label' => __('Item'),
-            'description' => __('Select a specific item (optional). If left blank all items with a TEI file will be processed'),
-            'multiOptions' => $this->_getItemsForSelect(),
-        ]);
-        $select->setRegisterInArrayValidator(false);
-        $form->addElement($select);
-
-        $form->addElement('checkbox', 'create_exhibit', [
-            'id' => 'tei-editions-upload-create-exhibit',
-            'label' => __('Create Neatline Exhibit'),
-            'class' => 'checkbox',
-            'description' => __('Create a Neatline Exhibit containing records for each place element contained in the TEI')
-        ]);
-
-        $form->addElement('submit', 'submit', [
-            'label' => __('Update Items')
-        ]);
-
-        $form->addDisplayGroup(['create_exhibit'], 'teiupdate_info');
-        $form->addDisplayGroup(['submit'], 'teiupdate_submit');
-
-        return $form;
-    }
-
-    /**
      * Process the page edit and edit forms.
+     * @throws Zend_File_Transfer_Exception
      */
-    private function _processImportForm(Omeka_Form_Admin $form)
+    private function _processImportForm(TeiEditions_IngestForm $form)
     {
         if ($this->getRequest()->isPost()) {
             if (!$form->isValid($_POST)) {
@@ -212,20 +162,19 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
             $neatline = $form->getElement('create_exhibit')->isChecked();
             $tx = get_db()->getAdapter()->beginTransaction();
             try {
-                foreach ($_FILES["file"]["name"] as $idx => $name) {
-                    $path = $_FILES["file"]["tmp_name"][$idx];
-                    $mime = $_FILES["file"]["type"][$idx];
-                    switch ($mime) {
-                        case "text/xml":
-                        case "application/xml":
-                            $this->_updateItem($path, $name, $neatline, $created, $updated);
-                            break;
-                        case "application/zip":
-                            $this->_readZip($path, $neatline, $created, $updated);
-                            break;
-                        default:
-                            error_log("Unhandled file extension: $mime");
-                    }
+                $name = $_FILES["file"]["name"];
+                $path = $_FILES["file"]["tmp_name"];
+                $mime = $_FILES["file"]["type"];
+                switch ($mime) {
+                    case "text/xml":
+                    case "application/xml":
+                        $this->_updateItem($path, $name, $neatline, $created, $updated);
+                        break;
+                    case "application/zip":
+                        $this->_readZip($path, $neatline, $created, $updated);
+                        break;
+                    default:
+                        error_log("Unhandled file extension: $mime");
                 }
                 $tx->commit();
             } catch (Exception $e) {
@@ -242,7 +191,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
     /**
      * Process the page edit and edit forms.
      */
-    private function _processUpdateForm(Omeka_Form $form)
+    private function _processUpdateForm(TeiEditions_UpdateForm $form)
     {
         if ($this->getRequest()->isPost()) {
             if (!$form->isValid($_POST)) {
@@ -253,11 +202,13 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
             $db = get_db();
             $tx = $db->getAdapter()->beginTransaction();
             $updated = 0;
+            $citem = null;
             try {
                 $neatline = $form->getElement('create_exhibit')->isChecked();
                 $selected_items = $form->getValue('item');
 
-                foreach ($this->_getCandidateItems() as $item) {
+                foreach ($form->getCandidateItems() as $item) {
+                    $citem = $item;
                     if ($selected_items and !in_array((string)$item->id, $selected_items)) {
                         continue;
                     }
@@ -275,9 +226,14 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
             } catch (Exception $e) {
                 error_log($e->getTraceAsString());
                 $tx->rollBack();
-                $this->_helper->_flashMessenger(
-                    __("There was an processing element %d '%s': %s",
-                        $item->id, metadata($item, "display_title"), $e->getMessage()), 'error');
+                if ($citem) {
+                    $this->_helper->_flashMessenger(
+                        __("There was an processing element %d '%s': %s",
+                            $citem->id, metadata($citem, "display_title"), $e->getMessage()), 'error');
+                } else {
+                    $this->_helper->_flashMessenger(
+                        __("There was an error: %s", $e->getMessage()), 'error');
+                }
                 return;
             }
 
@@ -375,28 +331,6 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
         if ($neatline) {
             $this->_updateNeatlineExhibit($item, $doc);
         }
-    }
-
-    private function _getCandidateItems()
-    {
-        $items = [];
-        foreach (get_db()->getTable('Item')->findAll() as $item) {
-            foreach ($item->getFiles() as $file) {
-                if (tei_editions_is_xml_file($file)) {
-                    $items[] = $item;
-                }
-            }
-        }
-        return $items;
-    }
-
-    private function _getItemsForSelect()
-    {
-        $options = [];
-        foreach ($this->_getCandidateItems() as $item) {
-            $options[$item->id] = metadata($item, 'display_title');
-        }
-        return $options;
     }
 
     /**
