@@ -142,6 +142,13 @@ harvested data in bulk using this function.
 
 ![TEI Update](plugin_update.png)
 
+### Update TEI Items
+
+If you change XPath-to-Omeka field mappings and have existing Omeka items you can re-extract the
+harvested data in bulk using this function.
+
+![TEI Update](plugin_update.png)
+
 ### Uploading associated files
 
 Once Omeka items have been created from the master TEI documents it is possible to upload any associated
