@@ -99,18 +99,52 @@ to which the `tei:sourceDesc/tei:listPerson/tei:person/tei:persName`,
 `tei:sourceDesc/tei:listOrg/tei:org/tei:orgName`, and 
 `tei:sourceDesc/tei:listPlace/tei:place/tei:placeName` respectively will be mapped.
 
+Plugin Configuration
+--------------------
+
+The plugin global options are as follows:
+
+![Plugin Options](plugin_opts.png)
+
+ - *Default Item Type*: Newly-created Omeka items will be assigned this item type
+ - *Template Exhibit*: When the plugin creates Neatline exhibits from TEI data is can use
+ an existing Neatline exhibit as a template from which existing settings and Neatline records
+ will be copied.
+
+Plugin Functionality
+--------------------
+
+![Plugin Functions](plugin_functions.png)
+
+The plugin has three main areas of functionality:
+
+ 1. Ingesting, updating, and associating tertiary files with TEI-based Omeka items
+ 2. Exporting TEI data and associated files
+ 3. Configuring XPath-to-Omeka field mappings
+
 ### Uploading the master TEI documents
 
 Once TEI files have been created and named correctly they can be ingested into Omeka. Doing so will create
 one new Omeka item per master TEI file with metadata populated as per the above XPATH mappings. 
 
+![TEI Ingest](plugin_ingest.png)
+
 Documents can either be ingested one-by-one or as a zip file containing multiple files.
+
+### Update TEI Items
+
+If you change XPath-to-Omeka field mappings and have existing Omeka items you can re-extract the
+harvested data in bulk using this function.
+
+![TEI Update](plugin_update.png)
 
 ### Uploading associated files
 
 Once Omeka items have been created from the master TEI documents it is possible to upload any associated
 files, which will be assigned to Omeka items according to the naming convention described above. As with
 master TEI documents, multiple associated files can be uploaded in a zip.
+
+![TEI Associate](plugin_associate.png)
 
 **Note:** uploading associated files will error if files exist within the uploaded archive that cannot be
 paired with an existing Omeka item.
@@ -120,5 +154,16 @@ paired with an existing Omeka item.
 If ingesting a large number of files at once via a zip archive it is easy to exceed the default limits on
 PHP's `post_max_size` and `upload_max_filesize` settings. Check your `php.ini` and increase the limits if 
 you find this to be the case.  
+
+### TEI Data Export
+
+![TEI Export](plugin_archive.png)
+
+The export function allows you to download single archives containing either:
+
+ - the master TEI files, or
+ - all associated files
+ 
+This function is mainly for synchronising the data across Omeka instances.
 
 TODO: more on ingest, screenshots, etc.
