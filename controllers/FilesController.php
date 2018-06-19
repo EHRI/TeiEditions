@@ -9,6 +9,7 @@
 include_once dirname(dirname(__FILE__)) . '/forms/TeiEditions_IngestForm.php';
 include_once dirname(dirname(__FILE__)) . '/forms/TeiEditions_UpdateForm.php';
 include_once dirname(dirname(__FILE__)) . '/forms/TeiEditions_AssociateForm.php';
+include_once dirname(dirname(__FILE__)) . '/forms/TeiEditions_ArchiveForm.php';
 
 /**
  * The TeiEditions TEI file upload controller.
@@ -115,34 +116,39 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
         return;
     }
 
-    public function zipAction()
+    public function archiveAction()
     {
-        $associated = array_key_exists('associated', $_GET);
-        $tmp = tempnam(sys_get_temp_dir(), '');
-        $archive = new ZipArchive();
-        $archive->open($tmp, ZipArchive::CREATE);
-        foreach (get_db()->getTable('Item')->findAll() as $item) {
-            $files = $associated
-                ? tei_editions_get_associated_files($item)
-                : (tei_editions_get_main_tei($item)
-                    ? [tei_editions_get_main_tei($item)]
-                    : []
-                );
-            foreach ($files as $file) {
-                $archive->addFromString($file->original_filename,
-                    file_get_contents($file->getWebPath()));
+        $form = new TeiEditions_ArchiveForm();
+        $this->view->form = $form;
+
+        if ($this->getRequest()->isPost() and $form->isValid($_POST)) {
+            $associated = $form->getElement('type')->getValue() === 'associated';
+            $tmp = tempnam(sys_get_temp_dir(), '');
+            $archive = new ZipArchive();
+            $archive->open($tmp, ZipArchive::CREATE);
+            foreach (get_db()->getTable('Item')->findAll() as $item) {
+                $files = $associated
+                    ? tei_editions_get_associated_files($item)
+                    : (tei_editions_get_main_tei($item)
+                        ? [tei_editions_get_main_tei($item)]
+                        : []
+                    );
+                foreach ($files as $file) {
+                    $archive->addFromString($file->original_filename,
+                        file_get_contents($file->getWebPath()));
+                }
             }
+            $archive->close();
+            $name = $associated ? 'associated' : 'tei';
+            $date = date('c');
+            header("Content-Type: application/zip");
+            header("Content-Disposition: attachment; filename='${name}-${date}.zip'");
+            header("Content-Length: " . filesize($tmp));
+            ob_end_flush();
+            readfile($tmp);
+            unlink($tmp);
+            exit();
         }
-        $archive->close();
-        $name = $associated ? 'associated' : 'tei';
-        $date = date('c');
-        header("Content-Type: application/zip");
-        header("Content-Disposition: attachment; filename='${name}-${date}.zip'");
-        header("Content-Length: " . filesize($tmp));
-        ob_end_flush();
-        readfile($tmp);
-        unlink($tmp);
-        exit();
     }
 
     /**
