@@ -3,16 +3,17 @@ TeiEditions
 
 An Omeka Classic plugin originally developed for the digital editions of the [European Holocaust Research Infrastructure](https://ehri-project.eu/). The plugin supports the editorial workflow which links document annotations to controlled vocabularies (EHRI, Geonames), EHRI archival descriptions and other resources. The plugin makes it possible to use documents encoded in the TEI P5 XML format to build a rich Omeka presentation.
 
-The plugin can be used together with the [EHRI Omeka Editions Theme](https://github.com/EHRI/ehri-editions-theme).
-
 The plugin allows you to:
 
+ - enhance headers of TEI documents with metadata from the EHRI Portal and Geonames
  - create Omeka items from uploaded TEI files, with Omeka metadata elements populated via customisable XPath mappings
  - associate images and other tertiary files
  - create Neatline exhibits from location data and other metadata in the TEI headers
 
 It also adds various view helpers for rendering TEI-derived info and a few Neatline
 shortcodes for use within SimplePages and ExhibitBuilder text blocks.
+
+The plugin can be used together with the [EHRI Omeka Editions Theme](https://github.com/EHRI/ehri-editions-theme).
 
 TEI Header Enrichment
 ---------------------
