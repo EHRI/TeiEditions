@@ -1,6 +1,9 @@
 TeiEditions
 ===========
 
+
+The plugin can be used together with the [EHRI Omeka Editions Theme](https://github.com/EHRI/ehri-editions-theme).
+
 An Omeka plugin containing various helpers for managing items derived from TEI.
 
 The plugin allows you to:
