@@ -1,11 +1,9 @@
 TeiEditions
 ===========
 
-An Omeka Classic plugin originally developed for the digital editions of the [European Holocaust Research Infrastructure](https://ehri-project.eu/). The plugin supports the editorial workflow which links document annotations to controlled vocabularies (EHRI, Geonames), EHRI archival descriptions and other resources.
+An Omeka Classic plugin originally developed for the digital editions of the [European Holocaust Research Infrastructure](https://ehri-project.eu/). The plugin supports the editorial workflow which links document annotations to controlled vocabularies (EHRI, Geonames), EHRI archival descriptions and other resources. The plugin makes it possible to use documents encoded in the TEI P5 XML format to build a rich Omeka presentation.
 
 The plugin can be used together with the [EHRI Omeka Editions Theme](https://github.com/EHRI/ehri-editions-theme).
-
-An Omeka plugin containing various helpers for managing items derived from TEI.
 
 The plugin allows you to:
 
