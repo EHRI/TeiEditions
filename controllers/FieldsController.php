@@ -61,6 +61,17 @@ class TeiEditions_FieldsController extends Omeka_Controller_AbstractActionContro
         $form = new Omeka_Form_Admin($formOptions);
 
         $form->addElementToEditGroup(
+            'text', 'path',
+            array(
+                'id' => 'tei-editions-field-mapping-path',
+                'value' => $fieldMapping->path,
+                'label' => __('Path'),
+                'description' => __('TEI XPath'),
+                'required' => true
+            )
+        );
+
+        $form->addElementToEditGroup(
             'select', 'element_id',
             array(
                 'id' => 'tei-editions-field-mapping-element-id',
@@ -68,17 +79,6 @@ class TeiEditions_FieldsController extends Omeka_Controller_AbstractActionContro
                 'value' => $fieldMapping->element_id,
                 'label' => __('Element'),
                 'description' => __('The element'),
-                'required' => true
-            )
-        );
-
-        $form->addElementToEditGroup(
-            'text', 'path',
-            array(
-                'id' => 'tei-editions-field-mapping-path',
-                'value' => $fieldMapping->path,
-                'label' => __('Path'),
-                'description' => __('TEI XPath'),
                 'required' => true
             )
         );

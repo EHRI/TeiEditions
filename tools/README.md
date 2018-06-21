@@ -61,6 +61,8 @@ For example, the minimal TEI document:
 Supported entities are `<placeName`, `<persName>`, `orgName`, and `<term>`. If an entity reference does not have a `ref=` attribute 
 an entity will be added to the header without external information using just the enclosed text.
 
+Preferred language can be selected with the `--lang` option followed by a three-character langauge code. Where possible, the script will preferably fetch information in the chosen language.
+
 For entities for which an external source either does not exist or is not supported, local "dictionary" file(s) can be supplied
 with the `--dict <file.xml>` option. A dictionary file consists of a TEI document containing entities in the `<sourceDesc>` that
 can be referred to by other files, using an anchor reference to their `xml:id` attribute.
@@ -100,4 +102,4 @@ For example, a dictionary file might resemble:
  Usage
  -----
  
-     ./tools/enhance-tei.xml [-d|--dict <dict.xml>] <source-tei,xml>
+     ./tools/enhance-tei.xml [-d|--dict <dict.xml>] [-l|--lang XXX] <source-tei,xml>

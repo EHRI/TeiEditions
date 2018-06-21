@@ -1,5 +1,9 @@
+<?php
+
+?>
+
 <?php echo head(array(
-    'title' => __('TEI Editions | Upload Associated Files'),
+    'title' => __('TEI Editions | Download'),
 )); ?>
 
 <?php echo flash(); ?>

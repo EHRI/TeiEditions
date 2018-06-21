@@ -25,7 +25,7 @@ class TeiEditionsDocumentProxyTest extends PHPUnit_Framework_Testcase
         $doc = new TeiEditionsDocumentProxy($this->file);
         $out = $doc->metadata([
             1 => [
-                '/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title	'
+                '/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title'
             ]
         ]);
         $expect = [['element_id' => 1, 'text' => 'This is a test TEI', 'html' => false]];
