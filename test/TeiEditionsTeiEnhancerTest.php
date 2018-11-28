@@ -30,8 +30,9 @@ class TeiEditionsEnhanceTeiTest extends PHPUnit_Framework_Testcase
         $this->assertEquals(
             array(
                 "Tartu" => "#test_1",
-                "London" => "http://www.geonames.org/2643743/",
-                "Munich" => "http://www.geonames.org/6559171/"
+                "London" => "https://www.geonames.org/2643743/",
+                "Munich" => "http://www.geonames.org/6559171/",
+                "Invalid" => "http://www.geonames.org/INVALID"
             ),
             $refs
         );

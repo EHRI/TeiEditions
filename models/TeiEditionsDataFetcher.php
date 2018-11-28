@@ -162,15 +162,15 @@ class TeiEditionsDataFetcher
         }
 
         // correct geonames url
-        $id = explode("/", str_replace("http://www.geonames.org/", "", $url))[0];
+        $id = explode("/",
+            str_replace(["http://www.geonames.org/", "https://www.geonames.org/"], "", $url))[0];
 
         $geonames_url = "http://sws.geonames.org/$id/about.rdf";
 
         // fetch geonames RDF
-        $data = file_get_contents($geonames_url);
-        $xml = new SimpleXMLElement($data);
-        if ($xml === FALSE) {
-            error_log("Error reading URL!");
+        if (($xml = @simplexml_load_file($geonames_url)) === false) {
+            $error = error_get_last();
+            error_log("Error reading URL '$url': " . $error["message"]);
             return false;
         }
 
