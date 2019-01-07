@@ -52,7 +52,7 @@ if (!count(debug_backtrace())) {
 
     $src = new TeiEditionsDataFetcher($dict, $lang);
     $enhancer = new TeiEditionsTeiEnhancer($tei, $src);
-    $enhancer->addRefs();
+    $enhancer->addReferences();
 
     // save the resulting TEI to output file or print
     // to stdout

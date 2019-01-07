@@ -42,7 +42,7 @@ class TeiEditionsEnhanceTeiTest extends PHPUnit_Framework_Testcase
     {
         // TODO: fix this so we can mock the data lookups!
         $src = new TeiEditionsDataFetcher([], "eng");
-        (new TeiEditionsTeiEnhancer($this->tei, $src))->addRefs();
+        (new TeiEditionsTeiEnhancer($this->tei, $src))->addReferences();
 
         $this->assertEquals(
             "Tartu",
@@ -78,7 +78,7 @@ class TeiEditionsEnhanceTeiTest extends PHPUnit_Framework_Testcase
     {
         // TODO: fix this so we can mock the data lookups!
         $src = new TeiEditionsDataFetcher([], "deu");
-        (new TeiEditionsTeiEnhancer($this->tei, $src))->addRefs();
+        (new TeiEditionsTeiEnhancer($this->tei, $src))->addReferences();
 
         $this->assertEquals(
             "München",
@@ -88,5 +88,16 @@ class TeiEditionsEnhanceTeiTest extends PHPUnit_Framework_Testcase
             "Beschlagnahme von Eigentum",
             $this->tei->xpath("//t:fileDesc/t:sourceDesc/t:list/t:item[1]/t:name/text()")[0]
         );
+    }
+
+    public function test_addRefsIdempotency() {
+        $src = new TeiEditionsDataFetcher([], "eng");
+        (new TeiEditionsTeiEnhancer($this->tei, $src))->addReferences();
+        $before = $this->tei->asXml();
+        file_put_contents("t1.xml", $before);
+        (new TeiEditionsTeiEnhancer($this->tei, $src))->addReferences();
+        $after = $this->tei->asXml();
+        file_put_contents("t2.xml", $after);
+        $this->assertEquals($before, $after);
     }
 }
