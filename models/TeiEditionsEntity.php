@@ -34,4 +34,16 @@ class TeiEditionsEntity
         $e->slug = tei_editions_url_to_slug($url);
         return $e;
     }
+
+    public function __toString()
+    {
+        return sprintf("<Entity: %s [%s] (%s)>",
+            $this->name, $this->slug, json_encode([
+                "urls" => $this->urls,
+                "notes" => $this->notes,
+                "lat" => $this->latitude,
+                "lon" => $this->longitude
+            ])
+        );
+    }
 }
