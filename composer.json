@@ -5,6 +5,9 @@
         "twig/twig": "~1.4",
         "matriphe/iso-639": "^1.2",
         "twig/extensions": "^1.5",
-      "ext-simplexml": "*"
+      "ext-simplexml": "*",
+      "ext-json": "*",
+      "ext-curl": "*",
+      "ext-dom": "*"
     }
 }
