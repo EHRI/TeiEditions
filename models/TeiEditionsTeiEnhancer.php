@@ -39,6 +39,7 @@ class TeiEditionsTeiEnhancer
 {
     private $tei;
     private $dataSrc;
+    private $doc;
 
     // Describes the XML paths in which to add entities,
     // the source tag from which to extract references,
@@ -54,6 +55,8 @@ class TeiEditionsTeiEnhancer
     function __construct(SimpleXMLElement &$tei, TeiEditionsDataFetcher $src)
     {
         $this->tei = $tei;
+        $this->tei->registerXPathNamespace('t', 'http://www.tei-c.org/ns/1.0');
+        $this->doc = TeiEditionsDocumentProxy::fromSimpleXMLElement($tei);
         $this->dataSrc = $src;
     }
 
@@ -70,8 +73,8 @@ class TeiEditionsTeiEnhancer
      */
     function getReferences($nameTag, &$idx = 0)
     {
-        $names = array();
-        $urls = array();
+        $names = [];
+        $urls = [];
         if (!($docid = (string)@$this->tei->xpath("/t:TEI/t:teiHeader/t:profileDesc/t:creation/t:idno/text()")[0])) {
             $docid = (string)$this->tei->xpath("/t:TEI/@xml:id")[0];
         }
@@ -96,55 +99,6 @@ class TeiEditionsTeiEnhancer
         }
 
         return array_merge($names, array_flip($urls));
-    }
-
-    /**
-     * Fetch entities of a particular type
-     *
-     * @param string $listTag the header list tag
-     * @param string $itemTag the header item tag
-     * @param string $nameTag the header name tag
-     * @return array an array of entities of the given type
-     */
-    private function getEntities($listTag, $itemTag, $nameTag)
-    {
-        $entities = [];
-
-        $xpath = "/t:TEI/t:teiHeader/t:fileDesc/t:sourceDesc/t:$listTag/t:$itemTag";
-        $nodes = $this->tei->xpath($xpath);
-        foreach ($nodes as $node) {
-            $node->registerXPathNamespace('t', 'http://www.tei-c.org/ns/1.0');
-            if ($name = $node->xpath("t:$nameTag/text()")) {
-                $entity = new TeiEditionsEntity();
-                $entity->name = htmlspecialchars_decode((string)$name[0]);
-                if ($id = $node->xpath("@xml:id")) {
-                    $sid = (string)$id[0];
-                    $entity->slug = $sid[0] == "#" ? substr($sid, 1) : $sid;
-                    $entity->urls["normal"] = "#$sid";
-                }
-                foreach ($node->xpath("t:linkGrp/t:link") as $linkNode) {
-                    $type = (string)$linkNode->xpath("@type")[0];
-                    $url = (string)$linkNode->xpath("@target")[0];
-                    $entity->urls[$type] = $url;
-                    if ($type === "normal") {
-                        $entity->slug = tei_editions_url_to_slug($url);
-                    }
-                }
-
-                if ($geo = $node->xpath("t:location/t:geo/text()")) {
-                    $latlon = explode(" ", (string)$geo[0]);
-                    $entity->latitude = $latlon[0];
-                    $entity->longitude = $latlon[1];
-                }
-
-                foreach ($node->xpath("t:note/t:p") as $noteNode) {
-                    $entity->notes[] = htmlspecialchars_decode((string)$noteNode[0]);
-                }
-
-                $entities[] = $entity;
-            }
-        }
-        return $entities;
     }
 
     /**
@@ -173,7 +127,8 @@ class TeiEditionsTeiEnhancer
         if ($entity->ref()[0] == '#') {
             $item->addAttribute("xml:id", substr($entity->ref(), 1),
                 "http://www.w3.org/XML/1998/namespace");
-        } else if (!empty($entity->urls)) {
+        }
+        if (!empty($entity->urls)) {
             $link_grp = $item->addChild('linkGrp');
             foreach ($entity->urls as $type => $url) {
                 $link = $link_grp->addChild("link");
@@ -195,25 +150,30 @@ class TeiEditionsTeiEnhancer
      *  - persName
      *  - placeName
      *  - term
+     *
+     * @return integer the number of items added.
      */
     public function addReferences()
     {
         // Index for generated entity IDs
         $idx = 0;
+        $added = 0;
 
         foreach ($this::$TYPES as $typeSpec) {
             list($listTag, $itemTag, $nameTag, $srcTag, $fetcherFunc) = $typeSpec;
 
-            $existing = $this->getEntities($listTag, $itemTag, $nameTag);
+            $existing = $this->doc->entities($listTag, $itemTag, $nameTag);
             $refs = $this->getReferences($srcTag, $idx);
             foreach ($this->dataSrc->{$fetcherFunc}($refs) as $ref) {
                 if (!in_array($ref, $existing)) {
                     error_log("Found $srcTag " . $ref->name);
                     $this->addEntity($listTag, $itemTag, $nameTag, $ref);
+                    $added++;
                 } else {
                     error_log("Not updating existing $srcTag " . $ref->name);
                 }
             }
         }
+        return $added;
     }
 }

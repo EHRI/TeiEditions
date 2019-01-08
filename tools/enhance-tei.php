@@ -48,8 +48,6 @@ if (!count(debug_backtrace())) {
     // read TEI file
     $in_file = $posargs[0];
     $tei = simplexml_load_file($in_file) or exit("Couldn't load the TEI file.");
-    $tei->registerXPathNamespace('t', 'http://www.tei-c.org/ns/1.0');
-
     $src = new TeiEditionsDataFetcher($dict, $lang);
     $enhancer = new TeiEditionsTeiEnhancer($tei, $src);
     $enhancer->addReferences();

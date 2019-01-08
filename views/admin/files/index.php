@@ -28,6 +28,12 @@
     <a href="<?php echo html_escape(url(['controller' => 'files', 'action' => 'archive'])); ?>" class="small blue button"><?php echo __('Download TEI Data'); ?></a>
 </div>
 
+<h2><?php echo __('Tools'); ?></h2>
+
+<div id="tei-fields">
+    <a href="<?php echo html_escape(url(['controller' => 'files', 'action' => 'enhance'])); ?>" class="small blue button"><?php echo __('Fetch TEI Header Data (Experimental!)'); ?></a>
+</div>
+
 <h2><?php echo __('Configuration'); ?></h2>
 
 <div id="tei-fields">
