@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="http://www.tei-c.org/release/xml/tei/custom/schema/relaxng/tei_all.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<!--EHRI ODT to TEI convertor: 2018-01-13T21:41:07+01:00-->
+<TEI xmlns="http://www.tei-c.org/ns/1.0" xml:id="EHRI-BF-local_dictionary">
+    <teiHeader>
+        <fileDesc>
+            <titleStmt>
+                <title>Local dictionary...</title>
+            </titleStmt>
+            <editionStmt>
+                <edition>BeGrenzte Flucht. Die österreichischen Flüchtlinge an der Grenze zur
+                    Tschechoslowakei im Krisenjahr 1938</edition>
+            </editionStmt>
+            <publicationStmt>
+                <publisher>
+                    <ref target="https://www.ehri-project.eu/">European Holocaust Research
+                        Infrastructure</ref>
+                </publisher>
+                <availability>
+                    <licence target="http://creativecommons.org/licenses/by-sa/4.0/"
+                        >Attribution-ShareAlike 4.0 International</licence>
+                </availability>
+            </publicationStmt>
+            <sourceDesc>
+
+                <listPlace>
+                    <place xml:id="ehri_bf_completely_new_place">
+                        <placeName>Completely new place</placeName>
+                        <location>
+                            <geo>48.75897 16.88203</geo>
+                        </location>
+                        <note><p>This mysterious place was never accounted for.</p></note>
+                        <linkGrp>
+                            <link type="desc" target="http://de.wikipedia.org/wiki/xxxxxxx"/>
+                        </linkGrp>
+                    </place>
+                </listPlace>
+
+                <list>
+                    <item xml:id="ehri_bf_nationalities_germans"><name>Germans (subjective
+                            ascription)</name></item>
+                </list>
+                <listPerson>
+                    <person xml:id="ehri_bf_people_cimrman_jaroslav">
+                        <persName>Jarda Cimrman</persName>
+                        <note><p>Fictional Czech genius.</p></note>
+                    </person>
+                </listPerson>
+                <listOrg>
+                    <org xml:id="ehri_bf_orbis">
+                        <orgName>Orbis</orgName>
+                        <note>
+                            <p>Verlag und Druckerei in Prag.</p>
+                        </note>
+                    </org>
+                </listOrg>
+            </sourceDesc>
+        </fileDesc>
+    </teiHeader>
+    <text>
+        <body>
+            <p></p>
+        </body>
+    </text>
+</TEI>

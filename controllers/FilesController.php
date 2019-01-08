@@ -10,6 +10,7 @@ include_once dirname(dirname(__FILE__)) . '/forms/TeiEditions_IngestForm.php';
 include_once dirname(dirname(__FILE__)) . '/forms/TeiEditions_UpdateForm.php';
 include_once dirname(dirname(__FILE__)) . '/forms/TeiEditions_AssociateForm.php';
 include_once dirname(dirname(__FILE__)) . '/forms/TeiEditions_ArchiveForm.php';
+include_once dirname(dirname(__FILE__)) . '/forms/TeiEditions_EnhanceForm.php';
 
 /**
  * The TeiEditions TEI file upload controller.
@@ -148,6 +149,46 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
             readfile($tmp);
             unlink($tmp);
             exit();
+        }
+    }
+
+    public function enhanceAction()
+    {
+        $form = new TeiEditions_EnhanceForm();
+        $this->view->form = $form;
+
+        if ($this->getRequest()->isPost() and $form->isValid($_POST)) {
+            $dict = [];
+            if ($dictpath = $_FILES["dict"]["tmp_name"]) {
+                $doc = TeiEditionsDocumentProxy::fromUriOrPath($dictpath);
+                foreach ($doc->entities() as $entity) {
+                    $dict[$entity->ref()] = $entity;
+                }
+            }
+
+            $name = $_FILES["file"]["name"];
+            $path = $_FILES["file"]["tmp_name"];
+            $mime = $_FILES["file"]["type"];
+            switch ($mime) {
+                case "text/xml":
+                case "application/xml":
+                    $data = simplexml_load_file($path);
+                    $src = new TeiEditionsDataFetcher($dict, $form->getValue("lang"));
+                    $tool = new TeiEditionsTeiEnhancer($data, $src);
+                    $num = $tool->addReferences();
+                    $enhancedxml = $data->asXML();
+
+                    $fname = pathinfo($name, PATHINFO_FILENAME);
+                    header("Content-Type: $mime");
+                    header("Content-Disposition: attachment; filename='${fname}-added-${num}.xml'");
+                    header("Content-Length: " . strlen($enhancedxml));
+                    ob_end_flush();
+                    echo $enhancedxml;
+                    exit();
+                default:
+                    $this->_helper->_flashMessenger(__('Unrecognised or unsuitable file type'), 'error');
+                    return;
+            }
         }
     }
 
@@ -347,7 +388,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
      */
     private function _getDoc($path, $name)
     {
-        $doc = new TeiEditionsDocumentProxy($path);
+        $doc = TeiEditionsDocumentProxy::fromUriOrPath($path);
         if (is_null($doc->xmlId())) {
             throw new Exception("TEI document '$name' must have a unique 'xml:id' attribute");
         }

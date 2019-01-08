@@ -19,7 +19,6 @@ class TeiEditionsEnhanceTeiTest extends PHPUnit_Framework_Testcase
     {
         $this->file = dirname(__FILE__) . "/enhance-tei.xml";
         $this->tei = simplexml_load_file($this->file);
-        $this->tei->registerXPathNamespace('t', 'http://www.tei-c.org/ns/1.0');
     }
 
     public function test_getReferences()
@@ -42,8 +41,8 @@ class TeiEditionsEnhanceTeiTest extends PHPUnit_Framework_Testcase
     {
         // TODO: fix this so we can mock the data lookups!
         $src = new TeiEditionsDataFetcher([], "eng");
-        (new TeiEditionsTeiEnhancer($this->tei, $src))->addReferences();
-
+        $num = (new TeiEditionsTeiEnhancer($this->tei, $src))->addReferences();
+        $this->assertEquals($num, 7);
         $this->assertEquals(
             "Tartu",
             $this->tei->xpath("//t:fileDesc/t:sourceDesc/t:listPlace/t:place[1]/t:placeName/text()")[0]
@@ -78,8 +77,9 @@ class TeiEditionsEnhanceTeiTest extends PHPUnit_Framework_Testcase
     {
         // TODO: fix this so we can mock the data lookups!
         $src = new TeiEditionsDataFetcher([], "deu");
-        (new TeiEditionsTeiEnhancer($this->tei, $src))->addReferences();
+        $num = (new TeiEditionsTeiEnhancer($this->tei, $src))->addReferences();
 
+        $this->assertEquals($num, 7);
         $this->assertEquals(
             "München",
             $this->tei->xpath("//t:fileDesc/t:sourceDesc/t:listPlace/t:place[3]/t:placeName/text()")[0]
@@ -90,14 +90,32 @@ class TeiEditionsEnhanceTeiTest extends PHPUnit_Framework_Testcase
         );
     }
 
+    public function test_addTefsWithLocalDict()
+    {
+        $testdata = simplexml_load_file(dirname(__FILE__) . "/enhance-tei-3.xml");
+        $dictfile = dirname(__FILE__) . "/dict-tei.xml";
+        $dict = [];
+        $doc = TeiEditionsDocumentProxy::fromUriOrPath($dictfile);
+        foreach ($doc->entities() as $entity) {
+            $dict[$entity->ref()] = $entity;
+        }
+        $src = new TeiEditionsDataFetcher($dict, "eng");
+        $num = (new TeiEditionsTeiEnhancer($testdata, $src))->addReferences();
+        $this->assertEquals(4, $num);
+        $num2 = (new TeiEditionsTeiEnhancer($testdata, $src))->addReferences();
+        $this->assertEquals(0, $num2);
+    }
+
     public function test_addRefsIdempotency() {
         $src = new TeiEditionsDataFetcher([], "eng");
-        (new TeiEditionsTeiEnhancer($this->tei, $src))->addReferences();
+        $num1 = (new TeiEditionsTeiEnhancer($this->tei, $src))->addReferences();
+        $this->assertEquals($num1, 7);
         $before = $this->tei->asXml();
         file_put_contents("t1.xml", $before);
-        (new TeiEditionsTeiEnhancer($this->tei, $src))->addReferences();
+        $num2 = (new TeiEditionsTeiEnhancer($this->tei, $src))->addReferences();
         $after = $this->tei->asXml();
         file_put_contents("t2.xml", $after);
         $this->assertEquals($before, $after);
+        $this->assertEquals($num2, 0);
     }
 }

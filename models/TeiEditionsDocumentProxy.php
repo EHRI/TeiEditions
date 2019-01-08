@@ -23,15 +23,33 @@ class TeiEditionsDocumentProxy
      * TeiEditionsDocumentProxy constructor.
      * @param $uriOrPath string an XML file or path
      */
-    public function __construct($uriOrPath)
+    private function __construct(DOMDocument $doc, $uriOrPath)
     {
         $this->uriOrPath = $uriOrPath;
-        $this->xml = new DomDocument();
+        $this->xml = $doc;
         $this->xml->preserveWhiteSpace = false;
-        $this->xml->load($uriOrPath);
         $this->query = new DOMXPath($this->xml);
-        $this->query->registerNamespace("tei",
+        $this->query->registerNamespace("t",
             "http://www.tei-c.org/ns/1.0");
+    }
+
+    public static function fromString($str)
+    {
+        $doc = new DOMDocument;
+        $doc->loadXML($str);
+        return new TeiEditionsDocumentProxy($doc, "");
+    }
+
+    public static function fromUriOrPath($uriOrPath)
+    {
+        $doc = new DOMDocument;
+        $doc->load($uriOrPath);
+        return new TeiEditionsDocumentProxy($doc, $uriOrPath);
+    }
+
+    public static function fromSimpleXMLElement(SimpleXMLElement $elem)
+    {
+        return TeiEditionsDocumentProxy::fromString($elem->asXML(), "");
     }
 
     /**
@@ -52,7 +70,7 @@ class TeiEditionsDocumentProxy
 
     public function manuscriptIds()
     {
-        $path = "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:msDesc/tei:msIdentifier/*/@ref";
+        $path = "/t:TEI/t:teiHeader/t:fileDesc/t:sourceDesc/t:msDesc/t:msIdentifier/*/@ref";
         $values = [];
         $list = $this->query->query($path);
         for ($i = 0; $i < $list->length; $i++) {
@@ -68,7 +86,7 @@ class TeiEditionsDocumentProxy
      */
     public function xmlId()
     {
-        $id = $this->pathValues("/tei:TEI/@xml:id");
+        $id = $this->pathValues("/t:TEI/@xml:id");
         return empty($id) ? null : $id[0];
     }
 
@@ -79,7 +97,7 @@ class TeiEditionsDocumentProxy
      */
     public function recordId()
     {
-        $id = $this->pathValues("/tei:TEI/tei:teiHeader/tei:profileDesc/tei:creation/tei:idno");
+        $id = $this->pathValues("/t:TEI/t:teiHeader/t:profileDesc/t:creation/t:idno");
         return empty($id) ? null : $id[0];
     }
 
@@ -144,16 +162,24 @@ class TeiEditionsDocumentProxy
         );
     }
 
-    private function getEntities($listTag, $itemTag, $nameTag)
+    /**
+     * List entities with the given list, item, and name tags.
+     *
+     * @param string $listTag
+     * @param string $itemTag
+     * @param string $nameTag
+     * @return array|TeiEditionsEntity
+     */
+    function getEntities($listTag, $itemTag, $nameTag)
     {
         $out = [];
-        $path = "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:$listTag/tei:$itemTag";
+        $path = "/t:TEI/t:teiHeader/t:fileDesc/t:sourceDesc/t:$listTag/t:$itemTag";
         $entities = $this->query->query($path);
         foreach ($entities as $entity) {
-            $names = $this->query->evaluate("./tei:{$nameTag}[1]", $entity);
+            $names = $this->query->evaluate("./t:{$nameTag}[1]", $entity);
             if ($names->length) {
                 $name = $names->item(0)->textContent;
-                $links = $this->query->evaluate("./tei:linkGrp/tei:link", $entity);
+                $links = $this->query->evaluate("./t:linkGrp/t:link", $entity);
                 $urls = [];
                 for ($i = 0; $i < $links->length; $i++) {
                     $type = $this->query->evaluate("./@type", $links->item($i))[0]->textContent;
@@ -168,20 +194,18 @@ class TeiEditionsDocumentProxy
                 $item->slug = $slug;
                 $item->urls = $urls;
 
-                $desc = $this->query->evaluate("./tei:note/tei:p", $entity);
+                $desc = $this->query->evaluate("./t:note/t:p", $entity);
                 if ($desc->length) {
                     for ($i = 0; $i < $desc->length; $i++) {
                         $item->notes[] = $desc->item($i)->textContent;
                     }
                 }
 
-                $lat_long = $this->query->evaluate("./tei:location/tei:geo[1]", $entity);
+                $lat_long = $this->query->evaluate("./t:location/t:geo[1]", $entity);
                 if ($lat_long->length) {
                     $parts = explode(" ", $lat_long->item(0)->textContent);
-                    $item->latitude = $parts[0];
-                    $item->longitude = $parts[1];
+                    list($item->latitude, $item->longitude) = $parts;
                 }
-
                 $out[$name] = $item;
             }
         }

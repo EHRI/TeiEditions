@@ -30,7 +30,7 @@ class ViewRenderer {
             self::$twig->getExtension('Twig_Extension_Core')->setDateFormat('d/m/Y', '%d days');
             self::$twig->addExtension(new Twig_Extensions_Extension_Text());
             self::$twig->addExtension(new Twig_Extensions_Extension_I18n());
-            self::$iso = $iso = new Matriphe\ISO639\ISO639;
+            self::$iso = new Matriphe\ISO639\ISO639;
             self::$twig->addFilter(new Twig_SimpleFilter("lang2name", function($code) {
                 $lang = self::$iso->languageByCode1($code);
                 return $lang ? __($lang) : $code;
@@ -157,7 +157,7 @@ function tei_editions_render_document_references($item)
     if (($tei = tei_editions_get_main_tei($item)) and
         plugin_is_active('EhriData')) {
 
-        $doc = new TeiEditionsDocumentProxy($tei->getWebPath());
+        $doc = TeiEditionsDocumentProxy::fromUriOrPath($tei->getWebPath());
         foreach ($doc->manuscriptIds() as $url) {
             $id = substr($url, strrpos($url, '/') + 1);
             $content .= "[ehri_item_data id=$id]\n";
