@@ -14,9 +14,11 @@ require_once dirname(__FILE__) . '/../helpers/TeiEditionsFunctions.php';
  */
 class TeiEditionsDocumentProxy
 {
+    const TEI_NS = "http://www.tei-c.org/ns/1.0";
+
     private $uriOrPath;
-    private $xml;
-    private $query;
+    private $tei;
+    private $xpath;
     private $htmlCache;
 
     /**
@@ -26,11 +28,10 @@ class TeiEditionsDocumentProxy
     private function __construct(DOMDocument $doc, $uriOrPath)
     {
         $this->uriOrPath = $uriOrPath;
-        $this->xml = $doc;
-        $this->xml->preserveWhiteSpace = false;
-        $this->query = new DOMXPath($this->xml);
-        $this->query->registerNamespace("t",
-            "http://www.tei-c.org/ns/1.0");
+        $this->tei = $doc;
+        $this->tei->preserveWhiteSpace = false;
+        $this->xpath = new DOMXPath($this->tei);
+        $this->xpath->registerNamespace("t", $this::TEI_NS);
     }
 
     public static function fromString($str)
@@ -47,9 +48,18 @@ class TeiEditionsDocumentProxy
         return new TeiEditionsDocumentProxy($doc, $uriOrPath);
     }
 
-    public static function fromSimpleXMLElement(SimpleXMLElement $elem)
+    public static function fromDocument(DOMDocument $elem, $uriOrPath)
     {
-        return TeiEditionsDocumentProxy::fromString($elem->asXML(), "");
+        return new TeiEditionsDocumentProxy($elem, $uriOrPath);
+    }
+
+    /**
+     * Get the underlying DOMDocument object.
+     *
+     * @return DOMDocument
+     */
+    public function document() {
+        return $this->tei;
     }
 
     /**
@@ -61,7 +71,7 @@ class TeiEditionsDocumentProxy
     public function pathValues($xpath)
     {
         $out = [];
-        $nodes = $this->query->query($xpath);
+        $nodes = $this->xpath->query($xpath);
         for ($i = 0; $i < $nodes->length; $i++) {
             $out[] = trim(preg_replace('/\s+/', ' ', $nodes->item($i)->textContent));
         }
@@ -72,7 +82,7 @@ class TeiEditionsDocumentProxy
     {
         $path = "/t:TEI/t:teiHeader/t:fileDesc/t:sourceDesc/t:msDesc/t:msIdentifier/*/@ref";
         $values = [];
-        $list = $this->query->query($path);
+        $list = $this->xpath->query($path);
         for ($i = 0; $i < $list->length; $i++) {
             $values[] = $list->item($i)->textContent;
         }
@@ -148,6 +158,55 @@ class TeiEditionsDocumentProxy
     }
 
     /**
+     * Extract references for a given entity tag name from a TEI
+     * body text and return the data as a [$name => $url] array.
+     *
+     * NB: If an entity is found without a ref attribute a
+     * numeric ref will be generated (and added to the document)
+     * if the $addRefs param is true.
+     *
+     * @param string $nameTag the tag name to locate
+     * @param integer $idx a count
+     * @param boolean $addRefs add missing ref attributes with an
+     * incrementing index.
+     * @return array an array of [name => urls]
+     */
+    function entityReferences($nameTag, &$idx = 0, $addRefs = false)
+    {
+        $names = [];
+        $urls = [];
+        if (!($docid = @$this->xpath->query(
+            "/t:TEI/t:teiHeader/t:profileDesc/t:creation/t:idno/text()")
+            ->item(0)
+            ->textContent)) {
+            $docid = $this->xmlId();
+        }
+        $paths = [
+            "/t:TEI/t:teiHeader/t:profileDesc/t:creation//t:$nameTag",
+            "/t:TEI/t:text/t:body/*//t:$nameTag"
+        ];
+        foreach ($paths as $path) {
+            $nodes = $this->xpath->query($path);
+            for ($i = 0; $i < $nodes->length; $i++) {
+                $ref = $nodes->item($i)->getAttribute("ref");
+                $text = $nodes->item($i)->textContent;
+                if ($ref) {
+                    $urls[$ref] = $text;
+                } else {
+                    $idx++;
+                    if ($addRefs) {
+                        $locUrl = "#" . $docid . "_" . $idx;
+                        $nodes->item($i)->setAttribute("ref", $locUrl);
+                        $names[$text] = $locUrl;
+                    }
+                }
+            }
+        }
+
+        return array_merge($names, array_flip($urls));
+    }
+
+    /**
      * List places, people, orgs, and term entities.
      *
      * @return array|TeiEditionsEntity
@@ -174,34 +233,34 @@ class TeiEditionsDocumentProxy
     {
         $out = [];
         $path = "/t:TEI/t:teiHeader/t:fileDesc/t:sourceDesc/t:$listTag/t:$itemTag";
-        $entities = $this->query->query($path);
+        $entities = $this->xpath->query($path);
         foreach ($entities as $entity) {
-            $names = $this->query->evaluate("./t:{$nameTag}[1]", $entity);
+            $names = $this->xpath->evaluate("./t:{$nameTag}[1]", $entity);
             if ($names->length) {
                 $name = $names->item(0)->textContent;
-                $links = $this->query->evaluate("./t:linkGrp/t:link", $entity);
+                $links = $this->xpath->evaluate("./t:linkGrp/t:link", $entity);
                 $urls = [];
                 for ($i = 0; $i < $links->length; $i++) {
-                    $type = $this->query->evaluate("./@type", $links->item($i))[0]->textContent;
-                    $url = $this->query->evaluate("./@target", $links->item($i))[0]->textContent;
+                    $type = $this->xpath->evaluate("./@type", $links->item($i))[0]->textContent;
+                    $url = $this->xpath->evaluate("./@target", $links->item($i))[0]->textContent;
                     $urls[$type] = $url;
                 }
                 $slug = isset($urls["normal"])
                     ? tei_editions_url_to_slug($urls["normal"])
-                    : @$this->query->evaluate("./@xml:id", $entity)->item(0)->textContent;
+                    : @$this->xpath->evaluate("./@xml:id", $entity)->item(0)->textContent;
                 $item = new TeiEditionsEntity;
                 $item->name = $name;
                 $item->slug = $slug;
                 $item->urls = $urls;
 
-                $desc = $this->query->evaluate("./t:note/t:p", $entity);
+                $desc = $this->xpath->evaluate("./t:note/t:p", $entity);
                 if ($desc->length) {
                     for ($i = 0; $i < $desc->length; $i++) {
-                        $item->notes[] = $desc->item($i)->textContent;
+                        $item->notes[$i] = $desc->item($i)->textContent;
                     }
                 }
 
-                $lat_long = $this->query->evaluate("./t:location/t:geo[1]", $entity);
+                $lat_long = $this->xpath->evaluate("./t:location/t:geo[1]", $entity);
                 if ($lat_long->length) {
                     $parts = explode(" ", $lat_long->item(0)->textContent);
                     list($item->latitude, $item->longitude) = $parts;
@@ -210,6 +269,61 @@ class TeiEditionsDocumentProxy
             }
         }
         return array_values($out);
+    }
+
+    /**
+     * Add an entity to the header with the given list/item/name.
+     *
+     * @param string $listTag the list tag name
+     * @param string $itemTag the item tag name
+     * @param string $nameTag the place tag name
+     * @param TeiEditionsEntity $entity the entity
+     */
+    function addEntity($listTag, $itemTag, $nameTag, TeiEditionsEntity $entity)
+    {
+
+        $source = $this->xpath->query(
+            "/t:TEI/t:teiHeader/t:fileDesc/t:sourceDesc")->item(0);
+        $list = $source->getElementsByTagNameNS($this::TEI_NS, $listTag)->length
+            ? $source->getElementsByTagNameNS($this::TEI_NS, $listTag)->item(0)
+            : $source->appendChild($this->tei->createElementNS($this::TEI_NS, $listTag));
+
+        $item = $this->tei->createElementNS($this::TEI_NS, $itemTag);
+        $list->appendChild($item);
+        $item->appendChild($this->tei->createElementNS($this::TEI_NS, $nameTag, htmlspecialchars($entity->name)));
+
+        if ($entity->hasGeo()) {
+            $geo = $this->tei->createElementNS(
+                $this::TEI_NS, "geo", $entity->latitude . " " . $entity->longitude);
+            $loc = $this->tei->createElementNS($this::TEI_NS, "location");
+            $item->appendChild($loc);
+            $loc->appendChild($geo);
+        }
+        // Special case - if we have a local URL anchor, it refers to an xml:id
+        // otherwise, add a link group.
+        if ($entity->ref()[0] == '#') {
+            $item->setAttributeNS("http://www.w3.org/XML/1998/namespace",
+                "id", substr($entity->ref(), 1));
+        }
+        if (!empty($entity->urls)) {
+            $linkGrp = $this->tei->createElementNS($this::TEI_NS, 'linkGrp');
+            $item->appendChild($linkGrp);
+            foreach ($entity->urls as $type => $url) {
+                $link = $this->tei->createElementNS($this::TEI_NS, "link");
+                $link->setAttribute("type", $type);
+                $link->setAttribute("target", $url);
+                $linkGrp->appendChild($link);
+            }
+        }
+        if (!empty($entity->notes)) {
+            $desc = $this->tei->createElementNS($this::TEI_NS, "note");
+            $item->appendChild($desc);
+            foreach ($entity->notes as $note) {
+                $desc->appendChild(
+                    $this->tei->createElementNS(
+                        $this::TEI_NS, "p", htmlspecialchars($note)));
+            }
+        }
     }
 
     public function entityBodyHtml($urls, $slug)

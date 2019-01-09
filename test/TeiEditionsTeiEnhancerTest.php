@@ -11,30 +11,21 @@ include_once dirname(__FILE__) . "/../models/TeiEditionsTeiEnhancer.php";
 
 class TeiEditionsEnhanceTeiTest extends PHPUnit_Framework_Testcase
 {
-
     private $file;
     private $tei;
+    private $xpath;
 
     public function setUp()
     {
         $this->file = dirname(__FILE__) . "/enhance-tei.xml";
-        $this->tei = simplexml_load_file($this->file);
+        $this->tei = TeiEditionsDocumentProxy::fromUriOrPath($this->file);
+        $this->xpath = new DOMXPath($this->tei->document());
+        $this->xpath->registerNamespace("t", TeiEditionsDocumentProxy::TEI_NS);
     }
 
-    public function test_getReferences()
-    {
-        $src = new TeiEditionsDataFetcher([], null);
-        $tester = new TeiEditionsTeiEnhancer($this->tei, $src);
-        $refs = $tester->getReferences("placeName");
-        $this->assertEquals(
-            array(
-                "Tartu" => "#test_1",
-                "London" => "https://www.geonames.org/2643743/",
-                "Munich" => "http://www.geonames.org/6559171/",
-                "Invalid" => "http://www.geonames.org/INVALID"
-            ),
-            $refs
-        );
+    private function valueOf($path) {
+        $n = $this->xpath->query($path);
+        return $n->length ? $n->item(0)->textContent : "";
     }
 
     public function test_addRefs()
@@ -45,31 +36,31 @@ class TeiEditionsEnhanceTeiTest extends PHPUnit_Framework_Testcase
         $this->assertEquals($num, 7);
         $this->assertEquals(
             "Tartu",
-            $this->tei->xpath("//t:fileDesc/t:sourceDesc/t:listPlace/t:place[1]/t:placeName/text()")[0]
+            $this->valueOf("//t:fileDesc/t:sourceDesc/t:listPlace/t:place[1]/t:placeName")
         );
         $this->assertEquals(
             "London",
-            $this->tei->xpath("//t:fileDesc/t:sourceDesc/t:listPlace/t:place[2]/t:placeName/text()")[0]
+            $this->valueOf("//t:fileDesc/t:sourceDesc/t:listPlace/t:place[2]/t:placeName")
         );
         $this->assertEquals(
             "Munich",
-            $this->tei->xpath("//t:fileDesc/t:sourceDesc/t:listPlace/t:place[3]/t:placeName/text()")[0]
+            $this->valueOf("//t:fileDesc/t:sourceDesc/t:listPlace/t:place[3]/t:placeName")
         );
         $this->assertEquals(
             "Confiscation of property",
-            $this->tei->xpath("//t:fileDesc/t:sourceDesc/t:list/t:item[1]/t:name/text()")[0]
+            $this->valueOf("//t:fileDesc/t:sourceDesc/t:list/t:item[1]/t:name")
         );
         $this->assertEquals(
             "Mach Alexander",
-            $this->tei->xpath("//t:fileDesc/t:sourceDesc/t:listPerson/t:person[1]/t:persName/text()")[0]
+            $this->valueOf("//t:fileDesc/t:sourceDesc/t:listPerson/t:person[1]/t:persName")
         );
         $this->assertRegExp(
           "/11\/10\/1902\s+15\/10\/1980/",
-            (string)$this->tei->xpath("//t:fileDesc/t:sourceDesc/t:listPerson/t:person[1]/t:note/t:p[1]/text()")[0]
+            $this->valueOf("//t:fileDesc/t:sourceDesc/t:listPerson/t:person[1]/t:note/t:p[1]")
         );
         $this->assertEquals(
             "Československá vláda v exilu",
-            $this->tei->xpath("//t:fileDesc/t:sourceDesc/t:listOrg/t:org[1]/t:orgName/text()")[0]
+            $this->valueOf("//t:fileDesc/t:sourceDesc/t:listOrg/t:org[1]/t:orgName")
         );
     }
 
@@ -82,17 +73,18 @@ class TeiEditionsEnhanceTeiTest extends PHPUnit_Framework_Testcase
         $this->assertEquals($num, 7);
         $this->assertEquals(
             "München",
-            $this->tei->xpath("//t:fileDesc/t:sourceDesc/t:listPlace/t:place[3]/t:placeName/text()")[0]
+            $this->valueOf("//t:fileDesc/t:sourceDesc/t:listPlace/t:place[3]/t:placeName")
         );
         $this->assertEquals(
             "Beschlagnahme von Eigentum",
-            $this->tei->xpath("//t:fileDesc/t:sourceDesc/t:list/t:item[1]/t:name/text()")[0]
+            $this->valueOf("//t:fileDesc/t:sourceDesc/t:list/t:item[1]/t:name")
         );
     }
 
     public function test_addTefsWithLocalDict()
     {
-        $testdata = simplexml_load_file(dirname(__FILE__) . "/enhance-tei-3.xml");
+        $testdata = TeiEditionsDocumentProxy::fromUriOrPath(
+            dirname(__FILE__) . "/enhance-tei-3.xml");
         $dictfile = dirname(__FILE__) . "/dict-tei.xml";
         $dict = [];
         $doc = TeiEditionsDocumentProxy::fromUriOrPath($dictfile);
@@ -110,10 +102,10 @@ class TeiEditionsEnhanceTeiTest extends PHPUnit_Framework_Testcase
         $src = new TeiEditionsDataFetcher([], "eng");
         $num1 = (new TeiEditionsTeiEnhancer($this->tei, $src))->addReferences();
         $this->assertEquals($num1, 7);
-        $before = $this->tei->asXml();
+        $before = $this->tei->document()->saveXML();
         file_put_contents("t1.xml", $before);
         $num2 = (new TeiEditionsTeiEnhancer($this->tei, $src))->addReferences();
-        $after = $this->tei->asXml();
+        $after = $this->tei->document()->saveXML();
         file_put_contents("t2.xml", $after);
         $this->assertEquals($before, $after);
         $this->assertEquals($num2, 0);

@@ -122,10 +122,10 @@ class TeiEditionsDataFetcher
     /**
      * Extract the place name from Geonames XML.
      *
-     * @param SimpleXMLElement $xml the RDF XML
+     * @param DOMDocument $xml the RDF XML
      * @return string|false
      */
-    private function _parseGeonamesPlaceName(SimpleXMLElement $xml, $lang = null)
+    private function _parseGeonamesPlaceName(DOMXPath $xpath, $lang = null)
     {
         // try and translate the language code.
         $shortlang = tei_editions_iso639_3to2($lang);
@@ -135,10 +135,12 @@ class TeiEditionsDataFetcher
             "/rdf:RDF/gn:Feature/gn:name/text()"
         ];
 
+
+
         foreach ($paths as $path) {
-            $value = $xml->xpath($path);
-            if (!empty($value)) {
-                return (string)$value[0];
+            $value = $xpath->query($path);
+            if ($value->length) {
+                return $value->item(0)->textContent;
             }
         }
 
@@ -168,30 +170,32 @@ class TeiEditionsDataFetcher
         $geonames_url = "http://sws.geonames.org/$id/about.rdf";
 
         // fetch geonames RDF
-        if (($xml = @simplexml_load_file($geonames_url)) === false) {
+        $xml = new DOMDocument();
+        if (@$xml->load($geonames_url) === false) {
             $error = error_get_last();
             error_log("Error reading URL '$url': " . $error["message"]);
             return false;
         }
+        $xpath = new DOMXPath($xml);
 
         // interpret geonames RDF
-        $xml->registerXPathNamespace('rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#');
-        $xml->registerXPathNamespace('gn', 'http://www.geonames.org/ontology#');
-        $xml->registerXPathNamespace('wgs84_pos', 'http://www.w3.org/2003/01/geo/wgs84_pos#');
+        $xpath->registerNamespace('rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#');
+        $xpath->registerNamespace('gn', 'http://www.geonames.org/ontology#');
+        $xpath->registerNamespace('wgs84_pos', 'http://www.w3.org/2003/01/geo/wgs84_pos#');
 
-        $lat = (array)$xml->xpath("/rdf:RDF/gn:Feature/wgs84_pos:lat")[0][0];
-        $lon = (array)$xml->xpath("/rdf:RDF/gn:Feature/wgs84_pos:long")[0][0];
-        $wiki = @(array)$xml->xpath("/rdf:RDF/gn:Feature/gn:wikipediaArticle/@rdf:resource")[0][0];
+        $lat = @(float)$xpath->query("/rdf:RDF/gn:Feature/wgs84_pos:lat")->item(0)->textContent;
+        $lon = @(float)$xpath->query("/rdf:RDF/gn:Feature/wgs84_pos:long")->item(0)->textContent;
+        $wiki = @$xpath->query("/rdf:RDF/gn:Feature/gn:wikipediaArticle/@rdf:resource")->item(0)->textContent;
 
         $entity = TeiEditionsEntity::create(
-           $this->_parseGeonamesPlaceName($xml, $lang),
+           $this->_parseGeonamesPlaceName($xpath, $lang),
            $url
         );
-        if ($wikiurl = @$wiki[0]) {
-            $entity->urls["desc"] = $wikiurl;
+        if ($wiki) {
+            $entity->urls["desc"] = $wiki;
         }
-        $entity->latitude = (float)$lat[0];
-        $entity->longitude = (float)$lon[0];
+        $entity->latitude = $lat;
+        $entity->longitude = $lon;
         return $entity;
     }
 
@@ -239,12 +243,11 @@ class TeiEditionsDataFetcher
         $item = $result['data']['HistoricalAgent'];
         $desc = $item['description'];
         $entity = TeiEditionsEntity::create($desc['name'], $url);
-        $entity->notes = array_filter([
-            @$desc['datesOfExistence'],
-            @$desc['biographicalHistory'],
-        ], function ($n) {
-            return !is_null($n);
-        });
+        foreach (['datesOfExistence', 'biographicalHistory'] as $key) {
+            if ($desc[$key]) {
+                $entity->notes[] = $desc[$key];
+            }
+        }
         return $entity;
     }
 

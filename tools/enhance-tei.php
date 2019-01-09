@@ -47,7 +47,7 @@ if (!count(debug_backtrace())) {
 
     // read TEI file
     $in_file = $posargs[0];
-    $tei = simplexml_load_file($in_file) or exit("Couldn't load the TEI file.");
+    $tei = TeiEditionsDocumentProxy::fromUriOrPath($in_file);
     $src = new TeiEditionsDataFetcher($dict, $lang);
     $enhancer = new TeiEditionsTeiEnhancer($tei, $src);
     $enhancer->addReferences();
@@ -55,8 +55,9 @@ if (!count(debug_backtrace())) {
     // save the resulting TEI to output file or print
     // to stdout
     if (count($posargs) > 1) {
-        $tei->asXML($posargs[1]);
+        $tei->document()->save($posargs[1]) or exit(2);
     } else {
-        print($tei->asXML());
+        print($tei->document()->saveXML());
     }
+    exit(0);
 }

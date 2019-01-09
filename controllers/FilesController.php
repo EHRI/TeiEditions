@@ -172,11 +172,11 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
             switch ($mime) {
                 case "text/xml":
                 case "application/xml":
-                    $data = simplexml_load_file($path);
+                    $data = TeiEditionsDocumentProxy::fromUriOrPath($path);
                     $src = new TeiEditionsDataFetcher($dict, $form->getValue("lang"));
                     $tool = new TeiEditionsTeiEnhancer($data, $src);
                     $num = $tool->addReferences();
-                    $enhancedxml = $data->asXML();
+                    $enhancedxml = $data->document()->saveXML();
 
                     $fname = pathinfo($name, PATHINFO_FILENAME);
                     header("Content-Type: $mime");
