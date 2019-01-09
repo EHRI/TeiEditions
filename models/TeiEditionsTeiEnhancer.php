@@ -85,8 +85,8 @@ class TeiEditionsTeiEnhancer
         foreach ($paths as $path) {
             $nodes = $this->tei->xpath($path);
             foreach ($nodes as $node) {
-                $text = $node->xpath("text()");
-                $ref = $node->xpath("@ref");
+                $ref = $node->xpath("./@ref");
+                $text = $node->xpath("./descendant-or-self::text()");
                 if ($ref) {
                     $urls[(string)($ref[0])] = (string)$text[0];
                 } else {
