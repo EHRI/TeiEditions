@@ -32,6 +32,23 @@ class TeiEditionsDocumentProxyTest extends PHPUnit_Framework_Testcase
         $this->assertEquals($expect, $out);
     }
 
+    public function testEntityReferences()
+    {
+        $doc = TeiEditionsDocumentProxy::fromUriOrPath(
+            dirname(__FILE__) . "/enhance-tei.xml");
+        $i = 0;
+        $refs = $doc->entityReferences("placeName", $i, $addRefs = true);
+        $this->assertEquals($i, 1);
+        $this->assertEquals(
+            array(
+                "Tartu" => "#test_1",
+                "London" => "https://www.geonames.org/2643743/",
+                "Munich" => "http://www.geonames.org/6559171/",
+                "Invalid" => "http://www.geonames.org/INVALID"
+            ),
+            $refs
+        );
+    }
 
     public function testGetPlaces()
     {
