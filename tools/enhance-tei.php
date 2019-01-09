@@ -26,7 +26,7 @@ if (!count(debug_backtrace())) {
             case "-d":
             case "--dict":
                 $dict_file = array_shift($argv);
-                $doc = new TeiEditionsDocumentProxy($dict_file);
+                $doc = TeiEditionsDocumentProxy::fromUriOrPath($dict_file);
                 foreach ($doc->entities() as $entity) {
                     $dict[$entity->ref()] = $entity;
                 }
