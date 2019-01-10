@@ -32,6 +32,7 @@ class TeiEditionsDocumentProxy
         $this->tei->preserveWhiteSpace = false;
         $this->xpath = new DOMXPath($this->tei);
         $this->xpath->registerNamespace("t", $this::TEI_NS);
+        $this->xpath->registerNamespace("tei", $this::TEI_NS);
     }
 
     public static function fromString($str)
