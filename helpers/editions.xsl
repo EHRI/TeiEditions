@@ -360,7 +360,7 @@
                 </xsl:for-each>
             </div>
 
-            <div class="tei-text">
+            <div class="tei-text" dir="auto">
                 <xsl:attribute name="class">tei-text</xsl:attribute>
                 <xsl:apply-templates select="tei:TEI/tei:text/tei:body/*"/>
             </div>
