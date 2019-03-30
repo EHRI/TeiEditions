@@ -342,7 +342,7 @@
     <xsl:template match="/">
         <div class="tei">
             <div class="tei-entities">
-                <xsl:attribute name="class">tei-entities</xsl:attribute>
+                <xsl:comment>TEI Entities</xsl:comment>
                 <xsl:for-each select="/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:listPlace/tei:place">
                     <xsl:call-template name="place-entity"/>
                 </xsl:for-each>
@@ -361,7 +361,7 @@
             </div>
 
             <div class="tei-text" dir="auto">
-                <xsl:attribute name="class">tei-text</xsl:attribute>
+                <xsl:comment>TEI Text</xsl:comment>
                 <xsl:apply-templates select="tei:TEI/tei:text/tei:body/*"/>
             </div>
         </div>
