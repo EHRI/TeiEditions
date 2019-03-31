@@ -253,7 +253,7 @@ function tei_editions_render_document_texts($item) {
 
         if (tei_editions_is_xml_file($path)) {
             $lang = tei_editions_get_language($file->original_filename, $file->original_filename);
-            $text_html[$lang] = tei_editions_tei_to_html($path, $file_url_map);
+            $text_html[$lang] = tei_editions_tei_to_html($path, $file_url_map, strtolower($lang));
         }
     }
 
