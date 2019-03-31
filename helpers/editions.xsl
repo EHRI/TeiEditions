@@ -2,6 +2,7 @@
     <xsl:output indent="yes" omit-xml-declaration="yes" encoding="utf-8" method="xml" xalan:indent-amount="4"/>
 
     <xsl:param name="lang" select="'en'"/>
+    <xsl:param name="text-lang" select="'en'"/>
 
     <ehri:strings>
         <search xml:lang="en">Search in this edition</search>
@@ -27,6 +28,21 @@
     </ehri:strings>
 
     <xsl:variable name="messages" select="document('')/*/ehri:strings"/>
+
+    <func:function name="ehri:text-dir">
+        <xsl:param name="text-lang"/>
+
+        <func:result>
+            <xsl:choose>
+                <xsl:when test="$text-lang = 'ar' or $text-lang = 'he' or $text-lang = 'ur' or $text-lang = 'yi'">
+                    <xsl:value-of select="'rtl'"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="'auto'"/>
+                </xsl:otherwise>
+            </xsl:choose>
+        </func:result>
+    </func:function>
 
     <func:function name="ehri:url-label">
         <xsl:param name="url"/>
@@ -360,7 +376,10 @@
                 </xsl:for-each>
             </div>
 
-            <div class="tei-text" dir="auto">
+            <div class="tei-text">
+                <xsl:attribute name="dir">
+                    <xsl:value-of select="ehri:text-dir($text-lang)"/>
+                </xsl:attribute>
                 <xsl:comment>TEI Text</xsl:comment>
                 <xsl:apply-templates select="tei:TEI/tei:text/tei:body/*"/>
             </div>

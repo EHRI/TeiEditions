@@ -140,13 +140,14 @@ function full_path_to($file)
     return (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]" . web_path_to($file);
 }
 
-function tei_editions_tei_to_html($path, $img_map)
+function tei_editions_tei_to_html($path, $img_map, $text_lang = null)
 {
 
     $html_lang = function_exists("get_html_lang")
         ? get_html_lang()
         : "en-GB";
     $lang = explode('-', $html_lang)[0];
+    $text_lang = $text_lang === null ? $lang : $text_lang;
     $tohtml = dirname(__FILE__) . '/editions.xsl';
 
     $xsldoc = new DOMDocument();
@@ -162,6 +163,7 @@ function tei_editions_tei_to_html($path, $img_map)
 
     $proc = new XSLTProcessor;
     $proc->setParameter('', "lang", $lang);
+    $proc->setParameter('', 'text-lang', $text_lang);
     $proc->importStylesheet($xsldoc);
     return $proc->transformToXml($xmldoc);
 }
