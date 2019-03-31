@@ -264,7 +264,7 @@
         <xsl:variable name="pageno" select="@n"/>
 
         <xsl:if test="$pageno">
-            <div class="element-text-page">
+            <div class="element-text-page" dir="auto">
                 <div class="element-text-page-icon material-icons">insert_drive_file</div>
                 <xsl:value-of select="$messages/textFromPage[lang($lang)]"/>
                 <xsl:value-of select="$pageno"/>
@@ -358,6 +358,7 @@
     <xsl:template match="/">
         <div class="tei">
             <div class="tei-entities">
+                <!-- this comment prevents self-closing tags. -->
                 <xsl:comment>TEI Entities</xsl:comment>
                 <xsl:for-each select="/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:listPlace/tei:place">
                     <xsl:call-template name="place-entity"/>
@@ -380,6 +381,7 @@
                 <xsl:attribute name="dir">
                     <xsl:value-of select="ehri:text-dir($text-lang)"/>
                 </xsl:attribute>
+                <!-- this comment prevents self-closing tags. -->
                 <xsl:comment>TEI Text</xsl:comment>
                 <xsl:apply-templates select="tei:TEI/tei:text/tei:body/*"/>
             </div>
