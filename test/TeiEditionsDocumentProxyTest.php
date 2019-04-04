@@ -91,7 +91,7 @@ class TeiEditionsDocumentProxyTest extends PHPUnit_Framework_Testcase
     {
         $doc = TeiEditionsDocumentProxy::fromUriOrPath($this->file);
         $simple = $doc->asSimpleHtml();
-        $this->assertThat($simple, self::stringStartsWith("<div class=\"tei-text\">"),
+        $this->assertThat($simple, self::stringStartsWith("<div class=\"tei-text\" dir=\"auto\">"),
             'does not start with the correct div');
     }
 }
