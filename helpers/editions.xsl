@@ -5,26 +5,36 @@
     <xsl:param name="text-lang" select="'en'"/>
 
     <ehri:strings>
-        <search xml:lang="en">Search in this edition</search>
-        <search xml:lang="de">Suche in der Edition</search>
-        <ehriPortal xml:lang="en">View in EHRI Portal</ehriPortal>
+        <ehriPortal xml:lang="cs">Zobrazit v EHRI Portálu</ehriPortal>
         <ehriPortal xml:lang="de">Im EHRI Portal anzeigen</ehriPortal>
-        <geonames xml:lang="en">View in Geonames</geonames>
+        <ehriPortal xml:lang="en">View in EHRI Portal</ehriPortal>
+        <geonames xml:lang="cs">Zobrazit v Geonames</geonames>
         <geonames xml:lang="de">In Geonames anzeigen</geonames>
-        <wikipedia xml:lang="en">View in Wikipedia</wikipedia>
-        <wikipedia xml:lang="de">In Wikipedia anzeigen</wikipedia>
-        <holocaustCz xml:lang="en">View in Holocaust.cz</holocaustCz>
+        <geonames xml:lang="en">View in Geonames</geonames>
+        <holocaustCz xml:lang="cs">Zobrazit na Holocaust.cz</holocaustCz>
         <holocaustCz xml:lang="de">In Holocaust.cz anzeigen</holocaustCz>
-        <person xml:lang="en">Person</person>
-        <person xml:lang="de">Person</person>
-        <place xml:lang="en">Place</place>
-        <place xml:lang="de">Ort</place>
-        <organisation xml:lang="en">Organisation</organisation>
+        <holocaustCz xml:lang="en">View in Holocaust.cz</holocaustCz>
+        <organisation xml:lang="cs">Organizace</organisation>
         <organisation xml:lang="de">Organisation</organisation>
-        <subject xml:lang="en">Subject</subject>
+        <organisation xml:lang="en">Organisation</organisation>
+        <person xml:lang="cs">Osoba</person>
+        <person xml:lang="de">Person</person>
+        <person xml:lang="en">Person</person>
+        <place xml:lang="cs">Místo</place>
+        <place xml:lang="de">Ort</place>
+        <place xml:lang="en">Place</place>
+        <search xml:lang="cs">Hledat v této edici</search>
+        <search xml:lang="de">Suche in der Edition</search>
+        <search xml:lang="en">Search in this edition</search>
+        <subject xml:lang="cs">Klíčové slovo</subject>
         <subject xml:lang="de">Thema</subject>
-        <textFromPage xml:lang="en">Text from page </textFromPage>
+        <subject xml:lang="en">Subject</subject>
+        <textFromPage xml:lang="cs">Text ze strany </textFromPage>
         <textFromPage xml:lang="de">Text von Seite </textFromPage>
+        <textFromPage xml:lang="en">Text from page </textFromPage>
+        <wikipedia xml:lang="cs">Zobrazit ve Wikipedii</wikipedia>
+        <wikipedia xml:lang="de">In Wikipedia anzeigen</wikipedia>
+        <wikipedia xml:lang="en">View in Wikipedia</wikipedia>
     </ehri:strings>
 
     <xsl:variable name="messages" select="document('')/*/ehri:strings"/>
