@@ -215,10 +215,10 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
                 switch ($mime) {
                     case "text/xml":
                     case "application/xml":
-                        $this->_updateItem($path, $name, $neatline, $created, $updated);
+                        $this->_updateItem($path, $name, $neatline, true, $created, $updated);
                         break;
                     case "application/zip":
-                        $this->_readZip($path, $neatline, $created, $updated);
+                        $this->_readZip($path, $neatline, true, $created, $updated);
                         break;
                     default:
                         error_log("Unhandled file extension: $mime");
@@ -310,10 +310,11 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
      * @param Item $item the item
      * @param string $path the file path
      * @param string $name the file name
+     * @param bool $is_primary if this file is the primary TEI
      */
-    private function _addOrUpdateItemFile(Item $item, $path, $name)
+    private function _addOrUpdateItemFile(Item $item, $path, $name, $is_primary = false)
     {
-        $primaryXml = null;
+        $primaryXml = $is_primary ? $name : null;
         foreach ($item->getFiles() as $file) {
             if (is_null($primaryXml) && tei_editions_is_xml_file($file)) {
                 $primaryXml = $file->original_filename;
@@ -336,7 +337,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
                 } else {
                     $xml[] = $file;
                 }
-            } else if (substr($file->mime_type, 0, 5) == "image" ) {
+            } else if (substr($file->mime_type, 0, 5) == "image") {
                 $images[] = $file;
             } else {
                 $others[] = $file;
@@ -405,7 +406,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
      * @throws Exception
      * @throws Omeka_Record_Exception
      */
-    private function _readZip($zipPath, $neatline = false, &$created = 0, &$updated = 0)
+    private function _readZip($zipPath, $neatline = false, $primary = false, &$created = 0, &$updated = 0)
     {
         $temp = $this->_tempDir();
 
@@ -416,7 +417,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
                 $zip->close();
 
                 foreach (glob($temp . '/*.xml') as $path) {
-                    $this->_updateItem($path, basename($path), $neatline, $created, $updated);
+                    $this->_updateItem($path, basename($path), $neatline, $primary, $created, $updated);
                 }
             } else {
                 throw new Exception("Zip cannot be opened");
@@ -499,19 +500,20 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
      * @param string $path
      * @param string $name
      * @param bool $neatline
+     * @param bool $primary
      * @param int $created
      * @param int $updated
      * @throws Exception
      * @throws Omeka_Record_Exception
      */
-    private function _updateItem($path, $name, $neatline, &$created, &$updated)
+    private function _updateItem($path, $name, $neatline, $primary, &$created, &$updated)
     {
         error_log("Importing file: $path");
         $create = false;
         $doc = $this->_getDoc($path, $name);
         $item = $this->_getOrCreateItem($doc, $create);
         $this->_updateItemFromTEI($item, $doc, $neatline);
-        $this->_addOrUpdateItemFile($item, $path, $name);
+        $this->_addOrUpdateItemFile($item, $path, $name, $primary);
         if ($create) {
             $created++;
         } else {
