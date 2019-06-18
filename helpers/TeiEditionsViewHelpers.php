@@ -228,13 +228,12 @@ function tei_editions_render_item_metadata($item)
 }
 
 /**
+ * Fetch an array of document texts keyed by language code.
+ *
  * @param $item
- * @return string
- * @throws Twig_Error_Loader
- * @throws Twig_Error_Runtime
- * @throws Twig_Error_Syntax
+ * @return array
  */
-function tei_editions_render_document_texts($item) {
+function tei_editions_get_document_texts($item) {
     if (is_string($item)) {
         $view = get_view();
         $item = $view->{$view->singularize($item)};
@@ -257,6 +256,20 @@ function tei_editions_render_document_texts($item) {
         }
     }
 
+    return $text_html;
+}
+
+/**
+ * Renders the document texts.
+ *
+ * @param $item
+ * @return string
+ * @throws Twig_Error_Loader
+ * @throws Twig_Error_Runtime
+ * @throws Twig_Error_Syntax
+ */
+function tei_editions_render_document_texts($item) {
+    $text_html = tei_editions_get_document_texts($item);
     return ViewRenderer::render("document_texts.twig.html", ["data" => $text_html]);
 }
 
