@@ -2,9 +2,13 @@
     <p class="element-metadata-field">{{ identifier }}</p>
     <p class="element-metadata-field">{{ metadata | join(' | ') }}</p>
     <p class="element-metadata-field">{{ source }}</p>
-    {% if truncate %}
-        <p class="contentDescription">{{ description | truncate(300) }}</p>
-    {% else %}
-        <p class="contentDescription">{{ description }}</p>
+    {% if not description | trim is empty %}
+        <p class="content-description">
+            {% if truncate %}
+                {{ description | trim | truncate(300) }}
+            {% else %}
+                {{ description | trim }}
+            {% endif %}
+        </p>
     {% endif %}
 </div>
