@@ -320,9 +320,15 @@ function tei_editions_get_item_by_identifier($identifier)
  */
 function tei_editions_get_neatline_exhibit(Item $item)
 {
-    $exhibits = get_db()->getTable('NeatlineExhibit')
-        ->findBy(['slug' => metadata($item, ['Dublin Core', 'Identifier'])]);
-    return empty($exhibits) ? null : $exhibits[0];
+    $identifier = metadata($item, ['Dublin Core', 'Identifier']);
+    if (empty($identifier)) {
+        return null;
+    }
+    $exhibits = get_db()->getTable('NeatlineExhibit')->findBy(['slug' => $identifier]);
+    if (empty($exhibits)) {
+        return null;
+    }
+    return $exhibits[0];
 }
 
 function tei_editions_render_string_list($list, $class_name = "")
