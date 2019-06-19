@@ -140,7 +140,19 @@ function full_path_to($file)
     return (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]" . web_path_to($file);
 }
 
-function tei_editions_tei_to_html($path, $img_map, $text_lang = null)
+/**
+ * @param string $path the TEI XML path
+ * @param array $img_map a map of image paths in the TEI to
+ * their web-resolvable paths
+ * @param null $text_lang the 2-letter language code
+ * @param bool $meta whether to also extract metadata from the header
+ * @param bool $entities whether to also extract a set of entities
+ * from the header
+ *
+ * @return array containing keys for 'html' (default) and optionally
+ * 'entities' and 'meta'
+ */
+function tei_editions_tei_to_html($path, $img_map, $text_lang = null, $meta = false, $entities = false)
 {
 
     $html_lang = function_exists("get_html_lang")
@@ -165,7 +177,21 @@ function tei_editions_tei_to_html($path, $img_map, $text_lang = null)
     $proc->setParameter('', "lang", $lang);
     $proc->setParameter('', 'text-lang', $text_lang);
     $proc->importStylesheet($xsldoc);
-    return $proc->transformToXml($xmldoc);
+
+    $data = [];
+
+    $data["html"] = $proc->transformToXml($xmldoc);
+
+    if ($entities) {
+        $proc->setParameter('', "entities", true);
+        $data["entities"] = $proc->transformToXml($xmldoc);
+    }
+    if ($meta) {
+        $proc->setParameter('', 'file-id', tei_editions_get_identifier(basename($path)));
+        $proc->setParameter('', 'meta', true);
+        $data["meta"] = $proc->transformToXml($xmldoc);
+    }
+    return $data;
 }
 
 function tei_editions_replace_urls_xml(DOMDocument $doc, $map)
@@ -268,7 +294,7 @@ function tei_editions_render_item(Item $item)
     foreach ($files as $file) {
         $path = $file->getWebPath();
         if (tei_editions_is_xml_file($path)) {
-            $xml .= @tei_editions_tei_to_html($path, $file_url_map);
+            $xml .= @tei_editions_tei_to_html($path, $file_url_map)["html"];
             break;
         }
     }
@@ -338,7 +364,7 @@ function tei_editions_degrees_to_metres($lon_lat)
  */
 function tei_editions_point_spread($points)
 {
-    $degsep = function($i) use ($points) {
+    $degsep = function ($i) use ($points) {
         $axis = function ($p) use ($i) {
             return $p[$i];
         };
@@ -363,7 +389,7 @@ function tei_editions_approximate_zoom($points, $default)
     $deg = max(tei_editions_point_spread($points));
 
     // maximum zoom level of 12
-    for($i = 0; $i < 12; $i++) {
+    for ($i = 0; $i < 12; $i++) {
         if ($deg > 360 / pow(2, $i)) {
             return $i;
         }

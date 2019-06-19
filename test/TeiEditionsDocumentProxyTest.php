@@ -81,9 +81,13 @@ class TeiEditionsDocumentProxyTest extends PHPUnit_Framework_Testcase
     {
         $doc = TeiEditionsDocumentProxy::fromUriOrPath($this->file);
         $html = $doc->asHtml();
-        $this->assertThat($html, self::stringStartsWith("<div class=\"tei\">"),
+        $this->assertThat($html["meta"], self::stringStartsWith("<div class=\"tei-meta\">"),
             'does not start with the correct div');
-        $this->assertThat($html, self::stringContains('geonames-2643743',
+        $this->assertThat($html["entities"], self::stringStartsWith("<div class=\"tei-entities\">"),
+            'does not start with the correct div');
+        $this->assertThat($html["html"], self::stringStartsWith("<div class=\"tei-text\" dir=\"auto\">"),
+            'does not start with the correct div');
+        $this->assertThat($html["html"], self::stringContains('geonames-2643743',
             'does not contain geonames slug'));
     }
 

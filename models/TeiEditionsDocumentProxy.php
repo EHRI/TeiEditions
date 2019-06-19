@@ -327,13 +327,17 @@ class TeiEditionsDocumentProxy
         }
     }
 
+    public function metaHtml() {
+        return $this->asHtml()["meta"];
+    }
+
     public function entityBodyHtml($urls, $slug)
     {
         $url = isset($urls["normal"]) ? $urls["normal"] : ('#' . $slug);
         $xml = new DomDocument;
-        $xml->loadXML($this->asHtml());
+        $xml->loadXML($this->asHtml()["entities"]);
         $query = new DOMXPath($xml);
-        $path = "/div/div[@class='tei-entities']/div[@data-ref='$url']/div[@class='content-info-entity-body']";
+        $path = "/div/div[@data-ref='$url']/div[@class='content-info-entity-body']";
         $node = $query->query($path);
         return empty($node) ? "" : $xml->saveXML($node->item(0));
     }
@@ -341,17 +345,13 @@ class TeiEditionsDocumentProxy
     public function asHtml()
     {
         if (is_null($this->htmlCache)) {
-            $this->htmlCache = tei_editions_tei_to_html($this->uriOrPath, []);
+            $this->htmlCache = tei_editions_tei_to_html($this->uriOrPath, [], null, true, true);
         }
         return $this->htmlCache;
     }
 
     public function asSimpleHtml()
     {
-        $xml = new DomDocument();
-        $xml->loadXML($this->asHtml());
-        $query = new DOMXPath($xml);
-        $div = $query->query("/div/div[@class='tei-text']");
-        return empty($div) ? "" : $xml->saveHTML($div->item(0));
+        return $this->asHtml()["html"];
     }
 }
