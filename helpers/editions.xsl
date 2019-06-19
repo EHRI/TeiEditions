@@ -1,6 +1,9 @@
 <xsl:stylesheet version="1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:redirect="http://xml.apache.org/xalan/redirect" xmlns:xalan="http://xml.apache.org/xalan" xmlns:ehri="https://ehri-project.eu/functions" xmlns:func="http://exslt.org/functions" extension-element-prefixes="xalan redirect func ehri" exclude-result-prefixes="xhtml tei">
     <xsl:output indent="yes" omit-xml-declaration="yes" encoding="utf-8" method="xml" xalan:indent-amount="4"/>
 
+    <xsl:param name="meta" />
+    <xsl:param name="entities" />
+    <xsl:param name="file-id" />
     <xsl:param name="lang" select="'en'"/>
     <xsl:param name="text-lang" select="'en'"/>
 
@@ -135,6 +138,25 @@
             </xsl:choose>
         </func:result>
     </func:function>
+
+
+    <!-- template 'join' accepts valueList and separator -->
+    <xsl:template name="join-meta" >
+        <xsl:param name="valueList" select="/.."/>
+        <xsl:param name="separator" select="','"/>
+
+        <xsl:for-each select="$valueList">
+            <xsl:choose>
+                <xsl:when test="position() = 1">
+                    <xsl:apply-templates select="."/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="$separator"/>
+                    <xsl:apply-templates select="."/>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:for-each>
+    </xsl:template>
 
     <xsl:template name="entity-header">
         <xsl:param name="type"/>
@@ -366,35 +388,59 @@
     </xsl:template>
 
     <xsl:template match="/">
-        <div class="tei">
-            <div class="tei-entities">
-                <!-- this comment prevents self-closing tags. -->
-                <xsl:comment>TEI Entities</xsl:comment>
-                <xsl:for-each select="/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:listPlace/tei:place">
-                    <xsl:call-template name="place-entity"/>
-                </xsl:for-each>
+        <xsl:choose>
+            <xsl:when test="$meta">
+               <div class="tei-meta">
+                   <p class="element-metadata-field"><xsl:value-of select="//tei:profileDesc/tei:creation/tei:idno"/></p>
+                   <p class="element-metadata-field">
+                       <xsl:call-template name="join-meta">
+                           <xsl:with-param name="valueList" select="//tei:profileDesc/tei:creation/tei:date/@when|//tei:profileDesc/tei:creation/tei:orgName|//tei:profileDesc/tei:creation/tei:placeName"/>
+                           <xsl:with-param name="separator" select="' | '"/>
+                       </xsl:call-template>
+                   </p>
+                   <xsl:variable name="bibl" select="//tei:sourceDesc/tei:bibl"/>
+                   <xsl:if test="$bibl">
+                       <p class="element-metadata-field">
+                           <xsl:apply-templates select="$bibl"/>
+                       </p>
+                   </xsl:if>
+                   <xsl:variable name="abstract" select="//tei:profileDesc/tei:abstract"/>
+                   <xsl:if test="$abstract">
+                       <p class="content-description"><xsl:apply-templates select="$abstract"/></p>
+                   </xsl:if>
+               </div>
+            </xsl:when>
+            <xsl:when test="$entities">
+                <div class="tei-entities">
+                    <!-- this comment prevents self-closing tags. -->
+                    <xsl:comment>TEI Entities</xsl:comment>
+                    <xsl:for-each select="/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:listPlace/tei:place">
+                        <xsl:call-template name="place-entity"/>
+                    </xsl:for-each>
 
-                <xsl:for-each select="/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:list/tei:item">
-                    <xsl:call-template name="term-entity"/>
-                </xsl:for-each>
+                    <xsl:for-each select="/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:list/tei:item">
+                        <xsl:call-template name="term-entity"/>
+                    </xsl:for-each>
 
-                <xsl:for-each select="/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:listPerson/tei:person">
-                    <xsl:call-template name="person-entity"/>
-                </xsl:for-each>
+                    <xsl:for-each select="/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:listPerson/tei:person">
+                        <xsl:call-template name="person-entity"/>
+                    </xsl:for-each>
 
-                <xsl:for-each select="/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:listOrg/tei:org">
-                    <xsl:call-template name="org-entity"/>
-                </xsl:for-each>
-            </div>
-
-            <div class="tei-text">
-                <xsl:attribute name="dir">
-                    <xsl:value-of select="ehri:text-dir($text-lang)"/>
-                </xsl:attribute>
-                <!-- this comment prevents self-closing tags. -->
-                <xsl:comment>TEI Text</xsl:comment>
-                <xsl:apply-templates select="tei:TEI/tei:text/tei:body/*"/>
-            </div>
-        </div>
+                    <xsl:for-each select="/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:listOrg/tei:org">
+                        <xsl:call-template name="org-entity"/>
+                    </xsl:for-each>
+                </div>
+            </xsl:when>
+            <xsl:otherwise>
+                <div class="tei-text">
+                    <xsl:attribute name="dir">
+                        <xsl:value-of select="ehri:text-dir($text-lang)"/>
+                    </xsl:attribute>
+                    <!-- this comment prevents self-closing tags. -->
+                    <xsl:comment>TEI Text</xsl:comment>
+                    <xsl:apply-templates select="tei:TEI/tei:text/tei:body/*"/>
+                </div>
+            </xsl:otherwise>
+        </xsl:choose>
     </xsl:template>
 </xsl:stylesheet>

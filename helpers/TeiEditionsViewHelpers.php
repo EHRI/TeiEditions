@@ -230,10 +230,15 @@ function tei_editions_render_item_metadata($item)
 /**
  * Fetch an array of document texts keyed by language code.
  *
- * @param $item
- * @return array
+ * @param Item $item the item
+ * @param string $metadata an out-param in which to put an HTML metadata section
+ * extracted from the first (primary) TEI
+ * @param string $entities an out-param in which to put HTML entity descriptions
+ * extracted from the first (primary) TEI
+ *
+ * @return array of language-codes to TEI HTML
  */
-function tei_editions_get_document_texts($item) {
+function tei_editions_get_document_texts($item, &$metadata, &$entities) {
     if (is_string($item)) {
         $view = get_view();
         $item = $view->{$view->singularize($item)};
@@ -251,8 +256,18 @@ function tei_editions_get_document_texts($item) {
         $path = $file->getWebPath();
 
         if (tei_editions_is_xml_file($path)) {
+
+            // Fetch entities and metadata for the first file processed.
+            $get_meta = empty($text_html);
+
             $lang = tei_editions_get_language($file->original_filename, $file->original_filename);
-            $text_html[$lang] = tei_editions_tei_to_html($path, $file_url_map, strtolower($lang));
+            $data = tei_editions_tei_to_html($path, $file_url_map, strtolower($lang), $get_meta, $get_meta);
+            $text_html[$lang] = $data["html"];
+
+            if ($get_meta) {
+                $metadata = $data["meta"];
+                $entities = $data["entities"];
+            }
         }
     }
 
@@ -268,8 +283,8 @@ function tei_editions_get_document_texts($item) {
  * @throws Twig_Error_Runtime
  * @throws Twig_Error_Syntax
  */
-function tei_editions_render_document_texts($item) {
-    $text_html = tei_editions_get_document_texts($item);
+function tei_editions_render_document_texts($item, &$meta, &$entities) {
+    $text_html = tei_editions_get_document_texts($item, $meta, $entities);
     return ViewRenderer::render("document_texts.twig.html", ["data" => $text_html]);
 }
 
