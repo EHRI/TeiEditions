@@ -1,5 +1,5 @@
-<div id="content-files">
-    {% if images %}
+{% if images %}
+<div id="photogallery-container">
     <div id="photogallery" itemscope="" itemtype="http://schema.org/ImageGallery">
         {% for image in images %}
         <figure class="gallery-item" itemprop="associatedMedia" itemscope="" itemtype="http://schema.org/ImageObject">
@@ -12,5 +12,5 @@
     <div id="content-files-zoom-icon" class="material-icons">zoom_in</div>
     <div id="content-files-gallery-icon" class="material-icons">insert_drive_file</div>
     <div id="content-files-counter">{{ images|length }}</div>
-    {% endif %}
 </div>
+{% endif %}
