@@ -69,12 +69,11 @@ function tei_editions_index_shortcode($args, $view)
  */
 function tei_editions_recent_items_shortcode($args, $view)
 {
-    $html = "<div class=\"recently-added-wrapper\">\n";
+    $items = [];
     foreach (get_recent_items($args["num"]) as $item) {
-        $html .= tei_editions_render_item_summary($item) . "\n";
+        $items[] = $view->partial("items/single.php", array("item" => $item));
     }
-    $html .= "</div>\n";
-    return $html;
+    return "<div class=\"recently-added-wrapper\">\n" . join("\n", $items) . "\n</div>";
 }
 
 /**
@@ -111,44 +110,12 @@ function tei_editions_item_shortcode($args, $view)
         }
         return sprintf(
             "<div class=\"editions-item\">%s</div>",
-            tei_editions_render_item_summary($item)
+            $view->partial('items/single.php', array('item' => $item))
         );
     } catch (Exception $e) {
         error_log($e->getMessage());
         return "<div class='shortcode-error'>Error rendering shortcode...</div>";
     }
-}
-
-/**
- * @param Item $item
- * @return string
- * @throws Twig_Error_Loader
- * @throws Twig_Error_Runtime
- * @throws Twig_Error_Syntax
- */
-function tei_editions_render_item_summary(Item $item)
-{
-    $url = record_url($item);
-    $img = record_image($item);
-    $options = ['no_escape' => true];
-    $title = metadata($item, "display_title", $options);
-    $ident = metadata($item, ['Dublin Core', "Identifier"], $options);
-    $desc = metadata($item, ['Dublin Core', "Description"], $options);
-    $src = metadata($item, ['Dublin Core', "Source"], $options);
-    $meta = [];
-    foreach (["Date", "Creator", "Coverage"] as $key) {
-        $value = metadata($item, ['Dublin Core', $key], $options);
-        if ($value) {
-            $meta[$key] = $value;
-        }
-    }
-
-    return ViewRenderer::render("item_summary.html.twig", [
-            "item" => $item, "metadata" => $meta, "url" => $url,
-            "record_image" => $img, "title" => $title,
-            "identifier" => $ident, "description" => $desc, "source" => $src
-        ]
-    );
 }
 
 function tei_editions_render_document_references($item)
@@ -195,36 +162,6 @@ function tei_editions_render_document_images($item)
     }
 
     return ViewRenderer::render("images.twig.html", ["images" => $images]);
-}
-
-/**
- * @param $item
- * @return string
- * @throws Twig_Error_Loader
- * @throws Twig_Error_Runtime
- * @throws Twig_Error_Syntax
- */
-function tei_editions_render_item_metadata($item)
-{
-    $ident = metadata($item, ['Dublin Core', "Identifier"], ['no_escape' => true]);
-    $desc = metadata($item, ['Dublin Core', "Description"], ['no_escape' => true]);
-    $src = metadata($item, ['Dublin Core', "Source"], ['no_escape' => true]);
-    $meta = [];
-    foreach (["Date", "Creator", "Coverage"] as $key) {
-        $value = metadata($item, ['Dublin Core', $key], ['no_escape' => true]);
-        if ($value) {
-            $meta[$key] = $value;
-        }
-    }
-
-    return ViewRenderer::render("metadata.html.twig", [
-            "item" => $item,
-            "metadata" => $meta,
-            "identifier" => $ident,
-            "description" => $desc,
-            "source" => $src
-        ]
-    );
 }
 
 /**
