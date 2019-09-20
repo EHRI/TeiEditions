@@ -118,6 +118,13 @@ function tei_editions_item_shortcode($args, $view)
     }
 }
 
+/**
+ * Fetch rendered HTML for document references to external
+ * content.
+ *
+ * @param Item $item
+ * @return mixed HTML content
+ */
 function tei_editions_render_document_references($item)
 {
     $content = "";
