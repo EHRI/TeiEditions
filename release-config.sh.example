@@ -1,0 +1,8 @@
+PROD_DOMAIN=example.com
+STAGE_DOMAIN=example-stage.com
+
+PROD_HOSTS=(my-prod-server)
+STAGE_HOSTS=(my-stage-server)
+
+PROD_SITES=(my-edition)
+STAGE_SITES=(my-edition)
