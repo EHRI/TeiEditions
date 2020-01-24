@@ -239,7 +239,9 @@ function tei_editions_get_elements($element_name)
                       FROM {$db->prefix}element_texts t
                       JOIN {$db->prefix}elements e
                         ON t.element_id = e.id
-                      WHERE e.name  = ?
+                      JOIN {$db->prefix}items i
+                        ON t.record_id = i.id
+                      WHERE i.public AND e.name  = ?
                       ORDER BY text",
         ["name" => $element_name]
     )->fetchAll($style = 0, $col = 0);
