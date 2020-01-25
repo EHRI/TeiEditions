@@ -26,7 +26,9 @@ class TeiEditionsPlugin extends Omeka_Plugin_AbstractPlugin
      */
     protected $_filters = array(
         'admin_navigation_main',
-        'public_navigation_main'
+        'public_navigation_main',
+        'item_previous',
+        'item_next'
     );
 
     /**
@@ -379,5 +381,61 @@ SQL
             'uri' => url('editions')
         ));
         return $nav;
+    }
+
+    /**
+     * Override item previous to exclude non-public items.
+     *
+     * @param $unused
+     * @param array $args
+     * @return Omeka_Record_AbstractRecord
+     */
+    public function filterItemPrevious($unused, array $args) {
+        $item = $args['item'];
+
+        $table = $this->_db->getTable('Item');
+        $select = $table->getSelect()
+            ->limit(1)
+            ->where('items.id < ? AND items.public', $item->id);
+        $this->_filterSolrExcludes($select);
+        $select->order('items.id DESC');
+        return $table->fetchObject($select);
+    }
+
+    /**
+     * Override item next to exclude non-public items.
+     *
+     * @param $unused
+     * @param array $args
+     * @return Omeka_Record_AbstractRecord
+     */
+    public function filterItemNext($unused, array $args) {
+        $item = $args['item'];
+
+        $table = $this->_db->getTable('Item');
+        $select = $table->getSelect()
+            ->limit(1)
+            ->where('items.id > ? AND items.public', $item->id);
+        $this->_filterSolrExcludes($select);
+        $select->order('items.id ASC');
+        return $table->fetchObject($select);
+    }
+
+    /**
+     * If the Solr plugin is enabled, exclude items from
+     * previous/next that are excluded from indexing.
+     *
+     * @param Zend_Db_Select $select
+     * @return Zend_Db_Select
+     */
+    private function _filterSolrExcludes(Zend_Db_Select $select) {
+        return !plugin_is_active('SolrSearch')
+            ? $select
+            : $select->where("(
+                        items.collection_id IS NULL 
+                    OR items.collection_id NOT IN (
+                        SELECT collection_id FROM {$this->_db->prefix}solr_search_excludes
+                    )
+                )");
     }
 }
