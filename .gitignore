@@ -1,5 +1,4 @@
 .idea
 *.iml
 spec
-
-release-config.sh
+vendor
