@@ -50,19 +50,31 @@ class TeiEditionsDocumentProxyTest extends PHPUnit_Framework_Testcase
         );
     }
 
-    public function testGetPlaces()
+    public function testGetEntities()
     {
         $doc = TeiEditionsDocumentProxy::fromUriOrPath($this->file);
-        $tartu = new TeiEditionsEntity;
-        $tartu->name =  "Tartu";
-        $tartu->slug = "geonames-588335";
-        $tartu->longitude = 26.72509;
-        $tartu->latitude = 58.38062;
-        $tartu->urls = [
+        $place = new TeiEditionsEntity;
+        $place->name =  "Tartu";
+        $place->slug = "geonames-588335";
+        $place->longitude = 26.72509;
+        $place->latitude = 58.38062;
+        $place->urls = [
             "normal" => "http://www.geonames.org/588335/",
             "desc" => "http://ru.wikipedia.org/wiki/%D0%A2%D0%B0%D1%80%D1%82%D1%83"
         ];
-        $this->assertEquals([$tartu], $doc->entities());
+        $pers = new TeiEditionsEntity;
+        $pers->name =  "Grün, Maurycy Moses";
+        $pers->slug = "ehri_nisko_gruen_maurycy";
+        $pers->birth = "1890";
+        $pers->death = "1944";
+        $pers->urls = [];
+
+        $org = new TeiEditionsEntity;
+        $org->name = "Test English";
+        $org->slug = "this-is-a-test";
+        $org->notes = ["Blah blah"];
+        $org->urls = [];
+        $this->assertEquals([$place, $pers, $org], $doc->entities());
     }
 
     public function testGetXmlId()

@@ -1,9 +1,13 @@
-<xsl:stylesheet version="1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:redirect="http://xml.apache.org/xalan/redirect" xmlns:xalan="http://xml.apache.org/xalan" xmlns:ehri="https://ehri-project.eu/functions" xmlns:func="http://exslt.org/functions" extension-element-prefixes="xalan redirect func ehri" exclude-result-prefixes="xhtml tei">
+<xsl:stylesheet version="1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0"
+                xmlns:redirect="http://xml.apache.org/xalan/redirect" xmlns:xalan="http://xml.apache.org/xalan"
+                xmlns:ehri="https://ehri-project.eu/functions" xmlns:func="http://exslt.org/functions"
+                extension-element-prefixes="xalan redirect func ehri" exclude-result-prefixes="xhtml tei">
     <xsl:output indent="yes" omit-xml-declaration="yes" encoding="utf-8" method="xml" xalan:indent-amount="4"/>
 
-    <xsl:param name="meta" />
-    <xsl:param name="entities" />
-    <xsl:param name="file-id" />
+    <xsl:param name="meta"/>
+    <xsl:param name="entities"/>
+    <xsl:param name="file-id"/>
     <xsl:param name="lang" select="'en'"/>
     <xsl:param name="text-lang" select="'en'"/>
 
@@ -32,9 +36,9 @@
         <subject xml:lang="cs">Klíčové slovo</subject>
         <subject xml:lang="de">Thema</subject>
         <subject xml:lang="en">Subject</subject>
-        <textFromPage xml:lang="cs">Text ze strany </textFromPage>
-        <textFromPage xml:lang="de">Text von Seite </textFromPage>
-        <textFromPage xml:lang="en">Text from page </textFromPage>
+        <textFromPage xml:lang="cs">Text ze strany</textFromPage>
+        <textFromPage xml:lang="de">Text von Seite</textFromPage>
+        <textFromPage xml:lang="en">Text from page</textFromPage>
         <wikipedia xml:lang="cs">Zobrazit ve Wikipedii</wikipedia>
         <wikipedia xml:lang="de">In Wikipedia anzeigen</wikipedia>
         <wikipedia xml:lang="en">View in Wikipedia</wikipedia>
@@ -116,7 +120,8 @@
                     <xsl:value-of select="concat('geonames-', substring-after($url, $geonames1))"/>
                 </xsl:when>
                 <xsl:when test="starts-with($url, $geonames2)">
-                    <xsl:value-of select="concat('geonames-', substring-before(substring-after($url, $geonames2),'/'))"/>
+                    <xsl:value-of
+                            select="concat('geonames-', substring-before(substring-after($url, $geonames2),'/'))"/>
                 </xsl:when>
                 <xsl:when test="starts-with($url, $holocaustcz)">
                     <xsl:value-of select="concat('holocaust-cz-', substring-after($url, $holocaustcz))"/>
@@ -141,7 +146,7 @@
 
 
     <!-- template 'join' accepts valueList and separator -->
-    <xsl:template name="join-meta" >
+    <xsl:template name="join-meta">
         <xsl:param name="valueList" select="/.."/>
         <xsl:param name="separator" select="','"/>
 
@@ -173,8 +178,31 @@
         <xsl:param name="search-type"/>
 
         <xsl:variable name="note" select="./tei:note"/>
+        <xsl:variable name="birth" select="./tei:birth/@when"/>
+        <xsl:variable name="death" select="./tei:death/@when"/>
 
         <div class="content-info-entity-body">
+            <xsl:choose>
+                <xsl:when test="$birth and $death">
+                    <p><strong><xsl:value-of select="concat($birth, '-', $death)"/></strong></p>
+                </xsl:when>
+                <xsl:when test="$birth">
+                    <p><strong><xsl:value-of select="$birth"/></strong></p>
+                </xsl:when>
+                <xsl:otherwise/>
+            </xsl:choose>
+            <xsl:if test="$birth">
+                <div class="content-info-entity-born">
+                    Born:
+                    <xsl:value-of select="$birth"/>
+                </div>
+            </xsl:if>
+            <xsl:if test="$death">
+                <div class="content-info-entity-died">
+                    Died:
+                    <xsl:value-of select="$death"/>
+                </div>
+            </xsl:if>
             <xsl:if test="$note">
                 <div class="content-info-entity-note">
                     <xsl:copy-of select="$note/node()"/>
@@ -390,25 +418,30 @@
     <xsl:template match="/">
         <xsl:choose>
             <xsl:when test="$meta">
-               <div class="tei-meta">
-                   <p class="element-metadata-field"><xsl:value-of select="//tei:profileDesc/tei:creation/tei:idno"/></p>
-                   <p class="element-metadata-field">
-                       <xsl:call-template name="join-meta">
-                           <xsl:with-param name="valueList" select="//tei:profileDesc/tei:creation/tei:date/@when|//tei:profileDesc/tei:creation/tei:orgName|//tei:profileDesc/tei:creation/tei:placeName"/>
-                           <xsl:with-param name="separator" select="' | '"/>
-                       </xsl:call-template>
-                   </p>
-                   <xsl:variable name="bibl" select="//tei:sourceDesc/tei:bibl"/>
-                   <xsl:if test="$bibl">
-                       <p class="element-metadata-field">
-                           <xsl:apply-templates select="$bibl"/>
-                       </p>
-                   </xsl:if>
-                   <xsl:variable name="abstract" select="//tei:profileDesc/tei:abstract"/>
-                   <xsl:if test="$abstract">
-                       <p class="content-description"><xsl:apply-templates select="$abstract"/></p>
-                   </xsl:if>
-               </div>
+                <div class="tei-meta">
+                    <p class="element-metadata-field">
+                        <xsl:value-of select="//tei:profileDesc/tei:creation/tei:idno"/>
+                    </p>
+                    <p class="element-metadata-field">
+                        <xsl:call-template name="join-meta">
+                            <xsl:with-param name="valueList"
+                                            select="//tei:profileDesc/tei:creation/tei:date/@when|//tei:profileDesc/tei:creation/tei:orgName|//tei:profileDesc/tei:creation/tei:placeName"/>
+                            <xsl:with-param name="separator" select="' | '"/>
+                        </xsl:call-template>
+                    </p>
+                    <xsl:variable name="bibl" select="//tei:sourceDesc/tei:bibl"/>
+                    <xsl:if test="$bibl">
+                        <p class="element-metadata-field">
+                            <xsl:apply-templates select="$bibl"/>
+                        </p>
+                    </xsl:if>
+                    <xsl:variable name="abstract" select="//tei:profileDesc/tei:abstract"/>
+                    <xsl:if test="$abstract">
+                        <p class="content-description">
+                            <xsl:apply-templates select="$abstract"/>
+                        </p>
+                    </xsl:if>
+                </div>
             </xsl:when>
             <xsl:when test="$entities">
                 <div class="tei-entities">
