@@ -29,6 +29,20 @@
                         </linkGrp>
                     </place>
                 </listPlace>
+                <listPerson>
+                    <person xml:id="ehri_nisko_gruen_maurycy">
+                        <persName>Grün, Maurycy Moses</persName>
+                        <birth when="1890"/>
+                        <death when="1944"/>
+                    </person>
+                </listPerson>
+                <listOrg>
+                    <org xml:id="this-is-a-test">
+                        <orgName xml:lang="en">Test English</orgName>
+                        <orgName xml:lang="cz">Test Czech</orgName>
+                        <note><p>Blah blah</p></note>
+                    </org>
+                </listOrg>
             </sourceDesc>
         </fileDesc>
         <encodingDesc>
@@ -54,6 +68,7 @@
             <p>This is a test TEI file.</p>
             <p>It contains a reference to the place: <placeName ref="http://www.geonames.org/2643743/">London</placeName>
                 and one without a reference: <placeName>Tartu</placeName>.</p>
+            <p><orgName ref="#this-is-a-test">Test English</orgName></p>
 
             <p>It contains a reference to an image of the Memorial of the Murdered Jews of Europe, Berlin. <figure><graphic url="memorial.jpg" /><head>Figure 1: Memorial to the Murdered Jews of Europe.</head><figDesc>Image of the Memorial to the Murdered Jews of Europe, Berlin by Flickr user Tomasz Przechlewski under the Creative Commons license.</figDesc></figure></p>
             <p>It also contains a reference to the Slovak Nationalist politician <persName ref="https://portal.ehri-project.eu/authorities/ehri_pers-000261">Mach Alexander</persName> and the subject term

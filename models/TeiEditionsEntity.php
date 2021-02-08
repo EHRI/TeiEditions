@@ -12,6 +12,8 @@ class TeiEditionsEntity
     public $slug;
     public $notes = [];
     public $urls = [];
+    public $birth = null;
+    public $death = null;
     public $longitude = null;
     public $latitude = null;
 

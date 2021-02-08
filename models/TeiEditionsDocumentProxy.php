@@ -151,6 +151,7 @@ class TeiEditionsDocumentProxy
     {
         $out = [];
         foreach ($this->extractXPaths($elemToXPaths) as $elem => $data) {
+            error_log("Extract: $elem: " . json_encode($data));
             foreach ($data as $text) {
                 $out[] = array('element_id' => $elem, 'text' => $text, 'html' => false);
             }
@@ -254,6 +255,16 @@ class TeiEditionsDocumentProxy
                 $item->slug = $slug;
                 $item->urls = $urls;
 
+                $birth = $this->xpath->evaluate("./t:birth/@when", $entity);
+                if ($birth->length) {
+                    $item->birth = $birth->item(0)->textContent;
+                }
+
+                $death = $this->xpath->evaluate("./t:death/@when", $entity);
+                if ($death->length) {
+                    $item->death = $death->item(0)->textContent;
+                }
+
                 $desc = $this->xpath->evaluate("./t:note/t:p", $entity);
                 if ($desc->length) {
                     for ($i = 0; $i < $desc->length; $i++) {
@@ -293,6 +304,16 @@ class TeiEditionsDocumentProxy
         $list->appendChild($item);
         $item->appendChild($this->tei->createElementNS($this::TEI_NS, $nameTag, htmlspecialchars($entity->name)));
 
+        if ($entity->birth) {
+            $birth = $this->tei->createElementNS($this::TEI_NS, "birth");
+            $birth->setAttribute("when", $entity->birth);
+        }
+
+        if ($entity->death) {
+            $death = $this->tei->createElementNS($this::TEI_NS, "death");
+            $death->setAttribute("when", $entity->death);
+        }
+
         if ($entity->hasGeo()) {
             $geo = $this->tei->createElementNS(
                 $this::TEI_NS, "geo", $entity->latitude . " " . $entity->longitude);
@@ -300,6 +321,7 @@ class TeiEditionsDocumentProxy
             $item->appendChild($loc);
             $loc->appendChild($geo);
         }
+
         // Special case - if we have a local URL anchor, it refers to an xml:id
         // otherwise, add a link group.
         if ($entity->ref()[0] == '#') {
