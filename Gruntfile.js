@@ -31,12 +31,14 @@ module.exports = function(grunt) {
 
           // NPM
           '!package.json',
+          '!package-lock.json',
           '!node_modules/**',
 
           // COMPOSER
           '!composer.json',
           '!composer.lock',
-          '!vendor/**',
+          '!vendor/phpunit/**',
+          '!vendor/bin/**',
 
           // GRUNT
           '!.grunt/**',
