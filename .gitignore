@@ -2,3 +2,5 @@
 *.iml
 spec
 vendor
+pkg
+node_modules
