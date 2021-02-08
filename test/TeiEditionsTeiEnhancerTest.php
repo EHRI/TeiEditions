@@ -103,10 +103,8 @@ class TeiEditionsEnhanceTeiTest extends PHPUnit_Framework_Testcase
         $num1 = (new TeiEditionsTeiEnhancer($this->tei, $src))->addReferences();
         $this->assertEquals($num1, 7);
         $before = $this->tei->document()->saveXML();
-        file_put_contents("t1.xml", $before);
         $num2 = (new TeiEditionsTeiEnhancer($this->tei, $src))->addReferences();
         $after = $this->tei->document()->saveXML();
-        file_put_contents("t2.xml", $after);
         $this->assertEquals($before, $after);
         $this->assertEquals($num2, 0);
     }
