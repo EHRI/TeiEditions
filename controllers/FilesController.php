@@ -91,6 +91,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
                 $tx->commit();
             } catch (Exception $e) {
                 $tx->rollBack();
+                echo $e->getTraceAsString();
                 $this->_helper->_flashMessenger(
                     __('There was an error on the form: %s', $e->getMessage()), 'error');
                 return;
@@ -620,6 +621,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
         $record = new NeatlineRecord;
         $record->exhibit_id = $exhibit->id;
         $record->title = $item->name;
+        $record->added = (new \DateTime('now'))->format('Y-m-d H:i:s');
         if ($item->hasGeo()) {
             $deg = [$item->longitude, $item->latitude];
             $metres = tei_editions_degrees_to_metres($deg);
