@@ -52,7 +52,7 @@ class TeiEditionsTeiEnhancer
         ["listPlace", "place", "placeName", "placeName", "fetchPlaces"],
     ];
 
-    function __construct(TeiEditionsDocumentProxy &$tei, TeiEditionsDataFetcher $src)
+    function __construct(TeiEditionsDocumentProxy $tei, TeiEditionsDataFetcher $src)
     {
         $this->doc = $tei;
         $this->dataSrc = $src;

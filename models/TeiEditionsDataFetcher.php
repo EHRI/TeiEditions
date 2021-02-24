@@ -21,11 +21,13 @@ class TeiEditionsDataFetcher
 {
     private $dict;
     private $lang;
+    private $opts;
     
-    function __construct($dict, $lang)
+    function __construct($dict, $lang, $opts = array())
     {
         $this->dict = $dict;
         $this->lang = $lang;
+        $this->opts = $opts;
     }
 
     /**
@@ -168,6 +170,9 @@ class TeiEditionsDataFetcher
             str_replace(["http://www.geonames.org/", "https://www.geonames.org/"], "", $url))[0];
 
         $geonames_url = "http://sws.geonames.org/$id/about.rdf";
+        if (isset($this->opts['geonames_user'])) {
+            $geonames_url = $geonames_url . "?username=" . $this->opts['geonames_user'];
+        }
 
         // fetch geonames RDF
         $xml = new DOMDocument();

@@ -32,7 +32,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
     }
 
     /**
-     * Display the "Field Configuration" form.
+     * Display the data import form.
      *
      * @throws Zend_Form_Exception
      */
@@ -41,7 +41,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
         // Set the created by user ID.
         $form = new TeiEditions_IngestForm();
         $this->view->form = $form;
-        $this->_processImportForm($form);
+        $this->_processIngestForm($form);
         // Clear and reindex.
         Zend_Registry::get('job_dispatcher')->sendLongRunning(
             'SolrSearch_Job_Reindex'
@@ -49,7 +49,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
     }
 
     /**
-     * Display the "Field Configuration" form.
+     * Display the data update form.
      *
      * @throws Zend_Form_Exception
      */
@@ -194,10 +194,10 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
     }
 
     /**
-     * Process the page edit and edit forms.
+     * Process the import form.
      * @throws Zend_File_Transfer_Exception
      */
-    private function _processImportForm(TeiEditions_IngestForm $form)
+    private function _processIngestForm(TeiEditions_IngestForm $form)
     {
         if ($this->getRequest()->isPost()) {
             if (!$form->isValid($_POST)) {
@@ -207,8 +207,18 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
 
             $created = 0;
             $updated = 0;
-            $neatline = $form->getElement('create_exhibit')->isChecked();
             $tx = get_db()->getAdapter()->beginTransaction();
+            $dict = [];
+
+            if ($form->getElement("enhance")) {
+                if ($dictpath = $_FILES["dict"]["tmp_name"]) {
+                    $doc = TeiEditionsDocumentProxy::fromUriOrPath($dictpath);
+                    foreach ($doc->entities() as $entity) {
+                        $dict[$entity->ref()] = $entity;
+                    }
+                }
+            }
+
             try {
                 $name = $_FILES["file"]["name"];
                 $path = $_FILES["file"]["tmp_name"];
@@ -216,10 +226,10 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
                 switch ($mime) {
                     case "text/xml":
                     case "application/xml":
-                        $this->_updateItem($path, $name, $neatline, true, $created, $updated);
+                        $this->_updateItem($path, $name, $form, $dict, true, $created, $updated);
                         break;
                     case "application/zip":
-                        $this->_readZip($path, $neatline, true, $created, $updated);
+                        $this->_readZip($path, $form, $dict, true, $created, $updated);
                         break;
                     default:
                         error_log("Unhandled file extension: $mime");
@@ -403,11 +413,12 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
 
     /**
      * @param string $zipPath the local path the the zip file
-     * @param bool $neatline create a Neatline exhibit
+     * @param TeiEditions_IngestForm $form the ingest form
+     * @param array $dict the TEI dictionary
      * @throws Exception
      * @throws Omeka_Record_Exception
      */
-    private function _readZip($zipPath, $neatline = false, $primary = false, &$created = 0, &$updated = 0)
+    private function _readZip($zipPath, $form, $dict, $primary = false, &$created = 0, &$updated = 0)
     {
         $temp = $this->_tempDir();
 
@@ -418,7 +429,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
                 $zip->close();
 
                 foreach (glob($temp . '/*.xml') as $path) {
-                    $this->_updateItem($path, basename($path), $neatline, $primary, $created, $updated);
+                    $this->_updateItem($path, basename($path), $form, $dict, $primary, $created, $updated);
                 }
             } else {
                 throw new Exception("Zip cannot be opened");
@@ -498,22 +509,50 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
     /**
      * Update an item from the given TEI XML file.
      *
-     * @param string $path
-     * @param string $name
-     * @param bool $neatline
-     * @param bool $primary
-     * @param int $created
-     * @param int $updated
-     * @throws Exception
+     * @param string $path the path to the XML file
+     * @param string $name the item name
+     * @param TeiEditions_IngestForm $form the import/update form
+     * @param array $dict a TEI dictionary
+     * @param bool $primary whether this is the primary XML
+     * @param int $created out-param for the number of created items
+     * @param int $updated out-param for the number of updated items
      * @throws Omeka_Record_Exception
      */
-    private function _updateItem($path, $name, $neatline, $primary, &$created, &$updated)
+    private function _updateItem($path, $name, $form, $dict, $primary, &$created, &$updated)
     {
         error_log("Importing file: $path");
+        $neatline = $form->getElement('create_exhibit')->isChecked();
+        $enhance = $form->getElement('enhance')->isChecked();
         $create = false;
         $doc = $this->_getDoc($path, $name);
         $item = $this->_getOrCreateItem($doc, $create);
         $this->_updateItemFromTEI($item, $doc, $neatline);
+
+        if ($enhance) {
+            $eDir = dirname($path) . DIRECTORY_SEPARATOR . "enhance-tei";
+            if (!file_exists($eDir)) {
+                mkdir($eDir);
+            }
+
+            $opts = [];
+            if ($geonamesUser = get_option("tei_editions_geonames_username")) {
+                $opts['geonames_username'] = $geonamesUser;
+            }
+            $ePath = $eDir . DIRECTORY_SEPARATOR . basename($path);
+            $tei = TeiEditionsDocumentProxy::fromUriOrPath($path);
+            $src = new TeiEditionsDataFetcher($dict, $form->getValue("lang"), $opts);
+            $enhancer = new TeiEditionsTeiEnhancer($tei, $src);
+            $enhancer->addReferences();
+            $f = fopen($ePath, "w");
+            fwrite($f, $tei->document()->saveXML());
+            register_shutdown_function(function () use ($ePath) {
+                if (file_exists($ePath)) {
+                    unlink($ePath);
+                }
+            });
+            $path = $ePath;
+        }
+
         $this->_addOrUpdateItemFile($item, $path, $name, $primary);
         if ($create) {
             $created++;

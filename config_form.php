@@ -22,3 +22,14 @@
             get_table_options('NeatlineExhibit')); ?>
     </div>
 </div>
+<div class="field">
+    <div class="two columns alpha">
+        <label for="tei_editions_template_neatline"><?php echo __('Geonames Username'); ?></label>
+    </div>
+    <div class="inputs five columns omega">
+        <p class="explanation">
+            <?php echo __("Username for Geonames data lookup with enhancement."); ?>
+        </p>
+        <?php echo get_view()->formInput('tei_editions_geonames_username', get_option('tei_editions_geonames_username')); ?>
+    </div>
+</div>
