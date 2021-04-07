@@ -167,6 +167,9 @@ class TeiEditions_DataImporter
 
                 foreach (glob($temp . '/*.xml') as $path) {
                     $this->updateItem($path, basename($path), $enhance, $dict, $neatline, $lang, $created, $updated);
+                    // NB: If I'm reading the docs right this should prevent a timeout
+                    // on large zips:
+                    set_time_limit(10);
                 }
             } else {
                 throw new Exception("Zip cannot be opened");

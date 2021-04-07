@@ -15,6 +15,8 @@ class TeiEditions_UpdateForm extends Omeka_Form
     {
         parent::init();
 
+        $this->setAttrib('id', 'tei-editions-update-form');
+
         // The pick an item drop-down select:
         $select = $this->createElement('select', 'item', [
             'required' => false,

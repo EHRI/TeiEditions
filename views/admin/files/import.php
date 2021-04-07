@@ -13,8 +13,16 @@
     // lang.disabled = !elem.checked;
     // dict.disabled = !elem.checked;
   }
+
   elem.addEventListener('change', updateState);
   updateState();
+
+
+  jQuery(function ($) {
+    $('form#tei-editions-import-form').submit(function () {
+      $(this).find(':input[type=submit]').prop('disabled', true);
+    });
+  });
 </script>
 <?php echo foot(); ?>
 
