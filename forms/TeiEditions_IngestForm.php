@@ -18,6 +18,8 @@ class TeiEditions_IngestForm extends Omeka_Form
     {
         parent::init();
 
+        $this->setAttrib('id', 'tei-editions-import-form');
+
         $iso = new Matriphe\ISO639\ISO639;
 
         $this->addElement('file', 'file', [
@@ -63,7 +65,8 @@ class TeiEditions_IngestForm extends Omeka_Form
         ]);
 
         $this->addElement('submit', 'submit', [
-            'label' => __('Upload File')
+            'label' => __('Upload File'),
+            'id' => 'tei-editions-submit'
         ]);
 
         $this->addDisplayGroup(['file', 'create_exhibit', 'enhance', 'enhance_dict', 'enhance_lang'], 'tei-editions_info');

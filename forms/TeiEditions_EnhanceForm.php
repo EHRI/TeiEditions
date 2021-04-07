@@ -19,6 +19,8 @@ class TeiEditions_EnhanceForm extends Omeka_Form
     {
         parent::init();
 
+        $this->setAttrib('id', 'tei-editions-enhance-form');
+
         $iso = new Matriphe\ISO639\ISO639;
 
         $this->addElement('file', 'file', [

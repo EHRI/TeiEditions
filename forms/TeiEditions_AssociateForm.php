@@ -15,6 +15,8 @@ class TeiEditions_AssociateForm extends Omeka_Form
     {
         parent::init();
 
+        $this->setAttrib('id', 'tei-editions-associate-form');
+
         $this->addElement('file', 'file', [
             'required' => true,
             'label' => __('Select file or zip archive'),
