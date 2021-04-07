@@ -1,12 +1,11 @@
 <?php
 /**
- * TeiEditions
+ * @package TeiEditions
  *
- * @copyright Copyright 2018 King's College London Department of Digital Humanities
- * @license http://www.gnu.org/licenses/gpl-3.0.txt GNU GPLv3
+ * @copyright Copyright 2021 King's College London Department of Digital Humanities
  */
 
-include_once dirname(__FILE__) . '/TeiEditionsDataFetcher.php';
+require_once __DIR__ . '/TeiEditions_DataFetcher.php';
 
 /**
 Extracts URIs of annotated/linked terms, people, organisations, places, ghettos and camps from TEI document,
@@ -35,7 +34,7 @@ TEI elements and services handled:
 - EHRI terms: DONE
 
 */
-class TeiEditionsTeiEnhancer
+class TeiEditions_TeiEnhancer
 {
 
     private $doc;
@@ -52,7 +51,7 @@ class TeiEditionsTeiEnhancer
         ["listPlace", "place", "placeName", "placeName", "fetchPlaces"],
     ];
 
-    function __construct(TeiEditionsDocumentProxy $tei, TeiEditionsDataFetcher $src)
+    function __construct(TeiEditions_DocumentProxy $tei, TeiEditions_DataFetcher $src)
     {
         $this->doc = $tei;
         $this->dataSrc = $src;

@@ -1,13 +1,12 @@
 <?php
 /**
- * TeiEditions
+ * @package TeiEditions
  *
- * @copyright Copyright 2018 King's College London Department of Digital Humanities
- * @license http://www.gnu.org/licenses/gpl-3.0.txt GNU GPLv3
+ * @copyright Copyright 2021 King's College London Department of Digital Humanities
  */
 
-include_once dirname(__FILE__) . "/../models/TeiEditionsEntity.php";
-include_once dirname(__FILE__) . "/../models/TeiEditionsDocumentProxy.php";
+require_once __DIR__ . "/../models/TeiEditions_Entity.php";
+require_once __DIR__ . "/../helpers/TeiEditions_DocumentProxy.php";
 
 
 class TeiEditionsDocumentProxyTest extends PHPUnit_Framework_Testcase
@@ -17,12 +16,12 @@ class TeiEditionsDocumentProxyTest extends PHPUnit_Framework_Testcase
 
     public function setUp()
     {
-        $this->file = dirname(__FILE__) . "/testing.xml";
+        $this->file = __DIR__ . "/testing.xml";
     }
 
     public function testMetadata()
     {
-        $doc = TeiEditionsDocumentProxy::fromUriOrPath($this->file);
+        $doc = TeiEditions_DocumentProxy::fromUriOrPath($this->file);
         $out = $doc->metadata([
             1 => [
                 '/t:TEI/t:teiHeader/t:fileDesc/t:titleStmt/t:title'
@@ -34,8 +33,8 @@ class TeiEditionsDocumentProxyTest extends PHPUnit_Framework_Testcase
 
     public function testEntityReferences()
     {
-        $doc = TeiEditionsDocumentProxy::fromUriOrPath(
-            dirname(__FILE__) . "/enhance-tei.xml");
+        $doc = TeiEditions_DocumentProxy::fromUriOrPath(
+            __DIR__ . "/enhance-tei.xml");
         $i = 0;
         $refs = $doc->entityReferences("placeName", $i, $addRefs = true);
         $this->assertEquals($i, 1);
@@ -52,8 +51,8 @@ class TeiEditionsDocumentProxyTest extends PHPUnit_Framework_Testcase
 
     public function testGetEntities()
     {
-        $doc = TeiEditionsDocumentProxy::fromUriOrPath($this->file);
-        $place = new TeiEditionsEntity;
+        $doc = TeiEditions_DocumentProxy::fromUriOrPath($this->file);
+        $place = new TeiEditions_Entity;
         $place->name =  "Tartu";
         $place->slug = "geonames-588335";
         $place->longitude = 26.72509;
@@ -62,14 +61,14 @@ class TeiEditionsDocumentProxyTest extends PHPUnit_Framework_Testcase
             "normal" => "http://www.geonames.org/588335/",
             "desc" => "http://ru.wikipedia.org/wiki/%D0%A2%D0%B0%D1%80%D1%82%D1%83"
         ];
-        $pers = new TeiEditionsEntity;
+        $pers = new TeiEditions_Entity;
         $pers->name =  "Grün, Maurycy Moses";
         $pers->slug = "ehri_nisko_gruen_maurycy";
         $pers->birth = "1890";
         $pers->death = "1944";
         $pers->urls = [];
 
-        $org = new TeiEditionsEntity;
+        $org = new TeiEditions_Entity;
         $org->name = "Test English";
         $org->slug = "this-is-a-test";
         $org->notes = ["Blah blah"];
@@ -79,19 +78,19 @@ class TeiEditionsDocumentProxyTest extends PHPUnit_Framework_Testcase
 
     public function testGetXmlId()
     {
-        $doc = TeiEditionsDocumentProxy::fromUriOrPath($this->file);
+        $doc = TeiEditions_DocumentProxy::fromUriOrPath($this->file);
         $this->assertEquals("testing_EN.xml", $doc->xmlId());
     }
 
     public function testGetRecordId()
     {
-        $doc = TeiEditionsDocumentProxy::fromUriOrPath($this->file);
+        $doc = TeiEditions_DocumentProxy::fromUriOrPath($this->file);
         $this->assertEquals("testing", $doc->recordId());
     }
 
     public function testAsHtml()
     {
-        $doc = TeiEditionsDocumentProxy::fromUriOrPath($this->file);
+        $doc = TeiEditions_DocumentProxy::fromUriOrPath($this->file);
         $html = $doc->asHtml();
         $this->assertThat($html["meta"], self::stringStartsWith("<div class=\"tei-meta\">"),
             'does not start with the correct div');
@@ -105,7 +104,7 @@ class TeiEditionsDocumentProxyTest extends PHPUnit_Framework_Testcase
 
     public function testAsSimpleHtml()
     {
-        $doc = TeiEditionsDocumentProxy::fromUriOrPath($this->file);
+        $doc = TeiEditions_DocumentProxy::fromUriOrPath($this->file);
         $simple = $doc->asSimpleHtml();
         $this->assertThat($simple, self::stringStartsWith("<div class=\"tei-text\" dir=\"auto\">"),
             'does not start with the correct div');

@@ -1,13 +1,12 @@
 <?php
 /**
- * TeiEditions
+ * @package TeiEditions
  *
- * @copyright Copyright 2018 King's College London Department of Digital Humanities
- * @license http://www.gnu.org/licenses/gpl-3.0.txt GNU GPLv3
+ * @copyright Copyright 2021 King's College London Department of Digital Humanities
  */
 
 
-class TeiEditionsFieldMappingTable extends Omeka_Db_Table
+class TeiEditions_FieldMapping_Table extends Omeka_Db_Table
 {
 
 
@@ -15,7 +14,7 @@ class TeiEditionsFieldMappingTable extends Omeka_Db_Table
      * Find the field associated with a given element text.
      *
      * @param ElementText $text The element text.
-     * @return false|TeiEditionsFieldMapping
+     * @return false|TeiEditions_FieldMapping
      */
     public function findByText($text)
     {
@@ -27,7 +26,7 @@ class TeiEditionsFieldMappingTable extends Omeka_Db_Table
      * Find the field associated with a given element.
      *
      * @param Element $element The element.
-     * @return false|TeiEditionsFieldMapping
+     * @return false|TeiEditions_FieldMapping
      */
     public function findByElement($element)
     {
@@ -41,7 +40,7 @@ class TeiEditionsFieldMappingTable extends Omeka_Db_Table
      *
      * @param string $set The element set name.
      * @param string $element The element name.
-     * @return TeiEditionsFieldMapping
+     * @return TeiEditions_FieldMapping
      */
     public function findByElementName($set, $element)
     {

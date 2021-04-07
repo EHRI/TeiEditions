@@ -1,18 +1,17 @@
 <?php
 /**
- * TeiEditions
+ * @package TeiEditions
  *
- * @copyright Copyright 2018 King's College London Department of Digital Humanities
- * @license http://www.gnu.org/licenses/gpl-3.0.txt GNU GPLv3
+ * @copyright Copyright 2021 King's College London Department of Digital Humanities
  */
 
-require_once dirname(__FILE__) . '/../helpers/TeiEditionsFunctions.php';
+require_once __DIR__ . '/../helpers/TeiEditions_Functions.php';
 
 /**
  * Convenience class for accessing TEI information via
  * XPath.
  */
-class TeiEditionsDocumentProxy
+class TeiEditions_DocumentProxy
 {
     const TEI_NS = "http://www.tei-c.org/ns/1.0";
 
@@ -22,7 +21,7 @@ class TeiEditionsDocumentProxy
     private $htmlCache;
 
     /**
-     * TeiEditionsDocumentProxy constructor.
+     * @package TeiEditionsDocumentProxy constructor.
      * @param $uriOrPath string an XML file or path
      */
     private function __construct(DOMDocument $doc, $uriOrPath)
@@ -39,19 +38,19 @@ class TeiEditionsDocumentProxy
     {
         $doc = new DOMDocument;
         $doc->loadXML($str);
-        return new TeiEditionsDocumentProxy($doc, "");
+        return new TeiEditions_DocumentProxy($doc, "");
     }
 
     public static function fromUriOrPath($uriOrPath)
     {
         $doc = new DOMDocument;
         $doc->load($uriOrPath);
-        return new TeiEditionsDocumentProxy($doc, $uriOrPath);
+        return new TeiEditions_DocumentProxy($doc, $uriOrPath);
     }
 
     public static function fromDocument(DOMDocument $elem, $uriOrPath)
     {
-        return new TeiEditionsDocumentProxy($elem, $uriOrPath);
+        return new TeiEditions_DocumentProxy($elem, $uriOrPath);
     }
 
     /**
@@ -211,7 +210,7 @@ class TeiEditionsDocumentProxy
     /**
      * List places, people, orgs, and term entities.
      *
-     * @return array|TeiEditionsEntity
+     * @return array|TeiEditions_Entity
      */
     function entities()
     {
@@ -229,7 +228,7 @@ class TeiEditionsDocumentProxy
      * @param string $listTag
      * @param string $itemTag
      * @param string $nameTag
-     * @return array|TeiEditionsEntity
+     * @return array|TeiEditions_Entity
      */
     function getEntities($listTag, $itemTag, $nameTag)
     {
@@ -250,7 +249,7 @@ class TeiEditionsDocumentProxy
                 $slug = isset($urls["normal"])
                     ? tei_editions_url_to_slug($urls["normal"])
                     : @$this->xpath->evaluate("./@xml:id", $entity)->item(0)->textContent;
-                $item = new TeiEditionsEntity;
+                $item = new TeiEditions_Entity;
                 $item->name = $name;
                 $item->slug = $slug;
                 $item->urls = $urls;
@@ -289,9 +288,9 @@ class TeiEditionsDocumentProxy
      * @param string $listTag the list tag name
      * @param string $itemTag the item tag name
      * @param string $nameTag the place tag name
-     * @param TeiEditionsEntity $entity the entity
+     * @param TeiEditions_Entity $entity the entity
      */
-    function addEntity($listTag, $itemTag, $nameTag, TeiEditionsEntity $entity)
+    function addEntity($listTag, $itemTag, $nameTag, TeiEditions_Entity $entity)
     {
 
         $source = $this->xpath->query(
