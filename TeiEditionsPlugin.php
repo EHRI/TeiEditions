@@ -338,7 +338,7 @@ SQL
     {
         set_option('tei_editions_default_item_type', (int)$_POST['tei_editions_default_item_type']);
         set_option('tei_editions_template_neatline', (int)$_POST['tei_editions_template_neatline']);
-        set_option('tei_editions_geonames_username', (int)$_POST['tei_editions_geonames_username']);
+        set_option('tei_editions_geonames_username', $_POST['tei_editions_geonames_username']);
     }
 
     public function hookPublicHead($args)
