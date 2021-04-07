@@ -1,14 +1,15 @@
 <?php
 /**
- * TeiEditions
+ * @package TeiEditions
  *
- * @copyright Copyright 2018 King's College London Department of Digital Humanities
- * @license http://www.gnu.org/licenses/gpl-3.0.txt GNU GPLv3
+ * @copyright Copyright 2021 King's College London Department of Digital Humanities
  */
 
-require_once dirname(__FILE__) . '/../vendor/autoload.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
-class ViewRenderer {
+
+class ViewRenderer
+{
     static $loader;
     static $twig;
     static $iso;
@@ -21,9 +22,10 @@ class ViewRenderer {
      * @throws Twig_Error_Runtime
      * @throws Twig_Error_Syntax
      */
-    public static function render($template, $args = []) {
+    public static function render($template, $args = [])
+    {
         if (!isset(self::$loader)) {
-            self::$loader = new Twig_Loader_Filesystem(dirname(__FILE__) . "/../templates");
+            self::$loader = new Twig_Loader_Filesystem(__DIR__ . "/../templates");
             self::$twig = new Twig_Environment(self::$loader);
             self::$twig->addExtension(new Twig_Extensions_Extension_I18n());
             self::$twig->getExtension('Twig_Extension_Core')->setTimezone('Europe/Amsterdam');
@@ -31,7 +33,7 @@ class ViewRenderer {
             self::$twig->addExtension(new Twig_Extensions_Extension_Text());
             self::$twig->addExtension(new Twig_Extensions_Extension_I18n());
             self::$iso = new Matriphe\ISO639\ISO639;
-            self::$twig->addFilter(new Twig_SimpleFilter("lang2name", function($code) {
+            self::$twig->addFilter(new Twig_SimpleFilter("lang2name", function ($code) {
                 $lang = self::$iso->languageByCode1($code);
                 return $lang ? __($lang) : $code;
             }));
@@ -88,11 +90,12 @@ function tei_editions_items_shortcode($args, $view)
 {
     return sprintf(
         "<div class=\"editions-item-group\">%s</div>",
-        implode("\n", array_map(function($identifier) use ($view) {
+        implode("\n", array_map(function ($identifier) use ($view) {
             return tei_editions_item_shortcode(["identifier" => trim($identifier)], $view);
         }, explode(',', $args["identifiers"])))
     );
 }
+
 /**
  * A shortcode function for rendering an item summary via it's identifier.
  *
@@ -131,7 +134,7 @@ function tei_editions_render_document_references($item)
     if (($tei = tei_editions_get_main_tei($item)) and
         plugin_is_active('EhriData')) {
 
-        $doc = TeiEditionsDocumentProxy::fromUriOrPath($tei->getWebPath());
+        $doc = TeiEditions_DocumentProxy::fromUriOrPath($tei->getWebPath());
         foreach ($doc->manuscriptIds() as $url) {
             $id = substr($url, strrpos($url, '/') + 1);
             $content .= "[ehri_item_data id=$id]\n";
@@ -182,7 +185,8 @@ function tei_editions_render_document_images($item)
  *
  * @return array of language-codes to TEI HTML
  */
-function tei_editions_get_document_texts($item, &$metadata, &$entities) {
+function tei_editions_get_document_texts($item, &$metadata, &$entities)
+{
     if (is_string($item)) {
         $view = get_view();
         $item = $view->{$view->singularize($item)};
@@ -227,7 +231,8 @@ function tei_editions_get_document_texts($item, &$metadata, &$entities) {
  * @throws Twig_Error_Runtime
  * @throws Twig_Error_Syntax
  */
-function tei_editions_render_document_texts($item, &$meta, &$entities) {
+function tei_editions_render_document_texts($item, &$meta, &$entities)
+{
     $text_html = tei_editions_get_document_texts($item, $meta, $entities);
     return ViewRenderer::render("document_texts.twig.html", ["data" => $text_html]);
 }
@@ -275,7 +280,7 @@ function tei_editions_get_item_by_identifier($identifier)
 
 
 /**
- * @param TeiEditionsDocumentProxy $doc
+ * @param TeiEditions_DocumentProxy $doc
  * @return NeatlineExhibit
  * @throws Omeka_Record_Exception
  */
@@ -292,6 +297,11 @@ function tei_editions_get_neatline_exhibit(Item $item)
     return $exhibits[0];
 }
 
+/**
+ * @param array|null $list
+ * @param string $class_name
+ * @return string
+ */
 function tei_editions_render_string_list($list, $class_name = "")
 {
     $out = "";
@@ -307,6 +317,13 @@ function tei_editions_render_string_list($list, $class_name = "")
     return $out;
 }
 
+/**
+ * @param array $data
+ * @param array $messages
+ * @param array|null $only_keys
+ * @param string $class_name
+ * @return string
+ */
 function tei_editions_render_properties($data, $messages, $only_keys = null, $class_name = "")
 {
     $out = "";

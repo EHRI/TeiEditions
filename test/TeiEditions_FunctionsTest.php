@@ -1,12 +1,11 @@
 <?php
 /**
- * TeiEditions
+ * @package TeiEditions
  *
- * @copyright Copyright 2018 King's College London Department of Digital Humanities
- * @license http://www.gnu.org/licenses/gpl-3.0.txt GNU GPLv3
+ * @copyright Copyright 2021 King's College London Department of Digital Humanities
  */
 
-include_once dirname(__FILE__) . "/../helpers/TeiEditionsFunctions.php";
+require_once __DIR__ . "/../helpers/TeiEditions_Functions.php";
 
 
 class TeiEditionsFunctionsTest extends PHPUnit_Framework_Testcase
@@ -16,7 +15,7 @@ class TeiEditionsFunctionsTest extends PHPUnit_Framework_Testcase
 
     public function setUp()
     {
-        $this->file = dirname(__FILE__) . "/testing.xml";
+        $this->file = __DIR__ . "/testing.xml";
     }
 
     public function test_tei_editions_url_to_slug()

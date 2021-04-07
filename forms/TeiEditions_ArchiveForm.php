@@ -1,9 +1,8 @@
 <?php
 /**
- * TeiEditions
+ * @package TeiEditions
  *
- * @copyright Copyright 2018 King's College London Department of Digital Humanities
- * @license http://www.gnu.org/licenses/gpl-3.0.txt GNU GPLv3
+ * @copyright Copyright 2021 King's College London Department of Digital Humanities
  */
 
 
@@ -22,7 +21,7 @@ class TeiEditions_ArchiveForm extends Omeka_Form
             'multiple' => 'multiple',
             'label' => __('Type'),
             'description' => __('Choose the type of data to download'),
-            'multiOptions' => ['tei' => 'Master TEIs', 'associated' => 'Associated Files'],
+            'multiOptions' => ['tei' => 'Primary TEIs', 'associated' => 'Associated Files'],
             'size' => 10,
         ]);
         $this->addElement($select);

@@ -1,9 +1,8 @@
 <?php
 /**
- * TeiEditions
+ * @package TeiEditions
  *
- * @copyright Copyright 2018 King's College London Department of Digital Humanities
- * @license http://www.gnu.org/licenses/gpl-3.0.txt GNU GPLv3
+ * @copyright Copyright 2021 King's College London Department of Digital Humanities
  */
 
 
@@ -27,10 +26,18 @@ class TeiEditions_IngestForm extends Omeka_Form
             'description' => __('Select the file to be ingested. Multiple files can be ingested if contained within a zip archive.'),
         ]);
 
+        $this->addElement('checkbox', 'create_exhibit', [
+            'id' => 'tei-editions-upload-create-exhibit',
+            'label' => __('Create Neatline Exhibit'),
+            'class' => 'checkbox',
+            'description' => __('Create a Neatline Exhibit containing records for each place element contained in the TEI')
+        ]);
+
         $this->addElement('checkbox', 'enhance', [
             'id' => 'tei-editions-enhance',
             'label' => __('Enhance TEI'),
             'class' => 'checkbox',
+            'required' => false,
             'description' => __('Attempt to enhance the TEI by populating the TEI header with canonical references to 
     entities marked in the text by &lt;term&gt;, &lt;persName&gt;, &lt;orgName&gt; and &lt;place&gt; markup
     if they contain \'ref\' attributes that point to the Geonames or EHRI data sources.')
@@ -47,18 +54,12 @@ class TeiEditions_IngestForm extends Omeka_Form
             'id' => 'tei-editions-enhance-lang',
             'label' => __('Language'),
             'class' => 'text',
+            'required' => false,
             'multiOptions' => array_reduce($this::$LANGS, function($res, $code) use ($iso) {
                 $res[$code] = $iso->languageByCode2t($code);
                 return $res;
             }, []),
             'description' => __('The preferred language for fetched entity data.')
-        ]);
-
-        $this->addElement('checkbox', 'create_exhibit', [
-            'id' => 'tei-editions-upload-create-exhibit',
-            'label' => __('Create Neatline Exhibit'),
-            'class' => 'checkbox',
-            'description' => __('Create a Neatline Exhibit containing records for each place element contained in the TEI')
         ]);
 
         $this->addElement('submit', 'submit', [

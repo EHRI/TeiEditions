@@ -1,14 +1,13 @@
 <?php
 /**
- * TeiEditions
+ * @package TeiEditions
  *
- * @copyright Copyright 2018 King's College London Department of Digital Humanities
- * @license http://www.gnu.org/licenses/gpl-3.0.txt GNU GPLv3
+ * @copyright Copyright 2021 King's College London Department of Digital Humanities
  */
 
-include_once dirname(__FILE__) . "/../models/TeiEditionsDocumentProxy.php";
-include_once dirname(__FILE__) . "/../models/TeiEditionsDataFetcher.php";
-include_once dirname(__FILE__) . "/../models/TeiEditionsTeiEnhancer.php";
+require_once __DIR__ . "/../helpers/TeiEditions_DocumentProxy.php";
+require_once __DIR__ . "/../helpers/TeiEditions_DataFetcher.php";
+require_once __DIR__ . "/../helpers/TeiEditions_TeiEnhancer.php";
 
 // If we're running interactively...
 if (!count(debug_backtrace())) {
@@ -26,7 +25,7 @@ if (!count(debug_backtrace())) {
             case "-d":
             case "--dict":
                 $dict_file = array_shift($argv);
-                $doc = TeiEditionsDocumentProxy::fromUriOrPath($dict_file);
+                $doc = TeiEditions_DocumentProxy::fromUriOrPath($dict_file);
                 foreach ($doc->entities() as $entity) {
                     $dict[$entity->ref()] = $entity;
                 }
@@ -47,9 +46,9 @@ if (!count(debug_backtrace())) {
 
     // read TEI file
     $in_file = $posargs[0];
-    $tei = TeiEditionsDocumentProxy::fromUriOrPath($in_file);
-    $src = new TeiEditionsDataFetcher($dict, $lang);
-    $enhancer = new TeiEditionsTeiEnhancer($tei, $src);
+    $tei = TeiEditions_DocumentProxy::fromUriOrPath($in_file);
+    $src = new TeiEditions_DataFetcher($dict, $lang);
+    $enhancer = new TeiEditions_TeiEnhancer($tei, $src);
     $enhancer->addReferences();
 
     // save the resulting TEI to output file or print

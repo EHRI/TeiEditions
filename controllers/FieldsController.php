@@ -1,9 +1,8 @@
 <?php
 /**
- * TeiEditions
+ * @package TeiEditions
  *
- * @copyright Copyright 2018 King's College London Department of Digital Humanities
- * @license http://www.gnu.org/licenses/gpl-3.0.txt GNU GPLv3
+ * @copyright Copyright 2021 King's College London Department of Digital Humanities
  */
 
 /**
@@ -18,7 +17,7 @@ class TeiEditions_FieldsController extends Omeka_Controller_AbstractActionContro
     {
         // Set the model class so this controller can perform some functions,
         // such as $this->findById()
-        $this->_helper->db->setDefaultModelName('TeiEditionsFieldMapping');
+        $this->_helper->db->setDefaultModelName('TeiEditions_FieldMapping');
     }
 
     public function indexAction()
@@ -34,7 +33,7 @@ class TeiEditions_FieldsController extends Omeka_Controller_AbstractActionContro
     public function addAction()
     {
         // Create a new page.
-        $fieldMapping = new TeiEditionsFieldMapping;
+        $fieldMapping = new TeiEditions_FieldMapping;
 
         // Set the created by user ID.
         $form = $this->_getForm($fieldMapping);
@@ -75,7 +74,7 @@ class TeiEditions_FieldsController extends Omeka_Controller_AbstractActionContro
             'select', 'element_id',
             array(
                 'id' => 'tei-editions-field-mapping-element-id',
-                'multiOptions' => label_table_options(TeiEditionsFieldMapping::elementOptions()),
+                'multiOptions' => label_table_options(TeiEditions_FieldMapping::elementOptions()),
                 'value' => $fieldMapping->element_id,
                 'label' => __('Element'),
                 'description' => __('The element'),

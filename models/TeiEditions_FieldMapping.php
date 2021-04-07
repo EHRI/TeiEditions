@@ -1,13 +1,12 @@
 <?php
 /**
- * TeiEditions
+ * @package TeiEditions
  *
- * @copyright Copyright 2018 King's College London Department of Digital Humanities
- * @license http://www.gnu.org/licenses/gpl-3.0.txt GNU GPLv3
+ * @copyright Copyright 2021 King's College London Department of Digital Humanities
  */
 
 
-class TeiEditionsFieldMapping extends Omeka_Record_AbstractRecord implements Zend_Acl_Resource_Interface
+class TeiEditions_FieldMapping extends Omeka_Record_AbstractRecord implements Zend_Acl_Resource_Interface
 {
     /**
      * The id of the parent element [integer].
@@ -63,7 +62,7 @@ class TeiEditionsFieldMapping extends Omeka_Record_AbstractRecord implements Zen
     public static function fieldMappings()
     {
         $mappings = array();
-        foreach (get_db()->getTable("TeiEditionsFieldMapping")->findAll() as $mapping) {
+        foreach (get_db()->getTable("TeiEditions_FieldMapping")->findAll() as $mapping) {
             $id = $mapping->element_id;
             if (!array_key_exists($id, $mappings)) {
                 $mappings[$id] = array();

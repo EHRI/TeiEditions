@@ -1,9 +1,8 @@
 <?php
 /**
- * TeiEditions
+ * @package TeiEditions
  *
- * @copyright Copyright 2018 King's College London Department of Digital Humanities
- * @license http://www.gnu.org/licenses/gpl-3.0.txt GNU GPLv3
+ * @copyright Copyright 2021 King's College London Department of Digital Humanities
  */
 
 
@@ -43,7 +42,20 @@ class TeiEditions_UpdateForm extends Omeka_Form
         $this->addDisplayGroup(['submit'], 'tei-editions_submit');
     }
 
-    public function getCandidateItems()
+    public function getSelectedItems()
+    {
+        $selected = $this->getValue('item');
+        return empty($selected)
+            ? $this->_getCandidateItems()
+            : array_filter($this->_getCandidateItems(), function($item) use ($selected) {
+                return in_array((string)$item->id, $selected);
+            });
+    }
+
+    /**
+     * @return array
+     */
+    private function _getCandidateItems()
     {
         $items = [];
         foreach (get_db()->getTable('Item')->findAll() as $item) {
@@ -59,12 +71,11 @@ class TeiEditions_UpdateForm extends Omeka_Form
     private function _getItemsForSelect()
     {
         $options = [];
-        foreach ($this->getCandidateItems() as $item) {
+        foreach ($this->_getCandidateItems() as $item) {
             $options[$item->id] = sprintf("%s: %s",
                 metadata($item, ['Dublin Core', 'Identifier']),
                 metadata($item, 'display_title'));
         }
         return $options;
     }
-
 }

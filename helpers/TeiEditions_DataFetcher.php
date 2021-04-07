@@ -1,13 +1,12 @@
 <?php
 /**
- * TeiEditions
+ * @package TeiEditions
  *
- * @copyright Copyright 2018 King's College London Department of Digital Humanities
- * @license http://www.gnu.org/licenses/gpl-3.0.txt GNU GPLv3
+ * @copyright Copyright 2021 King's College London Department of Digital Humanities
  */
 
-include_once dirname(__FILE__) . '/TeiEditionsEntity.php';
-include_once dirname(__FILE__) . '/../helpers/TeiEditionsFunctions.php';
+require_once __DIR__ . '/../models/TeiEditions_Entity.php';
+require_once __DIR__ . '/TeiEditions_Functions.php';
 
 
 /**
@@ -17,7 +16,7 @@ include_once dirname(__FILE__) . '/../helpers/TeiEditionsFunctions.php';
  *  - Geonames
  *  - EHRI Portal authorities and keywords
  */
-class TeiEditionsDataFetcher
+class TeiEditions_DataFetcher
 {
     private $dict;
     private $lang;
@@ -43,7 +42,7 @@ class TeiEditionsDataFetcher
             // item as a concept
             if (!($e = $this->_getPlace($url, $this->lang))
                     && !($e = $this->_getConcept($url, $this->lang))) {
-                $e = TeiEditionsEntity::create($name, $url);
+                $e = TeiEditions_Entity::create($name, $url);
             }
             $entities[$e->ref()] = $e;
         }
@@ -61,7 +60,7 @@ class TeiEditionsDataFetcher
         $entities = [];
         foreach ($nametourl as $name => $url) {
             if (!($e = $this->_getHistoricalAgent($url, $this->lang))) {
-                $e = TeiEditionsEntity::create($name, $url);
+                $e = TeiEditions_Entity::create($name, $url);
             }
             $entities[$e->ref()] = $e;
         }
@@ -78,7 +77,7 @@ class TeiEditionsDataFetcher
         $entities = [];
         foreach ($nametourl as $name => $url) {
             if (!($e = $this->_getConcept($url, $this->lang))) {
-                $e = TeiEditionsEntity::create($name, $url);
+                $e = TeiEditions_Entity::create($name, $url);
             }
             $entities[$e->ref()] = $e;
         }
@@ -87,11 +86,11 @@ class TeiEditionsDataFetcher
 
     /**
      * @param $url
-     * @return TeiEditionsEntity|false
+     * @return TeiEditions_Entity|false
      */
     private function _findInDict($url)
     {
-        return current(array_filter($this->dict, function(TeiEditionsEntity $e) use ($url) {
+        return current(array_filter($this->dict, function(TeiEditions_Entity $e) use ($url) {
             return $e->ref() == $url;
         }));
     }
@@ -153,7 +152,7 @@ class TeiEditionsDataFetcher
      * Fetch info about a place given an URL reference.
      *
      * @param string $url the canonical URL
-     * @return TeiEditionsEntity|false
+     * @return TeiEditions_Entity|false
      */
     private function _getPlace($url, $lang = null)
     {
@@ -192,7 +191,7 @@ class TeiEditionsDataFetcher
         $lon = @(float)$xpath->query("/rdf:RDF/gn:Feature/wgs84_pos:long")->item(0)->textContent;
         $wiki = @$xpath->query("/rdf:RDF/gn:Feature/gn:wikipediaArticle/@rdf:resource")->item(0)->textContent;
 
-        $entity = TeiEditionsEntity::create(
+        $entity = TeiEditions_Entity::create(
            $this->_parseGeonamesPlaceName($xpath, $lang),
            $url
         );
@@ -209,7 +208,7 @@ class TeiEditionsDataFetcher
      * given an URL reference.
      *
      * @param string $url the canonical URL
-     * @return TeiEditionsEntity|false
+     * @return TeiEditions_Entity|false
      */
     private function _getHistoricalAgent($url, $lang = null)
     {
@@ -247,7 +246,7 @@ class TeiEditionsDataFetcher
         }
         $item = $result['data']['HistoricalAgent'];
         $desc = $item['description'];
-        $entity = TeiEditionsEntity::create($desc['name'], $url);
+        $entity = TeiEditions_Entity::create($desc['name'], $url);
         foreach (['datesOfExistence', 'biographicalHistory'] as $key) {
             if ($desc[$key]) {
                 $entity->notes[] = $desc[$key];
@@ -260,7 +259,7 @@ class TeiEditionsDataFetcher
      * Fetch info about a keyword/concept given an URL reference.
      *
      * @param string $url the canonical URL
-     * @return TeiEditionsEntity|false
+     * @return TeiEditions_Entity|false
      */
     private function _getConcept($url, $lang = null)
     {
@@ -294,7 +293,7 @@ class TeiEditionsDataFetcher
         $item = $result['data']['CvocConcept'];
         $desc = $item['description'];
 
-        $entity = TeiEditionsEntity::create($desc['name'], $url);
+        $entity = TeiEditions_Entity::create($desc['name'], $url);
         $entity->notes = $desc['scopeNote'];
         foreach ($item['seeAlso'] as $seeAlso) {
             if (preg_match('/wikipedia/', $seeAlso)) {

@@ -10,8 +10,8 @@
       dict = document.getElementById('tei-editions-enhance-dict');
 
   function updateState() {
-    lang.disabled = !elem.checked;
-    dict.disabled = !elem.checked;
+    // lang.disabled = !elem.checked;
+    // dict.disabled = !elem.checked;
   }
   elem.addEventListener('change', updateState);
   updateState();

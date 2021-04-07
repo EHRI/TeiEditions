@@ -1,9 +1,8 @@
 <?php
 /**
- * TeiEditions
+ * @package TeiEditions
  *
- * @copyright Copyright 2018 King's College London Department of Digital Humanities
- * @license http://www.gnu.org/licenses/gpl-3.0.txt GNU GPLv3
+ * @copyright Copyright 2021 King's College London Department of Digital Humanities
  */
 
 /**
@@ -160,7 +159,7 @@ function tei_editions_tei_to_html($path, $img_map, $text_lang = null, $meta = fa
         : "en-GB";
     $lang = explode('-', $html_lang)[0];
     $text_lang = $text_lang === null ? $lang : $text_lang;
-    $tohtml = dirname(__FILE__) . '/editions.xsl';
+    $tohtml = __DIR__ . '/editions.xsl';
 
     $xsldoc = new DOMDocument();
     $xsldoc->load($tohtml);
@@ -196,7 +195,7 @@ function tei_editions_tei_to_html($path, $img_map, $text_lang = null, $meta = fa
 
 function tei_editions_replace_urls_xml(DOMDocument $doc, $map)
 {
-    $filename = dirname(__FILE__) . '/replace-urls.xsl';
+    $filename = __DIR__ . '/replace-urls.xsl';
     $xsldoc = new DOMDocument();
     $xsldoc->load($filename);
 

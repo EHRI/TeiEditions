@@ -1,12 +1,11 @@
 <?php
 /**
- * TeiEditions
+ * @package TeiEditions
  *
- * @copyright Copyright 2018 King's College London Department of Digital Humanities
- * @license http://www.gnu.org/licenses/gpl-3.0.txt GNU GPLv3
+ * @copyright Copyright 2021 King's College London Department of Digital Humanities
  */
 
-include_once dirname(__FILE__) . "/../models/TeiEditionsTeiEnhancer.php";
+require_once __DIR__ . "/../helpers/TeiEditions_TeiEnhancer.php";
 
 
 class TeiEditionsEnhanceTeiTest extends PHPUnit_Framework_Testcase
@@ -17,10 +16,10 @@ class TeiEditionsEnhanceTeiTest extends PHPUnit_Framework_Testcase
 
     public function setUp()
     {
-        $this->file = dirname(__FILE__) . "/enhance-tei.xml";
-        $this->tei = TeiEditionsDocumentProxy::fromUriOrPath($this->file);
+        $this->file = __DIR__ . "/enhance-tei.xml";
+        $this->tei = TeiEditions_DocumentProxy::fromUriOrPath($this->file);
         $this->xpath = new DOMXPath($this->tei->document());
-        $this->xpath->registerNamespace("t", TeiEditionsDocumentProxy::TEI_NS);
+        $this->xpath->registerNamespace("t", TeiEditions_DocumentProxy::TEI_NS);
     }
 
     private function valueOf($path) {
@@ -31,8 +30,8 @@ class TeiEditionsEnhanceTeiTest extends PHPUnit_Framework_Testcase
     public function test_addRefs()
     {
         // TODO: fix this so we can mock the data lookups!
-        $src = new TeiEditionsDataFetcher([], "eng");
-        $num = (new TeiEditionsTeiEnhancer($this->tei, $src))->addReferences();
+        $src = new TeiEditions_DataFetcher([], "eng");
+        $num = (new TeiEditions_TeiEnhancer($this->tei, $src))->addReferences();
         $this->assertEquals($num, 7);
         $this->assertEquals(
             "Tartu",
@@ -67,8 +66,8 @@ class TeiEditionsEnhanceTeiTest extends PHPUnit_Framework_Testcase
     public function test_addRefsWithLang()
     {
         // TODO: fix this so we can mock the data lookups!
-        $src = new TeiEditionsDataFetcher([], "deu");
-        $num = (new TeiEditionsTeiEnhancer($this->tei, $src))->addReferences();
+        $src = new TeiEditions_DataFetcher([], "deu");
+        $num = (new TeiEditions_TeiEnhancer($this->tei, $src))->addReferences();
 
         $this->assertEquals($num, 7);
         $this->assertEquals(
@@ -83,27 +82,27 @@ class TeiEditionsEnhanceTeiTest extends PHPUnit_Framework_Testcase
 
     public function test_addTefsWithLocalDict()
     {
-        $testdata = TeiEditionsDocumentProxy::fromUriOrPath(
-            dirname(__FILE__) . "/enhance-tei-3.xml");
-        $dictfile = dirname(__FILE__) . "/dict-tei.xml";
+        $testdata = TeiEditions_DocumentProxy::fromUriOrPath(
+            __DIR__ . "/enhance-tei-3.xml");
+        $dictfile = __DIR__ . "/dict-tei.xml";
         $dict = [];
-        $doc = TeiEditionsDocumentProxy::fromUriOrPath($dictfile);
+        $doc = TeiEditions_DocumentProxy::fromUriOrPath($dictfile);
         foreach ($doc->entities() as $entity) {
             $dict[$entity->ref()] = $entity;
         }
-        $src = new TeiEditionsDataFetcher($dict, "eng");
-        $num = (new TeiEditionsTeiEnhancer($testdata, $src))->addReferences();
+        $src = new TeiEditions_DataFetcher($dict, "eng");
+        $num = (new TeiEditions_TeiEnhancer($testdata, $src))->addReferences();
         $this->assertEquals(4, $num);
-        $num2 = (new TeiEditionsTeiEnhancer($testdata, $src))->addReferences();
+        $num2 = (new TeiEditions_TeiEnhancer($testdata, $src))->addReferences();
         $this->assertEquals(0, $num2);
     }
 
     public function test_addRefsIdempotency() {
-        $src = new TeiEditionsDataFetcher([], "eng");
-        $num1 = (new TeiEditionsTeiEnhancer($this->tei, $src))->addReferences();
+        $src = new TeiEditions_DataFetcher([], "eng");
+        $num1 = (new TeiEditions_TeiEnhancer($this->tei, $src))->addReferences();
         $this->assertEquals($num1, 7);
         $before = $this->tei->document()->saveXML();
-        $num2 = (new TeiEditionsTeiEnhancer($this->tei, $src))->addReferences();
+        $num2 = (new TeiEditions_TeiEnhancer($this->tei, $src))->addReferences();
         $after = $this->tei->document()->saveXML();
         $this->assertEquals($before, $after);
         $this->assertEquals($num2, 0);

@@ -1,12 +1,11 @@
 <?php
 /**
- * TeiEditions
+ * @package TeiEditions
  *
- * @copyright Copyright 2018 King's College London Department of Digital Humanities
- * @license http://www.gnu.org/licenses/gpl-3.0.txt GNU GPLv3
+ * @copyright Copyright 2021 King's College London Department of Digital Humanities
  */
 
-class TeiEditionsEntity
+class TeiEditions_Entity
 {
     public $name;
     public $slug;
@@ -30,7 +29,7 @@ class TeiEditionsEntity
     }
     
     static function create($name, $url) {
-        $e = new TeiEditionsEntity;
+        $e = new TeiEditions_Entity;
         $e->name = $name;
         $e->urls = ["normal" => $url];
         $e->slug = tei_editions_url_to_slug($url);

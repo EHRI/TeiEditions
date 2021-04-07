@@ -2,12 +2,8 @@
 /**
  * Omeka TEI Editions
  *
- * @copyright Copyright 2018 King's College London, Department of Digital Humanities
- * @license http://www.gnu.org/licenses/gpl-3.0.txt GNU GPLv3
+ * @copyright Copyright 2021 King's College London, Department of Digital Humanities
  */
-
-require_once dirname(__FILE__) . '/helpers/TeiEditionsFunctions.php';
-require_once dirname(__FILE__) . '/helpers/TeiEditionsViewHelpers.php';
 
 /**
  * Simple Pages plugin.
@@ -50,13 +46,13 @@ class TeiEditionsPlugin extends Omeka_Plugin_AbstractPlugin
      *
      * @param string $element_id the element id
      * @param string $xpath the XPath
-     * @return TeiEditionsFieldMapping
+     * @return TeiEditions_FieldMapping
      * @throws Omeka_Record_Exception
      * @throws Omeka_Validate_Exception
      */
     private function createMapping($element_id, $xpath)
     {
-        $mapping = new TeiEditionsFieldMapping;
+        $mapping = new TeiEditions_FieldMapping;
         $mapping->path = $xpath;
         $mapping->element_id = $element_id;
         $mapping->save(true);
@@ -310,7 +306,7 @@ SQL
     public function hookDefineRoutes($args)
     {
         $args['router']->addConfig(new Zend_Config_Ini(
-                dirname(__FILE__) . "/routes.ini")
+                __DIR__ . "/routes.ini")
         );
     }
 
@@ -319,7 +315,7 @@ SQL
      */
     public function hookConfigForm()
     {
-        require dirname(__FILE__) . '/config_form.php';
+        require __DIR__ . '/config_form.php';
     }
 
     /**
