@@ -25,6 +25,7 @@ require_once TEI_EDITIONS_DIR . '/helpers/TeiEditions_View_Helpers.php';
 require_once TEI_EDITIONS_DIR . '/helpers/TeiEditions_DataImporter.php';
 require_once TEI_EDITIONS_DIR . '/helpers/TeiEditions_DocumentProxy.php';
 require_once TEI_EDITIONS_DIR . '/helpers/TeiEditions_DataFetcher.php';
+require_once TEI_EDITIONS_DIR . '/helpers/TeiEditions_BatchEnhancer.php';
 
 require_once TEI_EDITIONS_DIR . '/jobs/TeiEditions_Job_DataImporter.php';
 

@@ -148,37 +148,27 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
         $this->view->form = $form;
 
         if ($this->getRequest()->isPost() and $form->isValid($_POST)) {
-            $dict = [];
-            if ($dictpath = $_FILES["dict"]["tmp_name"]) {
-                $doc = TeiEditions_DocumentProxy::fromUriOrPath($dictpath);
-                foreach ($doc->entities() as $entity) {
-                    $dict[$entity->ref()] = $entity;
-                }
-            }
 
+            $added = 0;
             $name = $_FILES["file"]["name"];
+            $base = pathinfo($name, PATHINFO_FILENAME);
+            $ext = pathinfo($name, PATHINFO_EXTENSION);
             $path = $_FILES["file"]["tmp_name"];
             $mime = $_FILES["file"]["type"];
-            switch ($mime) {
-                case "text/xml":
-                case "application/xml":
-                    $data = TeiEditions_DocumentProxy::fromUriOrPath($path);
-                    $src = new TeiEditions_DataFetcher($dict, $form->getValue("lang"));
-                    $tool = new TeiEditions_TeiEnhancer($data, $src);
-                    $num = $tool->addReferences();
-                    $enhancedxml = $data->document()->saveXML();
 
-                    $fname = pathinfo($name, PATHINFO_FILENAME);
-                    header("Content-Type: $mime");
-                    header("Content-Disposition: attachment; filename=${fname}-added-${num}.xml");
-                    header("Content-Length: " . strlen($enhancedxml));
-                    ob_end_flush();
-                    echo $enhancedxml;
-                    exit();
-                default:
-                    $this->_helper->_flashMessenger(__('Unrecognised or unsuitable file type'), 'error');
-                    return;
-            }
+            $dict_path = $_FILES["dict"]["tmp_name"];
+            $lang = $form->getValue("lang");
+
+            $enhancer = new TeiEditions_BatchEnhancer();
+            $out_path = $enhancer->enhance($path, $mime, $dict_path, $lang, $added);
+
+            header("Content-Type: $mime");
+            header("Content-Disposition: attachment; filename=${base}-added-${added}.$ext");
+            header("Content-Length: " . filesize($out_path));
+            ob_end_flush();
+            readfile($out_path);
+            unlink($out_path);
+            exit();
         }
     }
 
