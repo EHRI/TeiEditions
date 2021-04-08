@@ -5,7 +5,7 @@
  * @copyright Copyright 2021 King's College London Department of Digital Humanities
  */
 
-require_once __DIR__ . "/../helpers/TeiEditions_Helpers_TeiEnhancer.php";
+require_once TEI_EDITIONS_DIR . "/helpers/TeiEditions_Helpers_TeiEnhancer.php";
 
 
 class TeiEditionsEnhanceTeiTest extends PHPUnit_Framework_Testcase
@@ -16,7 +16,7 @@ class TeiEditionsEnhanceTeiTest extends PHPUnit_Framework_Testcase
 
     public function setUp()
     {
-        $this->file = __DIR__ . "/enhance-tei.xml";
+        $this->file = TEI_EDITIONS_TEST_DIR . "/resources/enhance-tei.xml";
         $this->tei = TeiEditions_Helpers_DocumentProxy::fromUriOrPath($this->file);
         $this->xpath = new DOMXPath($this->tei->document());
         $this->xpath->registerNamespace("t", TeiEditions_Helpers_DocumentProxy::TEI_NS);
@@ -83,8 +83,8 @@ class TeiEditionsEnhanceTeiTest extends PHPUnit_Framework_Testcase
     public function test_addTefsWithLocalDict()
     {
         $testdata = TeiEditions_Helpers_DocumentProxy::fromUriOrPath(
-            __DIR__ . "/enhance-tei-3.xml");
-        $dictfile = __DIR__ . "/dict-tei.xml";
+            TEI_EDITIONS_TEST_DIR . "/resources/enhance-tei-3.xml");
+        $dictfile = TEI_EDITIONS_TEST_DIR . "/resources/dict-tei.xml";
         $dict = [];
         $doc = TeiEditions_Helpers_DocumentProxy::fromUriOrPath($dictfile);
         foreach ($doc->entities() as $entity) {

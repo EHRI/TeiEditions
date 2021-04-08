@@ -17,7 +17,7 @@ class TeiEditions_FieldsController extends Omeka_Controller_AbstractActionContro
     {
         // Set the model class so this controller can perform some functions,
         // such as $this->findById()
-        $this->_helper->db->setDefaultModelName('TeiEditions_FieldMapping');
+        $this->_helper->db->setDefaultModelName('TeiEditionsFieldMapping');
     }
 
     public function indexAction()
@@ -33,7 +33,7 @@ class TeiEditions_FieldsController extends Omeka_Controller_AbstractActionContro
     public function addAction()
     {
         // Create a new page.
-        $fieldMapping = new TeiEditions_FieldMapping;
+        $fieldMapping = new TeiEditionsFieldMapping;
 
         // Set the created by user ID.
         $form = $this->_getForm($fieldMapping);
@@ -74,7 +74,7 @@ class TeiEditions_FieldsController extends Omeka_Controller_AbstractActionContro
             'select', 'element_id',
             array(
                 'id' => 'tei-editions-field-mapping-element-id',
-                'multiOptions' => label_table_options(TeiEditions_FieldMapping::elementOptions()),
+                'multiOptions' => label_table_options(TeiEditionsFieldMapping::elementOptions()),
                 'value' => $fieldMapping->element_id,
                 'label' => __('Element'),
                 'description' => __('The element'),

@@ -278,7 +278,7 @@ class TeiEditions_Helpers_DataImporter
     private function updateItemFromTEI(Item $item, TeiEditions_Helpers_DocumentProxy $doc, $neatline)
     {
         $item->item_type_id = get_option('tei_editions_default_item_type');
-        $data = $doc->metadata(TeiEditions_FieldMapping::fieldMappings());
+        $data = $doc->metadata(TeiEditionsFieldMapping::fieldMappings());
         $item->deleteElementTexts();
         $item->addElementTextsByArray($data);
         $item->save();
@@ -444,13 +444,13 @@ class TeiEditions_Helpers_DataImporter
     /**
      * @param TeiEditions_Helpers_DocumentProxy $doc
      * @param NeatlineExhibit $exhibit
-     * @param TeiEditions_Entity $item
+     * @param TeiEditionsEntity $item
      * @param $points_deg
      * @param $points_metres
      */
     private function createRecord(TeiEditions_Helpers_DocumentProxy $doc,
                                   NeatlineExhibit $exhibit,
-                                  TeiEditions_Entity $item,
+                                  TeiEditionsEntity $item,
                                   &$points_deg, &$points_metres)
     {
         $record = new NeatlineRecord;

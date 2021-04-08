@@ -5,7 +5,7 @@
  * @copyright Copyright 2021 King's College London Department of Digital Humanities
  */
 
-class TeiEditions_Entity
+class TeiEditionsEntity
 {
     public $name;
     public $slug;
@@ -29,7 +29,7 @@ class TeiEditions_Entity
     }
     
     static function create($name, $url) {
-        $e = new TeiEditions_Entity;
+        $e = new TeiEditionsEntity;
         $e->name = $name;
         $e->urls = ["normal" => $url];
         $e->slug = tei_editions_url_to_slug($url);

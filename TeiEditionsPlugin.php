@@ -6,10 +6,73 @@
  */
 
 /**
- * Simple Pages plugin.
+ * TeiEditions Plugin class
  */
 class TeiEditionsPlugin extends Omeka_Plugin_AbstractPlugin
 {
+
+    public static $DC_MAPPINGS = [
+        "Identifier" => ["/tei:TEI/tei:teiHeader/tei:profileDesc/tei:creation/tei:idno"],
+        "Title" => ["/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title"],
+        "Subject" => ["/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:list/tei:item/tei:name"],
+        "Description" => ["/tei:TEI/tei:teiHeader/tei:profileDesc/tei:abstract"],
+        "Creator" => [
+            "/tei:TEI/tei:teiHeader/tei:profileDesc/tei:creation/tei:persName",
+            "/tei:TEI/tei:teiHeader/tei:profileDesc/tei:creation/tei:orgName"
+        ],
+        "Source" => [
+            "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl",
+            "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:msDesc/tei:msIdentifier/tei:collection/@ref"
+        ],
+        "Publisher" => ["/tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:publisher/tei:ref"],
+        "Date" => ["/tei:TEI/tei:teiHeader/tei:profileDesc/tei:creation/tei:date/@when"],
+        "Rights" => ["/tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability/tei:licence"],
+        "Format" => ["/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:msDesc/tei:physDesc"],
+        "Language" => [
+            "/tei:TEI/tei:teiHeader/tei:profileDesc/tei:langUsage/tei:language",
+            "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/tei:textLang"
+        ],
+        "Coverage" => ["/tei:TEI/tei:teiHeader/tei:profileDesc/tei:creation/tei:placeName"]
+    ];
+
+    public static $ITEM_TYPE_MAPPINGS = [
+        "Text" => [
+            "description" => "Text items",
+            "mappings" => [
+                "Text" => [
+                    "description" => "The TEI text",
+                    "xpaths" => [
+                        "/tei:TEI/tei:text/tei:body"
+                    ]
+                ]
+            ]
+        ],
+        "TEI" => [
+            "description" => "TEI items",
+            "mappings" => [
+                "Person" => [
+                    "description" => "Persons mentioned in the text.",
+                    "xpaths" => [
+                        "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:listPerson/tei:person/tei:persName"
+                    ]
+                ],
+                "Organisation" => [
+                    "description" => "Organisations mentioned in the text.",
+                    "xpaths" => [
+                        "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:listOrg/tei:org/tei:orgName"
+                    ]
+                ],
+                "Place" => [
+                    "description" => "Places mentioned in the text.",
+                    "xpaths" => [
+                        "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:listPlace/tei:place/tei:placeName"
+                    ]
+                ]
+            ]
+        ]
+    ];
+
+
     /**
      * @var array Hooks for the plugin.
      */
@@ -46,13 +109,13 @@ class TeiEditionsPlugin extends Omeka_Plugin_AbstractPlugin
      *
      * @param string $element_id the element id
      * @param string $xpath the XPath
-     * @return TeiEditions_FieldMapping
+     * @return TeiEditionsFieldMapping
      * @throws Omeka_Record_Exception
      * @throws Omeka_Validate_Exception
      */
     private function createMapping($element_id, $xpath)
     {
-        $mapping = new TeiEditions_FieldMapping;
+        $mapping = new TeiEditionsFieldMapping;
         $mapping->path = $xpath;
         $mapping->element_id = $element_id;
         $mapping->save(true);
@@ -185,71 +248,11 @@ class TeiEditionsPlugin extends Omeka_Plugin_AbstractPlugin
 SQL
         );
 
-        $dc_mappings = [
-            "Identifier" => ["/tei:TEI/tei:teiHeader/tei:profileDesc/tei:creation/tei:idno"],
-            "Title" => ["/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title"],
-            "Subject" => ["/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:list/tei:item/tei:name"],
-            "Description" => ["/tei:TEI/tei:teiHeader/tei:profileDesc/tei:abstract"],
-            "Creator" => [
-                "/tei:TEI/tei:teiHeader/tei:profileDesc/tei:creation/tei:persName",
-                "/tei:TEI/tei:teiHeader/tei:profileDesc/tei:creation/tei:orgName"
-            ],
-            "Source" => [
-                "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl",
-                "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:msDesc/tei:msIdentifier/tei:collection/@ref"
-            ],
-            "Publisher" => ["/tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:publisher/tei:ref"],
-            "Date" => ["/tei:TEI/tei:teiHeader/tei:profileDesc/tei:creation/tei:date/@when"],
-            "Rights" => ["/tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability/tei:licence"],
-            "Format" => ["/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:msDesc/tei:physDesc"],
-            "Language" => [
-                "/tei:TEI/tei:teiHeader/tei:profileDesc/tei:langUsage/tei:language",
-                "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/tei:textLang"
-            ],
-            "Coverage" => ["/tei:TEI/tei:teiHeader/tei:profileDesc/tei:creation/tei:placeName"]
-        ];
-
-        $item_type_mappings = [
-            "Text" => [
-                "description" => "Text items",
-                "mappings" => [
-                    "Text" => [
-                        "description" => "The TEI text",
-                        "xpaths" => [
-                            "/tei:TEI/tei:text/tei:body"
-                        ]
-                    ]
-                ]
-            ],
-            "TEI" => [
-                "description" => "TEI items",
-                "mappings" => [
-                    "Person" => [
-                        "description" => "Persons mentioned in the text.",
-                        "xpaths" => [
-                            "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:listPerson/tei:person/tei:persName"
-                        ]
-                    ],
-                    "Organisation" => [
-                        "description" => "Organisations mentioned in the text.",
-                        "xpaths" => [
-                            "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:listOrg/tei:org/tei:orgName"
-                        ]
-                    ],
-                    "Place" => [
-                        "description" => "Places mentioned in the text.",
-                        "xpaths" => [
-                            "/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:listPlace/tei:place/tei:placeName"
-                        ]
-                    ]
-                ]
-            ]
-        ];
 
         $this->_db->getAdapter()->beginTransaction();
         try {
-            $this->createDublinCoreMappings($dc_mappings);
-            $this->createItemTypeMappings($item_type_mappings);
+            $this->createDublinCoreMappings(TeiEditionsPlugin::$DC_MAPPINGS);
+            $this->createItemTypeMappings(TeiEditionsPlugin::$ITEM_TYPE_MAPPINGS);
             $this->_db->getAdapter()->commit();
         } catch (Exception $e) {
             $this->_db->getAdapter()->rollBack();
@@ -327,7 +330,7 @@ SQL
     {
         $acl = $args['acl'];
 
-        $mappingResource = new Zend_Acl_Resource('TeiEditions_FieldMapping');
+        $mappingResource = new Zend_Acl_Resource('TeiEditionsFieldMapping');
         $acl->add($mappingResource);
     }
 
@@ -387,7 +390,8 @@ SQL
      * @param array $args
      * @return Omeka_Record_AbstractRecord
      */
-    public function filterItemPrevious($unused, array $args) {
+    public function filterItemPrevious($unused, array $args)
+    {
         $item = $args['item'];
 
         $table = $this->_db->getTable('Item');
@@ -406,7 +410,8 @@ SQL
      * @param array $args
      * @return Omeka_Record_AbstractRecord
      */
-    public function filterItemNext($unused, array $args) {
+    public function filterItemNext($unused, array $args)
+    {
         $item = $args['item'];
 
         $table = $this->_db->getTable('Item');
@@ -425,7 +430,8 @@ SQL
      * @param Zend_Db_Select $select
      * @return Zend_Db_Select
      */
-    private function _filterSolrExcludes(Zend_Db_Select $select) {
+    private function _filterSolrExcludes(Zend_Db_Select $select)
+    {
         return !plugin_is_active('SolrSearch')
             ? $select
             : $select->where("(

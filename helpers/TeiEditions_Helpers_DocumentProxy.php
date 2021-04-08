@@ -210,7 +210,7 @@ class TeiEditions_Helpers_DocumentProxy
     /**
      * List places, people, orgs, and term entities.
      *
-     * @return array|TeiEditions_Entity
+     * @return array|TeiEditionsEntity
      */
     function entities()
     {
@@ -228,7 +228,7 @@ class TeiEditions_Helpers_DocumentProxy
      * @param string $listTag
      * @param string $itemTag
      * @param string $nameTag
-     * @return array|TeiEditions_Entity
+     * @return array|TeiEditionsEntity
      */
     function getEntities($listTag, $itemTag, $nameTag)
     {
@@ -249,7 +249,7 @@ class TeiEditions_Helpers_DocumentProxy
                 $slug = isset($urls["normal"])
                     ? tei_editions_url_to_slug($urls["normal"])
                     : @$this->xpath->evaluate("./@xml:id", $entity)->item(0)->textContent;
-                $item = new TeiEditions_Entity;
+                $item = new TeiEditionsEntity;
                 $item->name = $name;
                 $item->slug = $slug;
                 $item->urls = $urls;
@@ -288,9 +288,9 @@ class TeiEditions_Helpers_DocumentProxy
      * @param string $listTag the list tag name
      * @param string $itemTag the item tag name
      * @param string $nameTag the place tag name
-     * @param TeiEditions_Entity $entity the entity
+     * @param TeiEditionsEntity $entity the entity
      */
-    function addEntity($listTag, $itemTag, $nameTag, TeiEditions_Entity $entity)
+    function addEntity($listTag, $itemTag, $nameTag, TeiEditionsEntity $entity)
     {
 
         $source = $this->xpath->query(
