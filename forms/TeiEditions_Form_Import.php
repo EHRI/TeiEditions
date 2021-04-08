@@ -6,7 +6,7 @@
  */
 
 
-class TeiEditions_IngestForm extends Omeka_Form
+class TeiEditions_Form_Import extends Omeka_Form
 {
     // TODO: put this in config somewhere???
     private static $LANGS = ["eng", "ces", "deu", "nld", "fra", "rus", "pol",];
@@ -69,7 +69,8 @@ class TeiEditions_IngestForm extends Omeka_Form
             'id' => 'tei-editions-submit'
         ]);
 
-        $this->addDisplayGroup(['file', 'create_exhibit', 'enhance', 'enhance_dict', 'enhance_lang'], 'tei-editions_info');
+        $this->addDisplayGroup(['file', 'create_exhibit', 'enhance'], 'tei-editions-ingest-opts');
+        $this->addDisplayGroup(['enhance_dict', 'enhance_lang'], 'tei-editions-enhance-opts');
         $this->addDisplayGroup(['submit'], 'tei-editions_submit');
     }
 }

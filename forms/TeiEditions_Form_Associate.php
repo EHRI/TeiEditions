@@ -6,7 +6,7 @@
  */
 
 
-class TeiEditions_AssociateForm extends Omeka_Form
+class TeiEditions_Form_Associate extends Omeka_Form
 {
     /**
      * @throws Zend_Form_Exception
@@ -24,7 +24,8 @@ class TeiEditions_AssociateForm extends Omeka_Form
         ]);
 
         $this->addElement('submit', 'submit', [
-            'label' => __('Upload File')
+            'label' => __('Upload File'),
+            'id' => 'tei-editions-submit'
         ]);
 
         $this->addDisplayGroup(['file'], 'tei-editions_info');

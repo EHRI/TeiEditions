@@ -5,7 +5,7 @@
  * @copyright Copyright 2021 King's College London Department of Digital Humanities
  */
 
-require_once __DIR__ . '/TeiEditions_DataFetcher.php';
+require_once __DIR__ . '/TeiEditions_Helpers_DataFetcher.php';
 
 /**
 Extracts URIs of annotated/linked terms, people, organisations, places, ghettos and camps from TEI document,
@@ -34,7 +34,7 @@ TEI elements and services handled:
 - EHRI terms: DONE
 
 */
-class TeiEditions_TeiEnhancer
+class TeiEditions_Helpers_TeiEnhancer
 {
 
     private $doc;
@@ -51,7 +51,7 @@ class TeiEditions_TeiEnhancer
         ["listPlace", "place", "placeName", "placeName", "fetchPlaces"],
     ];
 
-    function __construct(TeiEditions_DocumentProxy $tei, TeiEditions_DataFetcher $src)
+    function __construct(TeiEditions_Helpers_DocumentProxy $tei, TeiEditions_Helpers_DataFetcher $src)
     {
         $this->doc = $tei;
         $this->dataSrc = $src;

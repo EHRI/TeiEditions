@@ -5,13 +5,13 @@
  * @copyright Copyright 2021 King's College London Department of Digital Humanities
  */
 
-require_once __DIR__ . '/../helpers/TeiEditions_Functions.php';
+require_once __DIR__ . '/../helpers/TeiEditions_Helpers_Functions.php';
 
 /**
  * Convenience class for accessing TEI information via
  * XPath.
  */
-class TeiEditions_DocumentProxy
+class TeiEditions_Helpers_DocumentProxy
 {
     const TEI_NS = "http://www.tei-c.org/ns/1.0";
 
@@ -38,19 +38,19 @@ class TeiEditions_DocumentProxy
     {
         $doc = new DOMDocument;
         $doc->loadXML($str);
-        return new TeiEditions_DocumentProxy($doc, "");
+        return new TeiEditions_Helpers_DocumentProxy($doc, "");
     }
 
     public static function fromUriOrPath($uriOrPath)
     {
         $doc = new DOMDocument;
         $doc->load($uriOrPath);
-        return new TeiEditions_DocumentProxy($doc, $uriOrPath);
+        return new TeiEditions_Helpers_DocumentProxy($doc, $uriOrPath);
     }
 
     public static function fromDocument(DOMDocument $elem, $uriOrPath)
     {
-        return new TeiEditions_DocumentProxy($elem, $uriOrPath);
+        return new TeiEditions_Helpers_DocumentProxy($elem, $uriOrPath);
     }
 
     /**

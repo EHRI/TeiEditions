@@ -54,7 +54,7 @@ class TeiEditions_Job_DataImporter extends Omeka_Job_AbstractJob
         $created = 0;
         $updated = 0;
 
-        $importer = new TeiEditions_DataImporter($this->_db);
+        $importer = new TeiEditions_Helpers_DataImporter($this->_db);
         $importer->importData(
             $this->_path,
             $this->_mime,

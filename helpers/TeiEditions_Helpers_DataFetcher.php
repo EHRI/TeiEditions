@@ -5,8 +5,8 @@
  * @copyright Copyright 2021 King's College London Department of Digital Humanities
  */
 
-require_once __DIR__ . '/../models/TeiEditions_Entity.php';
-require_once __DIR__ . '/TeiEditions_Functions.php';
+require_once __DIR__ . '/../models/TeiEditionsEntity.php';
+require_once __DIR__ . '/TeiEditions_Helpers_Functions.php';
 
 
 /**
@@ -16,7 +16,7 @@ require_once __DIR__ . '/TeiEditions_Functions.php';
  *  - Geonames
  *  - EHRI Portal authorities and keywords
  */
-class TeiEditions_DataFetcher
+class TeiEditions_Helpers_DataFetcher
 {
     private $dict;
     private $lang;

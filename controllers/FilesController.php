@@ -5,11 +5,11 @@
  * @copyright Copyright 2021 King's College London Department of Digital Humanities
  */
 
-require_once dirname(__DIR__) . '/forms/TeiEditions_IngestForm.php';
-require_once dirname(__DIR__) . '/forms/TeiEditions_UpdateForm.php';
-require_once dirname(__DIR__) . '/forms/TeiEditions_AssociateForm.php';
-require_once dirname(__DIR__) . '/forms/TeiEditions_ArchiveForm.php';
-require_once dirname(__DIR__) . '/forms/TeiEditions_EnhanceForm.php';
+require_once dirname(__DIR__) . '/forms/TeiEditions_Form_Import.php';
+require_once dirname(__DIR__) . '/forms/TeiEditions_Form_Update.php';
+require_once dirname(__DIR__) . '/forms/TeiEditions_Form_Associate.php';
+require_once dirname(__DIR__) . '/forms/TeiEditions_Form_Archive.php';
+require_once dirname(__DIR__) . '/forms/TeiEditions_Form_Enhance.php';
 require_once dirname(__DIR__) . '/jobs/TeiEditions_Job_DataImporter.php';
 
 
@@ -38,11 +38,81 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
     public function importAction()
     {
         // Set the created by user ID.
-        $form = new TeiEditions_IngestForm();
+        $form = new TeiEditions_Form_Import();
         $this->view->form = $form;
-        $this->_processIngestForm($form);
-        // Clear and reindex.
-        Zend_Registry::get('job_dispatcher')->sendLongRunning('SolrSearch_Job_Reindex');
+
+        if ($this->getRequest()->isPost()) {
+            if (!$form->isValid($_POST)) {
+                $this->_helper->_flashMessenger(__('There was an error on the form. Please try again.'), 'error');
+                return;
+            }
+
+            $created = 0;
+            $updated = 0;
+
+            $name = $_FILES["file"]["name"];
+            $mime = $_FILES["file"]["type"];
+
+            if (($temp = $this->_tempDir()) === false) {
+                $this->_helper->_flashMessenger(
+                    __('There was an error creating a temporary processing location', 'error'));
+                return;
+            }
+
+            $path = $temp . DIRECTORY_SEPARATOR . $name;
+            move_uploaded_file($_FILES["file"]["tmp_name"], $path);
+
+            $dict_path = null;
+            if ($form->getElement("enhance") && isset($_FILES["enhance_dict"])) {
+                $dict_path = $temp . DIRECTORY_SEPARATOR . $_FILES['enhance_dict']['name'];
+                move_uploaded_file($_FILES["enhance_dict"]["tmp_name"], $dict_path);
+            }
+
+            // NB: Dispatching this as a long-running job doesn't quite work
+            // because of crashes when creating Neatline items. This is likely
+            // because the job runner is just a command line and the full Neatline
+            // libraries are not being loaded correctly - unfortunately I haven't
+            // figured out how to get proper error messages since the job runner
+            // just dies without apparently sending its output anywhere...
+            // In any case, a long running job can't return output of any kind
+            // so it's a bit fire and forget really.
+            //Zend_Registry::get('job_dispatcher')->sendLongRunning(
+            //    'TeiEditions_Job_DataImporter', [
+            //        "path" => $path,
+            //        "mime" => $mime,
+            //        "dict_path" => $dict_path,
+            //        "neatline" => $form->getElement('create_exhibit')->isChecked(),
+            //        "enhance" => $form->getElement('enhance')->isChecked(),
+            //        "lang" => $form->getValue('enhance_lang'),
+            //    ]
+            //);
+
+            try {
+                $importer = new TeiEditions_Helpers_DataImporter(get_db());
+                $importer->importData(
+                    $path,
+                    $mime,
+                    $form->getElement('create_exhibit')->isChecked(),
+                    $form->getElement('enhance')->isChecked(),
+                    $dict_path,
+                    $form->getValue('enhance_lang'),
+                    $created,
+                    $updated,
+                    function () {
+                        _log("Import complete");
+                    }
+                );
+
+                $this->_helper->flashMessenger(__("TEIs successfully created: $created, updated: $updated"), 'success');
+            } catch (Exception $e) {
+                $this->_helper->_flashMessenger(__('There was an error on the form: %s', $e->getMessage()), 'error');
+            } finally {
+                $this->_deleteDir($temp);
+
+                // Clear and reindex.
+                Zend_Registry::get('job_dispatcher')->sendLongRunning('SolrSearch_Job_Reindex');
+            }
+        }
     }
 
     /**
@@ -53,10 +123,29 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
     public function updateAction()
     {
         // Set the created by user ID.
-        $form = new TeiEditions_UpdateForm();
+        $form = new TeiEditions_Form_Update();
         $this->view->form = $form;
-        $this->_processUpdateForm($form);
-        Zend_Registry::get('job_dispatcher')->sendLongRunning('SolrSearch_Job_Reindex');
+
+        if ($this->getRequest()->isPost()) {
+            if (!$form->isValid($_POST)) {
+                $this->_helper->_flashMessenger(__('There was an error on the form. Please try again.'), 'error');
+                return;
+            }
+
+            $updated = 0;
+            try {
+                $neatline = $form->getElement('create_exhibit')->isChecked();
+                $importer = new TeiEditions_Helpers_DataImporter(get_db());
+                $importer->updateItems($form->getSelectedItems(), $neatline, $updated);
+                $this->_helper->flashMessenger(__("TEI items updated: $updated"), 'success');
+            } catch (Exception $e) {
+                error_log($e->getTraceAsString());
+                $this->_helper->_flashMessenger(
+                    __("There was an error: %s", $e->getMessage()), 'error');
+            } finally {
+                Zend_Registry::get('job_dispatcher')->sendLongRunning('SolrSearch_Job_Reindex');
+            }
+        }
     }
 
     /**
@@ -64,13 +153,13 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
      */
     public function associateAction()
     {
-        $form = new TeiEditions_AssociateForm();
+        $form = new TeiEditions_Form_Associate();
         $this->view->form = $form;
 
         if ($this->getRequest()->isPost()) {
             $done = 0;
             try {
-                $importer = new TeiEditions_DataImporter(get_db());
+                $importer = new TeiEditions_Helpers_DataImporter(get_db());
                 $importer->associateItems(
                     $_FILES["file"]["tmp_name"],
                     $_FILES["file"]["name"],
@@ -106,7 +195,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
 
     public function archiveAction()
     {
-        $form = new TeiEditions_ArchiveForm();
+        $form = new TeiEditions_Form_Archive();
         $this->view->form = $form;
 
         if ($this->getRequest()->isPost() and $form->isValid($_POST)) {
@@ -126,9 +215,15 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
                         ? [tei_editions_get_main_tei($item)]
                         : []
                     );
+
                 foreach ($files as $file) {
-                    $archive->addFromString($file->original_filename,
-                        file_get_contents($file->getWebPath()));
+                    // TODO: use a better way of retrieving this data:
+                    if (($xml = file_get_contents($file->getWebPath())) !== false) {
+                        $archive->addFromString($file->original_filename, $xml);
+                    } else {
+                        // Should we throw an exception here???
+                        _log("Unable to read URL: " . $file->getWebPath(), Zend_Log::ERR);
+                    }
                 }
             }
             $archive->close();
@@ -144,22 +239,22 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
 
     public function enhanceAction()
     {
-        $form = new TeiEditions_EnhanceForm();
+        $form = new TeiEditions_Form_Enhance();
         $this->view->form = $form;
 
         if ($this->getRequest()->isPost() and $form->isValid($_POST)) {
 
-            $added = 0;
             $name = $_FILES["file"]["name"];
-            $base = pathinfo($name, PATHINFO_FILENAME);
-            $ext = pathinfo($name, PATHINFO_EXTENSION);
             $path = $_FILES["file"]["tmp_name"];
             $mime = $_FILES["file"]["type"];
+            $base = pathinfo($name, PATHINFO_FILENAME);
+            $ext = pathinfo($name, PATHINFO_EXTENSION);
 
             $dict_path = $_FILES["dict"]["tmp_name"];
             $lang = $form->getValue("lang");
 
-            $enhancer = new TeiEditions_BatchEnhancer();
+            $added = 0;
+            $enhancer = new TeiEditions_Helpers_BatchEnhancer();
             $out_path = $enhancer->enhance($path, $mime, $dict_path, $lang, $added);
 
             header("Content-Type: $mime");
@@ -172,108 +267,6 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
         }
     }
 
-    /**
-     * Process the import form.
-     * @throws Zend_File_Transfer_Exception
-     */
-    private function _processIngestForm(TeiEditions_IngestForm $form)
-    {
-        if ($this->getRequest()->isPost()) {
-            if (!$form->isValid($_POST)) {
-                error_log("Errors: ". json_encode($form->getErrors()));
-                $this->_helper->_flashMessenger(__('There was an error on the form. Please try again.'), 'error');
-                return;
-            }
-
-            $created = 0;
-            $updated = 0;
-
-            $name = $_FILES["file"]["name"];
-            $mime = $_FILES["file"]["type"];
-
-            if(($temp = $this->_tempDir()) === false) {
-                $this->_helper->_flashMessenger(
-                        __('There was an error creating a temporary processing location', 'error'));
-                return;
-            }
-
-            $path = $temp . DIRECTORY_SEPARATOR . $name;
-            move_uploaded_file($_FILES["file"]["tmp_name"], $path);
-
-            $dict_path = null;
-            if ($form->getElement("enhance") && isset($_FILES["enhance_dict"])) {
-                $dict_path = $temp . DIRECTORY_SEPARATOR . $_FILES['enhance_dict']['name'];
-                move_uploaded_file($_FILES["enhance_dict"]["tmp_name"], $dict_path);
-            }
-
-            // NB: Dispatching this as a long-running job doesn't quite work
-            // because of crashes when creating Neatline items. This is likely
-            // because the job runner is just a command line and the full Neatline
-            // libraries are not being loaded correctly - unfortunately I haven't
-            // figured out how to get proper error messages since the job runner
-            // just dies without apparently sending its output anywhere...
-            // In any case, a long running job can't return output of any kind
-            // so it's a bit fire and forget really.
-            //Zend_Registry::get('job_dispatcher')->sendLongRunning(
-            //    'TeiEditions_Job_DataImporter', [
-            //        "path" => $path,
-            //        "mime" => $mime,
-            //        "dict_path" => $dict_path,
-            //        "neatline" => $form->getElement('create_exhibit')->isChecked(),
-            //        "enhance" => $form->getElement('enhance')->isChecked(),
-            //        "lang" => $form->getValue('enhance_lang'),
-            //    ]
-            //);
-
-            try {
-                $importer = new TeiEditions_DataImporter(get_db());
-                $importer->importData(
-                    $path,
-                    $mime,
-                    $form->getElement('create_exhibit')->isChecked(),
-                    $form->getElement('enhance')->isChecked(),
-                    $dict_path,
-                    $form->getValue('enhance_lang'),
-                    $created,
-                    $updated,
-                    function () {
-                        _log("Import complete");
-                    }
-                );
-
-                $this->_helper->flashMessenger(__("TEIs successfully created: $created, updated: $updated"), 'success');
-            } catch (Exception $e) {
-                $this->_helper->_flashMessenger(__('There was an error on the form: %s', $e->getMessage()), 'error');
-            } finally {
-                $this->_deleteDir($temp);
-            }
-        }
-    }
-
-    /**
-     * Process the page edit and edit forms.
-     */
-    private function _processUpdateForm(TeiEditions_UpdateForm $form)
-    {
-        if ($this->getRequest()->isPost()) {
-            if (!$form->isValid($_POST)) {
-                $this->_helper->_flashMessenger(__('There was an error on the form. Please try again.'), 'error');
-                return;
-            }
-
-            $updated = 0;
-            try {
-                $neatline = $form->getElement('create_exhibit')->isChecked();
-                $importer = new TeiEditions_DataImporter(get_db());
-                $importer->updateItems($form->getSelectedItems(), $neatline, $updated);
-                $this->_helper->flashMessenger(__("TEI items updated: $updated"), 'success');
-            } catch (Exception $e) {
-                error_log($e->getTraceAsString());
-                $this->_helper->_flashMessenger(
-                    __("There was an error: %s", $e->getMessage()), 'error');
-            }
-        }
-    }
     private function _tempDir($mode = 0700)
     {
         do {

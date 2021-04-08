@@ -5,12 +5,12 @@
  * @copyright Copyright 2020 King's College London Department of Digital Humanities
  */
 
-require_once __DIR__ . '/TeiEditions_DataFetcher.php';
-require_once __DIR__ . '/TeiEditions_DocumentProxy.php';
-require_once __DIR__ . '/TeiEditions_TeiEnhancer.php';
+require_once __DIR__ . '/TeiEditions_Helpers_DataFetcher.php';
+require_once __DIR__ . '/TeiEditions_Helpers_DocumentProxy.php';
+require_once __DIR__ . '/TeiEditions_Helpers_TeiEnhancer.php';
 
 
-class TeiEditions_DataImporter
+class TeiEditions_Helpers_DataImporter
 {
     private $_db;
 
@@ -49,7 +49,7 @@ class TeiEditions_DataImporter
 
         $dict = [];
         if ($dictPath) {
-            $doc = TeiEditions_DocumentProxy::fromUriOrPath($dictPath);
+            $doc = TeiEditions_Helpers_DocumentProxy::fromUriOrPath($dictPath);
             foreach ($doc->entities() as $entity) {
                 $dict[$entity->ref()] = $entity;
             }
@@ -205,9 +205,9 @@ class TeiEditions_DataImporter
                 $opts['geonames_username'] = $geonamesUser;
             }
             $ePath = $eDir . DIRECTORY_SEPARATOR . basename($path);
-            $tei = TeiEditions_DocumentProxy::fromUriOrPath($path);
-            $src = new TeiEditions_DataFetcher($dict, $lang, $opts);
-            $enhancer = new TeiEditions_TeiEnhancer($tei, $src);
+            $tei = TeiEditions_Helpers_DocumentProxy::fromUriOrPath($path);
+            $src = new TeiEditions_Helpers_DataFetcher($dict, $lang, $opts);
+            $enhancer = new TeiEditions_Helpers_TeiEnhancer($tei, $src);
             $enhancer->addReferences();
             $f = fopen($ePath, "w");
             fwrite($f, $tei->document()->saveXML());
@@ -234,12 +234,12 @@ class TeiEditions_DataImporter
     /**
      * @param string $path
      * @param string $name
-     * @return TeiEditions_DocumentProxy
+     * @return TeiEditions_Helpers_DocumentProxy
      * @throws Exception
      */
     private function getDoc($path, $name)
     {
-        $doc = TeiEditions_DocumentProxy::fromUriOrPath($path);
+        $doc = TeiEditions_Helpers_DocumentProxy::fromUriOrPath($path);
         if (is_null($doc->xmlId())) {
             throw new Exception("TEI document '$name' must have a unique 'xml:id' attribute");
         }
@@ -253,13 +253,13 @@ class TeiEditions_DataImporter
     /**
      * Get an existing item by TEI identifier, or create a new one.
      *
-     * @param TeiEditions_DocumentProxy $doc
+     * @param TeiEditions_Helpers_DocumentProxy $doc
      * @param bool $created
      * @return Item
      * @throws Omeka_Record_Exception
      * @throws Exception
      */
-    private function getOrCreateItem(TeiEditions_DocumentProxy $doc, &$created)
+    private function getOrCreateItem(TeiEditions_Helpers_DocumentProxy $doc, &$created)
     {
         $item = tei_editions_get_item_by_identifier($doc->recordId());
         $created = is_null($item);
@@ -271,11 +271,11 @@ class TeiEditions_DataImporter
      * Update an item's data from that extracted from the TEI document.
      *
      * @param Item $item
-     * @param TeiEditions_DocumentProxy $doc
+     * @param TeiEditions_Helpers_DocumentProxy $doc
      * @param bool $neatline create a Neatline exhibit
      * @throws Omeka_Record_Exception|Exception
      */
-    private function updateItemFromTEI(Item $item, TeiEditions_DocumentProxy $doc, $neatline)
+    private function updateItemFromTEI(Item $item, TeiEditions_Helpers_DocumentProxy $doc, $neatline)
     {
         $item->item_type_id = get_option('tei_editions_default_item_type');
         $data = $doc->metadata(TeiEditions_FieldMapping::fieldMappings());
@@ -356,10 +356,10 @@ class TeiEditions_DataImporter
 
     /**
      * @param Item $entity
-     * @param TeiEditions_DocumentProxy $doc
+     * @param TeiEditions_Helpers_DocumentProxy $doc
      * @throws Omeka_Record_Exception
      */
-    private function updateNeatlineExhibit(Item $entity, TeiEditions_DocumentProxy $doc)
+    private function updateNeatlineExhibit(Item $entity, TeiEditions_Helpers_DocumentProxy $doc)
     {
         if (!plugin_is_active('Neatline')) {
             return;
@@ -430,11 +430,11 @@ class TeiEditions_DataImporter
 
 
     /**
-     * @param TeiEditions_DocumentProxy $doc
+     * @param TeiEditions_Helpers_DocumentProxy $doc
      * @return NeatlineExhibit
      * @throws Omeka_Record_Exception
      */
-    private function getOrCreateNeatlineExhibit(TeiEditions_DocumentProxy $doc)
+    private function getOrCreateNeatlineExhibit(TeiEditions_Helpers_DocumentProxy $doc)
     {
         $exhibits = $this->_db->getTable('NeatlineExhibit')
             ->findBy(['slug' => strtolower($doc->recordId())]);
@@ -442,13 +442,13 @@ class TeiEditions_DataImporter
     }
 
     /**
-     * @param TeiEditions_DocumentProxy $doc
+     * @param TeiEditions_Helpers_DocumentProxy $doc
      * @param NeatlineExhibit $exhibit
      * @param TeiEditions_Entity $item
      * @param $points_deg
      * @param $points_metres
      */
-    private function createRecord(TeiEditions_DocumentProxy $doc,
+    private function createRecord(TeiEditions_Helpers_DocumentProxy $doc,
                                   NeatlineExhibit $exhibit,
                                   TeiEditions_Entity $item,
                                   &$points_deg, &$points_metres)
