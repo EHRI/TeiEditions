@@ -1,4 +1,6 @@
 {
+  "name": "ehri-project/tei-editions",
+  "description": "An Omeka plugin for importing and rendering structured TEI files for EHRI digital editions.",
   "require": {
     "php": ">=7.2",
     "twig/twig": "~1.4",
@@ -12,7 +14,6 @@
   "require-dev": {
     "phpunit/phpunit": "~4.8.0@stable"
   },
-  "name": "ehri-project/tei-editions",
   "license": "EUPL-1.2",
   "scripts": {
     "unit-test": "./vendor/bin/phpunit -c test/phpunit.xml test/unit",
