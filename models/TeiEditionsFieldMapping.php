@@ -6,7 +6,7 @@
  */
 
 
-class TeiEditions_FieldMapping extends Omeka_Record_AbstractRecord implements Zend_Acl_Resource_Interface
+class TeiEditionsFieldMapping extends Omeka_Record_AbstractRecord implements Zend_Acl_Resource_Interface
 {
     /**
      * The id of the parent element [integer].
@@ -118,6 +118,6 @@ class TeiEditions_FieldMapping extends Omeka_Record_AbstractRecord implements Ze
 
     public function getResourceId()
     {
-        return 'TeiEditions_FieldMapping';
+        return 'TeiEditionsFieldMapping';
     }
 }

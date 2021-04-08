@@ -5,7 +5,7 @@
  * @copyright Copyright 2021 King's College London Department of Digital Humanities
  */
 
-require_once __DIR__ . "/../helpers/TeiEditions_Helpers_Functions.php";
+require_once TEI_EDITIONS_DIR . "/helpers/TeiEditions_Helpers_Functions.php";
 
 
 class TeiEditionsFunctionsTest extends PHPUnit_Framework_Testcase
@@ -15,7 +15,7 @@ class TeiEditionsFunctionsTest extends PHPUnit_Framework_Testcase
 
     public function setUp()
     {
-        $this->file = __DIR__ . "/testing.xml";
+        $this->file = TEI_EDITIONS_TEST_DIR . "/resources/testing.xml";
     }
 
     public function test_tei_editions_url_to_slug()

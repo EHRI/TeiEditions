@@ -5,8 +5,8 @@
  * @copyright Copyright 2021 King's College London Department of Digital Humanities
  */
 
-require_once __DIR__ . "/../models/TeiEditionsEntity.php";
-require_once __DIR__ . "/../helpers/TeiEditions_Helpers_DocumentProxy.php";
+require_once TEI_EDITIONS_DIR . "/models/TeiEditionsEntity.php";
+require_once TEI_EDITIONS_DIR . "/helpers/TeiEditions_Helpers_DocumentProxy.php";
 
 
 class TeiEditionsDocumentProxyTest extends PHPUnit_Framework_Testcase
@@ -16,7 +16,7 @@ class TeiEditionsDocumentProxyTest extends PHPUnit_Framework_Testcase
 
     public function setUp()
     {
-        $this->file = __DIR__ . "/testing.xml";
+        $this->file = TEI_EDITIONS_TEST_DIR . "/resources/testing.xml";
     }
 
     public function testMetadata()
@@ -34,7 +34,7 @@ class TeiEditionsDocumentProxyTest extends PHPUnit_Framework_Testcase
     public function testEntityReferences()
     {
         $doc = TeiEditions_Helpers_DocumentProxy::fromUriOrPath(
-            __DIR__ . "/enhance-tei.xml");
+            TEI_EDITIONS_TEST_DIR . "/resources/enhance-tei.xml");
         $i = 0;
         $refs = $doc->entityReferences("placeName", $i, $addRefs = true);
         $this->assertEquals($i, 1);
@@ -52,7 +52,7 @@ class TeiEditionsDocumentProxyTest extends PHPUnit_Framework_Testcase
     public function testGetEntities()
     {
         $doc = TeiEditions_Helpers_DocumentProxy::fromUriOrPath($this->file);
-        $place = new TeiEditions_Entity;
+        $place = new TeiEditionsEntity;
         $place->name =  "Tartu";
         $place->slug = "geonames-588335";
         $place->longitude = 26.72509;
@@ -61,14 +61,14 @@ class TeiEditionsDocumentProxyTest extends PHPUnit_Framework_Testcase
             "normal" => "http://www.geonames.org/588335/",
             "desc" => "http://ru.wikipedia.org/wiki/%D0%A2%D0%B0%D1%80%D1%82%D1%83"
         ];
-        $pers = new TeiEditions_Entity;
+        $pers = new TeiEditionsEntity;
         $pers->name =  "Grün, Maurycy Moses";
         $pers->slug = "ehri_nisko_gruen_maurycy";
         $pers->birth = "1890";
         $pers->death = "1944";
         $pers->urls = [];
 
-        $org = new TeiEditions_Entity;
+        $org = new TeiEditionsEntity;
         $org->name = "Test English";
         $org->slug = "this-is-a-test";
         $org->notes = ["Blah blah"];

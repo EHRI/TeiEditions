@@ -42,7 +42,7 @@ class TeiEditions_Helpers_DataFetcher
             // item as a concept
             if (!($e = $this->_getPlace($url, $this->lang))
                     && !($e = $this->_getConcept($url, $this->lang))) {
-                $e = TeiEditions_Entity::create($name, $url);
+                $e = TeiEditionsEntity::create($name, $url);
             }
             $entities[$e->ref()] = $e;
         }
@@ -60,7 +60,7 @@ class TeiEditions_Helpers_DataFetcher
         $entities = [];
         foreach ($nametourl as $name => $url) {
             if (!($e = $this->_getHistoricalAgent($url, $this->lang))) {
-                $e = TeiEditions_Entity::create($name, $url);
+                $e = TeiEditionsEntity::create($name, $url);
             }
             $entities[$e->ref()] = $e;
         }
@@ -77,7 +77,7 @@ class TeiEditions_Helpers_DataFetcher
         $entities = [];
         foreach ($nametourl as $name => $url) {
             if (!($e = $this->_getConcept($url, $this->lang))) {
-                $e = TeiEditions_Entity::create($name, $url);
+                $e = TeiEditionsEntity::create($name, $url);
             }
             $entities[$e->ref()] = $e;
         }
@@ -86,11 +86,11 @@ class TeiEditions_Helpers_DataFetcher
 
     /**
      * @param $url
-     * @return TeiEditions_Entity|false
+     * @return TeiEditionsEntity|false
      */
     private function _findInDict($url)
     {
-        return current(array_filter($this->dict, function(TeiEditions_Entity $e) use ($url) {
+        return current(array_filter($this->dict, function(TeiEditionsEntity $e) use ($url) {
             return $e->ref() == $url;
         }));
     }
@@ -152,7 +152,7 @@ class TeiEditions_Helpers_DataFetcher
      * Fetch info about a place given an URL reference.
      *
      * @param string $url the canonical URL
-     * @return TeiEditions_Entity|false
+     * @return TeiEditionsEntity|false
      */
     private function _getPlace($url, $lang = null)
     {
@@ -191,7 +191,7 @@ class TeiEditions_Helpers_DataFetcher
         $lon = @(float)$xpath->query("/rdf:RDF/gn:Feature/wgs84_pos:long")->item(0)->textContent;
         $wiki = @$xpath->query("/rdf:RDF/gn:Feature/gn:wikipediaArticle/@rdf:resource")->item(0)->textContent;
 
-        $entity = TeiEditions_Entity::create(
+        $entity = TeiEditionsEntity::create(
            $this->_parseGeonamesPlaceName($xpath, $lang),
            $url
         );
@@ -208,7 +208,7 @@ class TeiEditions_Helpers_DataFetcher
      * given an URL reference.
      *
      * @param string $url the canonical URL
-     * @return TeiEditions_Entity|false
+     * @return TeiEditionsEntity|false
      */
     private function _getHistoricalAgent($url, $lang = null)
     {
@@ -246,7 +246,7 @@ class TeiEditions_Helpers_DataFetcher
         }
         $item = $result['data']['HistoricalAgent'];
         $desc = $item['description'];
-        $entity = TeiEditions_Entity::create($desc['name'], $url);
+        $entity = TeiEditionsEntity::create($desc['name'], $url);
         foreach (['datesOfExistence', 'biographicalHistory'] as $key) {
             if ($desc[$key]) {
                 $entity->notes[] = $desc[$key];
@@ -259,7 +259,7 @@ class TeiEditions_Helpers_DataFetcher
      * Fetch info about a keyword/concept given an URL reference.
      *
      * @param string $url the canonical URL
-     * @return TeiEditions_Entity|false
+     * @return TeiEditionsEntity|false
      */
     private function _getConcept($url, $lang = null)
     {
@@ -293,7 +293,7 @@ class TeiEditions_Helpers_DataFetcher
         $item = $result['data']['CvocConcept'];
         $desc = $item['description'];
 
-        $entity = TeiEditions_Entity::create($desc['name'], $url);
+        $entity = TeiEditionsEntity::create($desc['name'], $url);
         $entity->notes = $desc['scopeNote'];
         foreach ($item['seeAlso'] as $seeAlso) {
             if (preg_match('/wikipedia/', $seeAlso)) {

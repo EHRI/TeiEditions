@@ -22,6 +22,8 @@ This plugin contains a command-line tool for looking up entity references in TEI
 adding enriched canonical entity data to the header `<sourceDesc>` section. See the tools 
 [README](tools/README.md) file for details.
 
+Since 0.0.3 this functionality is available on file import, with caveats.
+
 
 Structuring a TEI Edition
 -------------------------
@@ -170,3 +172,12 @@ The export function allows you to download single archives containing either:
  
 This function is mainly for synchronising the data across Omeka instances.
 
+## Issues
+
+Importing, enriching, and creating Neatline items for a lot of files is quite slow
+and the admin UI doesn't present any feedback while this is happening.
+
+## TODO
+
+Integration tests need to be written for more admin functionality. A test-case base
+class has been created for this purpose.

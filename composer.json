@@ -13,6 +13,9 @@
     "phpunit/phpunit": "~4.8.0@stable"
   },
   "name": "ehri-project/tei-editions",
-  "description": "An Omeka plugin that provides functionality for EHRI's Digital Editions platform.",
-  "license": "EUPL-1.2"
+  "license": "EUPL-1.2",
+  "scripts": {
+    "unit-test": "./vendor/bin/phpunit -c test/phpunit.xml test/unit",
+    "test": "./vendor/bin/phpunit -c test/phpunit.xml test"
+  }
 }

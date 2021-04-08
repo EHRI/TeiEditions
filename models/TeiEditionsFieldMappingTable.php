@@ -6,7 +6,7 @@
  */
 
 
-class TeiEditions_FieldMapping_Table extends Omeka_Db_Table
+class TeiEditionsFieldMappingTable extends Omeka_Db_Table
 {
 
 
@@ -14,7 +14,7 @@ class TeiEditions_FieldMapping_Table extends Omeka_Db_Table
      * Find the field associated with a given element text.
      *
      * @param ElementText $text The element text.
-     * @return false|TeiEditions_FieldMapping
+     * @return false|TeiEditionsFieldMapping
      */
     public function findByText($text)
     {
@@ -26,7 +26,7 @@ class TeiEditions_FieldMapping_Table extends Omeka_Db_Table
      * Find the field associated with a given element.
      *
      * @param Element $element The element.
-     * @return false|TeiEditions_FieldMapping
+     * @return false|TeiEditionsFieldMapping
      */
     public function findByElement($element)
     {
@@ -40,7 +40,7 @@ class TeiEditions_FieldMapping_Table extends Omeka_Db_Table
      *
      * @param string $set The element set name.
      * @param string $element The element name.
-     * @return TeiEditions_FieldMapping
+     * @return TeiEditionsFieldMapping
      */
     public function findByElementName($set, $element)
     {
