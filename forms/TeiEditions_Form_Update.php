@@ -6,7 +6,7 @@
  */
 
 
-class TeiEditions_UpdateForm extends Omeka_Form
+class TeiEditions_Form_Update extends Omeka_Form
 {
     /**
      * @throws Zend_Form_Exception
@@ -37,7 +37,8 @@ class TeiEditions_UpdateForm extends Omeka_Form
         ]);
 
         $this->addElement('submit', 'submit', [
-            'label' => __('Update Items')
+            'label' => __('Update Items'),
+            'id' => 'tei-editions-submit'
         ]);
 
         $this->addDisplayGroup(['item', 'create_exhibit'], 'tei-editions_info');

@@ -6,22 +6,19 @@
 <?php echo $form; ?>
 <script>
   var elem = document.getElementById('tei-editions-enhance'),
-      lang = document.getElementById('tei-editions-enhance-lang'),
-      dict = document.getElementById('tei-editions-enhance-dict');
+      opts = document.getElementById('fieldset-teieditionsenhanceopts'),
+      form = document.getElementById('tei-editions-import-form'),
+      button = document.getElementById('tei-editions-submit');
 
   function updateState() {
-    // lang.disabled = !elem.checked;
-    // dict.disabled = !elem.checked;
+    opts.style.display = elem.checked ? 'block' : 'none';
   }
 
   elem.addEventListener('change', updateState);
   updateState();
 
-
-  jQuery(function ($) {
-    $('form#tei-editions-import-form').submit(function () {
-      $(this).find(':input[type=submit]').prop('disabled', true);
-    });
+  form.addEventListener('submit', function() {
+    button.disabled = true;
   });
 </script>
 <?php echo foot(); ?>

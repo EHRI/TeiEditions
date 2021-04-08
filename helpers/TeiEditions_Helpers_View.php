@@ -134,7 +134,7 @@ function tei_editions_render_document_references($item)
     if (($tei = tei_editions_get_main_tei($item)) and
         plugin_is_active('EhriData')) {
 
-        $doc = TeiEditions_DocumentProxy::fromUriOrPath($tei->getWebPath());
+        $doc = TeiEditions_Helpers_DocumentProxy::fromUriOrPath($tei->getWebPath());
         foreach ($doc->manuscriptIds() as $url) {
             $id = substr($url, strrpos($url, '/') + 1);
             $content .= "[ehri_item_data id=$id]\n";
@@ -280,7 +280,7 @@ function tei_editions_get_item_by_identifier($identifier)
 
 
 /**
- * @param TeiEditions_DocumentProxy $doc
+ * @param TeiEditions_Helpers_DocumentProxy $doc
  * @return NeatlineExhibit
  * @throws Omeka_Record_Exception
  */

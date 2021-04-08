@@ -6,7 +6,7 @@
  */
 
 
-class TeiEditions_ArchiveForm extends Omeka_Form
+class TeiEditions_Form_Archive extends Omeka_Form
 {
     /**
      * @throws Zend_Form_Exception
@@ -27,7 +27,8 @@ class TeiEditions_ArchiveForm extends Omeka_Form
         $this->addElement($select);
 
         $this->addElement('submit', 'submit', [
-            'label' => __('Download')
+            'label' => __('Download'),
+            'id' => 'tei-editions-submit'
         ]);
 
         $this->addDisplayGroup(['type'], 'tei-editions_info');

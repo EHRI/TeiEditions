@@ -5,7 +5,7 @@
  * @copyright Copyright 2021 King's College London Department of Digital Humanities
  */
 
-require_once __DIR__ . "/../helpers/TeiEditions_Functions.php";
+require_once __DIR__ . "/../helpers/TeiEditions_Helpers_Functions.php";
 
 
 class TeiEditionsFunctionsTest extends PHPUnit_Framework_Testcase

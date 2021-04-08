@@ -7,7 +7,7 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-class TeiEditions_EnhanceForm extends Omeka_Form
+class TeiEditions_Form_Enhance extends Omeka_Form
 {
     // TODO: put this in config somewhere???
     private static $LANGS = ["eng", "ces", "deu", "nld", "fra", "rus", "pol",];
@@ -47,7 +47,8 @@ class TeiEditions_EnhanceForm extends Omeka_Form
         ]);
 
         $this->addElement('submit', 'submit', [
-            'label' => __('Download Transformed TEI')
+            'label' => __('Download Transformed TEI'),
+            'id' => 'tei-editions-submit'
         ]);
 
         $this->addDisplayGroup(['file', 'dict', 'lang'], 'tei-editions_info');
