@@ -328,10 +328,6 @@ SQL
      */
     public function hookDefineAcl($args)
     {
-        $acl = $args['acl'];
-
-        $mappingResource = new Zend_Acl_Resource('TeiEditionsFieldMapping');
-        $acl->add($mappingResource);
     }
 
     /**
