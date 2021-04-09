@@ -1,8 +1,8 @@
 <?php
 /**
- * TeiEditions
+ * @package TeiEditions
  *
- * @copyright Copyright 2020 King's College London Department of Digital Humanities
+ * @copyright Copyright 2021 King's College London Department of Digital Humanities
  */
 
 

@@ -62,7 +62,7 @@ class TeiEditionsFieldMapping extends Omeka_Record_AbstractRecord implements Zen
     public static function fieldMappings()
     {
         $mappings = array();
-        foreach (get_db()->getTable("TeiEditions_FieldMapping")->findAll() as $mapping) {
+        foreach (get_db()->getTable("TeiEditionsFieldMapping")->findAll() as $mapping) {
             $id = $mapping->element_id;
             if (!array_key_exists($id, $mappings)) {
                 $mappings[$id] = array();
