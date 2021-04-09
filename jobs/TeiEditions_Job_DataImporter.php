@@ -5,9 +5,6 @@
  * @copyright Copyright 2020 King's College London Department of Digital Humanities
  */
 
-require_once '/home/mike/dev/php/Omeka/plugins/Neatline/plugin.php';
-require_once '/home/mike/dev/php/TeiEditions/TeiEditionsPlugin.php';
-
 
 class TeiEditions_Job_DataImporter extends Omeka_Job_AbstractJob
 {
