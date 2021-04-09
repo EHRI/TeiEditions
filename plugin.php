@@ -10,6 +10,8 @@ if (!defined('TEI_EDITIONS_DIR')) define('TEI_EDITIONS_DIR', __DIR__);
 
 require_once TEI_EDITIONS_DIR . '/vendor/autoload.php';
 
+require_once TEI_EDITIONS_DIR . '/TeiEditionsPlugin.php';
+
 require_once TEI_EDITIONS_DIR . '/models/TeiEditionsFieldMapping.php';
 require_once TEI_EDITIONS_DIR . '/models/TeiEditionsFieldMappingTable.php';
 require_once TEI_EDITIONS_DIR . '/models/TeiEditionsEntity.php';
