@@ -47,6 +47,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
                 return;
             }
 
+            $start = time();
             $created = 0;
             $updated = 0;
 
@@ -103,8 +104,10 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
                     }
                 );
 
-                $this->_helper->flashMessenger(__("TEIs successfully created: $created, updated: $updated"), 'success');
+                $time = time() - $start;
+                $this->_helper->flashMessenger(__("TEIs successfully created: $created, updated: $updated, time: ${time}s"), 'success');
             } catch (Exception $e) {
+                echo $e->getTraceAsString();
                 $this->_helper->_flashMessenger(__('There was an error on the form: %s', $e->getMessage()), 'error');
             } finally {
                 $this->_deleteDir($temp);
