@@ -7,6 +7,11 @@
 
 require_once __DIR__ . '/TeiEditions_Helpers_DataFetcher.php';
 
+
+interface TeiEditions_TeiEnhancer {
+    public function addReferences(TeiEditions_Helpers_DocumentProxy $tei);
+}
+
 /**
 Extracts URIs of annotated/linked terms, people, organisations, places, ghettos and camps from TEI document,
 fetches metadata from EHRI, Geonames and possibly other services
@@ -32,12 +37,11 @@ TEI elements and services handled:
 
 <term>
 - EHRI terms: DONE
-
+ *
 */
-class TeiEditions_Helpers_TeiEnhancer
+class TeiEditions_Helpers_TeiEnhancer implements TeiEditions_TeiEnhancer
 {
 
-    private $doc;
     private $dataSrc;
 
     // Describes the XML paths in which to add entities,
@@ -51,9 +55,8 @@ class TeiEditions_Helpers_TeiEnhancer
         ["listPlace", "place", "placeName", "placeName", "fetchPlaces"],
     ];
 
-    function __construct(TeiEditions_Helpers_DocumentProxy $tei, TeiEditions_Helpers_DataFetcher $src)
+    function __construct(TeiEditions_Helpers_DataFetcher $src)
     {
-        $this->doc = $tei;
         $this->dataSrc = $src;
     }
 
@@ -66,7 +69,7 @@ class TeiEditions_Helpers_TeiEnhancer
      *
      * @return integer the number of items added.
      */
-    public function addReferences()
+    public function addReferences(TeiEditions_Helpers_DocumentProxy $tei)
     {
         // Index for generated entity IDs
         $idx = 0;
@@ -75,12 +78,12 @@ class TeiEditions_Helpers_TeiEnhancer
         foreach ($this::$TYPES as $typeSpec) {
             list($listTag, $itemTag, $nameTag, $srcTag, $fetcherFunc) = $typeSpec;
 
-            $existing = $this->doc->getEntities($listTag, $itemTag, $nameTag);
-            $refs = $this->doc->entityReferences($srcTag, $idx, $addRefs = true);
+            $existing = $tei->getEntities($listTag, $itemTag, $nameTag);
+            $refs = $tei->entityReferences($srcTag, $idx, $addRefs = true);
             foreach ($this->dataSrc->{$fetcherFunc}($refs) as $ref) {
                 if (!in_array($ref, $existing)) {
                     error_log("Found $srcTag " . $ref->name);
-                    $this->doc->addEntity($listTag, $itemTag, $nameTag, $ref);
+                    $tei->addEntity($listTag, $itemTag, $nameTag, $ref);
                     $added++;
                 } else {
                     error_log("Not updating existing $srcTag " . $ref->name);

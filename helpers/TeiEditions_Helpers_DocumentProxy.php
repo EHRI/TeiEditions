@@ -37,15 +37,21 @@ class TeiEditions_Helpers_DocumentProxy
     public static function fromString($str)
     {
         $doc = new DOMDocument;
-        $doc->loadXML($str);
-        return new TeiEditions_Helpers_DocumentProxy($doc, "");
+        if ($doc->loadXML($str)) {
+            return new TeiEditions_Helpers_DocumentProxy($doc, "");
+        }
+
+        return false;
     }
 
     public static function fromUriOrPath($uriOrPath)
     {
         $doc = new DOMDocument;
-        @$doc->load($uriOrPath);
-        return new TeiEditions_Helpers_DocumentProxy($doc, $uriOrPath);
+        if ($doc->load($uriOrPath)) {
+            return new TeiEditions_Helpers_DocumentProxy($doc, $uriOrPath);
+        }
+
+        return false;
     }
 
     public static function fromDocument(DOMDocument $elem, $uriOrPath)
@@ -150,7 +156,6 @@ class TeiEditions_Helpers_DocumentProxy
     {
         $out = [];
         foreach ($this->extractXPaths($elemToXPaths) as $elem => $data) {
-            error_log("Extract: $elem: " . json_encode($data));
             foreach ($data as $text) {
                 $out[] = array('element_id' => $elem, 'text' => $text, 'html' => false);
             }

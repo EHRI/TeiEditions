@@ -13,19 +13,19 @@ require_once __DIR__ . '/TeiEditions_Helpers_TeiEnhancer.php';
 class TeiEditions_Helpers_DataImporter
 {
     private $_db;
-    private $_geonamesUser;
+    private $_enhancer;
     private $_defaultItemType;
     private $_templateNeatline = null;
 
     /**
      * @package TeiEditionsDataImporter constructor.
      */
-    public function __construct(Omeka_Db $db)
+    public function __construct(Omeka_Db $db, TeiEditions_TeiEnhancer $enhancer)
     {
         $this->_db = $db;
-        $this->_geonamesUser = get_option("tei_editions_geonames_username");
+        $this->_enhancer = $enhancer;
         $this->_defaultItemType = get_option('tei_editions_default_item_type');
-        if (($id = (int)get_option('tei_editions_template_neatline')) !== null) {
+        if (plugin_is_active('Neatline') && ($id = (int)get_option('tei_editions_template_neatline')) !== null) {
             $this->_templateNeatline = $this->_db->getTable('NeatlineExhibit')->find($id);
         }
     }
@@ -37,49 +37,38 @@ class TeiEditions_Helpers_DataImporter
      * @param string $mime the mime type of the import file. Either text/xml or application/zip are supported
      * @param boolean $neatline whether or not to create a Neatline item from the TEI data
      * @param boolean $enhance whether or not to run enhancement on the input file by looking up entity metadata
-     * @param string|null $dictPath an optional path to a TEI dictionary file
-     * @param string $lang the default language or enhanced metadata
      * @param int $created out-param for number of items created
      * @param int $updated out-param for number of items updated
      * @param callable $onDone function to call on completion
      * @throws Omeka_Record_Exception
      */
-    public function importData($path, $mime, $neatline, $enhance, $dictPath, $lang, &$created, &$updated, $onDone)
+    public function importData($path, $mime, $neatline, $enhance, &$created, &$updated, $onDone)
     {
-        _log("PERFORMING DATA IMPORT: " . json_encode([
+        _log("Performing data import: " . json_encode([
                 "path" => $path,
-                "dict_path" => $dictPath,
                 "neatline" => $neatline,
                 "enhance" => $enhance,
-                "lang" => $lang,
                 "mime" => $mime
             ]));
 
-        $dict = [];
-        if ($dictPath) {
-            $doc = TeiEditions_Helpers_DocumentProxy::fromUriOrPath($dictPath);
-            foreach ($doc->entities() as $entity) {
-                $dict[$entity->ref()] = $entity;
-            }
-        }
-
+        $name = basename($path);
         $tx = $this->_db->getAdapter()->beginTransaction();
         try {
             switch ($mime) {
                 case "text/xml":
                 case "application/xml":
-                    $this->updateItem($path, basename($path), $enhance, $dict, $neatline, $lang, $created, $updated);
+                    $this->updateItem($path, $name, $neatline, $enhance, $created, $updated);
                     break;
                 case "application/zip":
-                    $this->readImportZip($path, $enhance, $dict, $neatline, $lang, $created, $updated);
+                    $this->readImportZip($path, $neatline, $enhance, $created, $updated);
                     break;
                 default:
-                    error_log("Unhandled file extension: $mime");
+                    throw new Exception("Unhandled file extension: $mime");
             }
             $tx->commit();
         } catch (Exception $e) {
             $tx->rollBack();
-            throw $e;
+            throw new TeiEditions_Helpers_ImportError("Error importing file: $name", 0, $e);
         } finally {
             $onDone();
         }
@@ -93,7 +82,7 @@ class TeiEditions_Helpers_DataImporter
      * @param int $updated
      * @throws Omeka_Record_Exception
      */
-    function updateItems($items, $neatline, &$updated)
+    public function updateItems($items, $neatline, &$updated)
     {
         $tx = $this->_db->getAdapter()->beginTransaction();
 
@@ -104,7 +93,7 @@ class TeiEditions_Helpers_DataImporter
                 foreach ($item->getFiles() as $file) {
                     if (tei_editions_is_xml_file($file)) {
                         $item->deleteElementTexts();
-                        $doc = $this->getDoc($file->getWebPath(), $file->getProperty('display_title'));
+                        $doc = $this->getProxy($file->getWebPath(), $file->getProperty('display_title'));
                         $this->updateItemFromTEI($item, $doc, $neatline);
                         $updated++;
                         break;
@@ -115,9 +104,9 @@ class TeiEditions_Helpers_DataImporter
         } catch (Exception $e) {
             $tx->rollBack();
             if ($currentItem) {
-                $msg = __("There was an processing element %d '%s': %s",
+                $msg = __("There was an error processing element with id [%d] '%s': %s",
                     $currentItem->id, metadata($currentItem, "display_title"), $e->getMessage());
-                throw new Exception($msg, $e);
+                throw new TeiEditions_Helpers_ImportError($msg, 0, $e);
             } else {
                 throw $e;
             }
@@ -132,7 +121,7 @@ class TeiEditions_Helpers_DataImporter
      * @param int $done out-param for number of items associated
      * @throws Omeka_Record_Exception
      */
-    function associateItems($path, $name, $mime, &$done)
+    public function associateItems($path, $name, $mime, &$done)
     {
         $tx = $this->_db->getAdapter()->beginTransaction();
         try {
@@ -155,15 +144,13 @@ class TeiEditions_Helpers_DataImporter
 
     /**
      * @param string $zipPath the path to the zip file
-     * @param boolean $enhance whether or not to enhance TEIs by looking up entity references
-     * @param array $dict a dictionary of local TEI references
      * @param boolean $neatline whether or not to create Neatline items
-     * @param string $lang the default language for entity lookups during enhancement
+     * @param boolean $enhance whether or not to enhance TEIs by looking up entity references
      * @param int $created out-param for number of items created
      * @param int $updated out-param for the number of items updated
      * @throws Omeka_Record_Exception
      */
-    private function readImportZip($zipPath, $enhance, $dict, $neatline, $lang, &$created = 0, &$updated = 0)
+    private function readImportZip($zipPath, $neatline, $enhance, &$created = 0, &$updated = 0)
     {
         $temp = $this->createTempDir();
 
@@ -174,7 +161,7 @@ class TeiEditions_Helpers_DataImporter
                 $zip->close();
 
                 foreach (glob($temp . '/*.xml') as $path) {
-                    $this->updateItem($path, basename($path), $enhance, $dict, $neatline, $lang, $created, $updated);
+                    $this->updateItem($path, basename($path), $neatline, $enhance, $created, $updated);
                     // NB: If I'm reading the docs right this should prevent a timeout
                     // on large zips:
                     set_time_limit(10);
@@ -192,12 +179,13 @@ class TeiEditions_Helpers_DataImporter
      *
      * @param string $path the path to the XML file
      * @param string $name the item name
+     * @param $neatline
+     * @param $enhance
      * @param int $created out-param for the number of created items
      * @param int $updated out-param for the number of updated items
      * @throws Omeka_Record_Exception
-     * @throws Exception
      */
-    private function updateItem($path, $name, $enhance, $dict, $neatline, $lang, &$created, &$updated)
+    private function updateItem($path, $name, $neatline, $enhance, &$created, &$updated)
     {
         _log("Importing file: $path");
         $create = false;
@@ -208,15 +196,9 @@ class TeiEditions_Helpers_DataImporter
                 mkdir($eDir);
             }
 
-            $opts = [];
-            if ($geonamesUser = $this->_geonamesUser) {
-                $opts['geonames_username'] = $geonamesUser;
-            }
             $ePath = $eDir . DIRECTORY_SEPARATOR . basename($path);
             $tei = TeiEditions_Helpers_DocumentProxy::fromUriOrPath($path);
-            $src = new TeiEditions_Helpers_DataFetcher($dict, $lang, $opts);
-            $enhancer = new TeiEditions_Helpers_TeiEnhancer($tei, $src);
-            $enhancer->addReferences();
+            $this->_enhancer->addReferences($tei);
 
             if ($f = fopen($ePath, "w")) {
                 fwrite($f, $tei->document()->saveXML());
@@ -231,7 +213,7 @@ class TeiEditions_Helpers_DataImporter
             }
         }
 
-        $doc = $this->getDoc($path, $name);
+        $doc = $this->getProxy($path, $name);
         $item = $this->getOrCreateItem($doc, $create);
         $this->updateItemFromTEI($item, $doc, $neatline);
 
@@ -249,9 +231,12 @@ class TeiEditions_Helpers_DataImporter
      * @return TeiEditions_Helpers_DocumentProxy
      * @throws Exception
      */
-    private function getDoc($path, $name)
+    private function getProxy($path, $name)
     {
         $doc = TeiEditions_Helpers_DocumentProxy::fromUriOrPath($path);
+        if (!$doc) {
+            throw new Exception("Unable to load TEI document at path: '$path'");
+        }
         if (is_null($doc->xmlId())) {
             throw new Exception("TEI document '$name' must have a unique 'xml:id' attribute");
         }
@@ -285,7 +270,7 @@ class TeiEditions_Helpers_DataImporter
      * @param Item $item
      * @param TeiEditions_Helpers_DocumentProxy $doc
      * @param bool $neatline create a Neatline exhibit
-     * @throws Omeka_Record_Exception|Exception
+     * @throws Omeka_Record_Exception
      */
     private function updateItemFromTEI(Item $item, TeiEditions_Helpers_DocumentProxy $doc, $neatline)
     {
@@ -483,6 +468,9 @@ class TeiEditions_Helpers_DataImporter
     {
         $tags = [];
         foreach ($urls as $url) {
+            // NB: Sorry about all these hard-coded IDs, I
+            // wish I knew a better way...
+            // TODO: somehow extract all this to config somewhere?
             if (preg_match('/geonames/', $url)) {
                 $tags[] = "location";
             }
@@ -508,7 +496,6 @@ class TeiEditions_Helpers_DataImporter
     /**
      * @param $zipPath
      * @return int
-     * @throws Exception
      * @throws Omeka_Record_Exception
      */
     private function readAssociatedItemsZip($zipPath)
@@ -527,7 +514,7 @@ class TeiEditions_Helpers_DataImporter
                     $done++;
                 }
             } else {
-                throw new Exception("Zip cannot be opened");
+                throw new TeiEditions_Helpers_ImportError("Zip cannot be opened");
             }
             return $done;
         } finally {
@@ -541,7 +528,6 @@ class TeiEditions_Helpers_DataImporter
      *
      * @param $path
      * @param $name
-     * @throws Exception
      * @throws Omeka_Record_Exception
      */
     private function addAssociatedFile($path, $name)
@@ -549,7 +535,7 @@ class TeiEditions_Helpers_DataImporter
         $id = tei_editions_get_identifier($name);
         $item = tei_editions_get_item_by_identifier($id);
         if (is_null($item)) {
-            throw new Exception("Unable to locate item with identifier: " . $id . " (file: $path)");
+            throw new TeiEditions_Helpers_ImportError("Unable to locate item with identifier: " . $id . " (file: $path)");
         }
         $this->addOrUpdateItemFile($item, $path, $name);
     }

@@ -5,16 +5,18 @@
  * @copyright Copyright 2021 King's College London Department of Digital Humanities
  */
 
+use PHPUnit\Framework\TestCase;
+
 require_once TEI_EDITIONS_DIR . "/helpers/TeiEditions_Helpers_TeiEnhancer.php";
 
 
-class TeiEditionsEnhanceTeiTest extends PHPUnit_Framework_Testcase
+class TeiEditionsEnhanceTeiTest extends TestCase
 {
     private $file;
     private $tei;
     private $xpath;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->file = TEI_EDITIONS_TEST_DIR . "/resources/enhance-tei.xml";
         $this->tei = TeiEditions_Helpers_DocumentProxy::fromUriOrPath($this->file);
@@ -31,7 +33,7 @@ class TeiEditionsEnhanceTeiTest extends PHPUnit_Framework_Testcase
     {
         // TODO: fix this so we can mock the data lookups!
         $src = new TeiEditions_Helpers_DataFetcher([], "eng");
-        $num = (new TeiEditions_Helpers_TeiEnhancer($this->tei, $src))->addReferences();
+        $num = (new TeiEditions_Helpers_TeiEnhancer($src))->addReferences($this->tei);
         $this->assertEquals($num, 7);
         $this->assertEquals(
             "Tartu",
@@ -67,7 +69,7 @@ class TeiEditionsEnhanceTeiTest extends PHPUnit_Framework_Testcase
     {
         // TODO: fix this so we can mock the data lookups!
         $src = new TeiEditions_Helpers_DataFetcher([], "deu");
-        $num = (new TeiEditions_Helpers_TeiEnhancer($this->tei, $src))->addReferences();
+        $num = (new TeiEditions_Helpers_TeiEnhancer($src))->addReferences($this->tei);
 
         $this->assertEquals($num, 7);
         $this->assertEquals(
@@ -85,24 +87,19 @@ class TeiEditionsEnhanceTeiTest extends PHPUnit_Framework_Testcase
         $testdata = TeiEditions_Helpers_DocumentProxy::fromUriOrPath(
             TEI_EDITIONS_TEST_DIR . "/resources/enhance-tei-3.xml");
         $dictfile = TEI_EDITIONS_TEST_DIR . "/resources/dict-tei.xml";
-        $dict = [];
-        $doc = TeiEditions_Helpers_DocumentProxy::fromUriOrPath($dictfile);
-        foreach ($doc->entities() as $entity) {
-            $dict[$entity->ref()] = $entity;
-        }
-        $src = new TeiEditions_Helpers_DataFetcher($dict, "eng");
-        $num = (new TeiEditions_Helpers_TeiEnhancer($testdata, $src))->addReferences();
+        $src = new TeiEditions_Helpers_DataFetcher($dictfile, "eng");
+        $num = (new TeiEditions_Helpers_TeiEnhancer($src))->addReferences($testdata);
         $this->assertEquals(4, $num);
-        $num2 = (new TeiEditions_Helpers_TeiEnhancer($testdata, $src))->addReferences();
+        $num2 = (new TeiEditions_Helpers_TeiEnhancer($src))->addReferences($testdata);
         $this->assertEquals(0, $num2);
     }
 
     public function test_addRefsIdempotency() {
         $src = new TeiEditions_Helpers_DataFetcher([], "eng");
-        $num1 = (new TeiEditions_Helpers_TeiEnhancer($this->tei, $src))->addReferences();
+        $num1 = (new TeiEditions_Helpers_TeiEnhancer($src))->addReferences($this->tei);
         $this->assertEquals($num1, 7);
         $before = $this->tei->document()->saveXML();
-        $num2 = (new TeiEditions_Helpers_TeiEnhancer($this->tei, $src))->addReferences();
+        $num2 = (new TeiEditions_Helpers_TeiEnhancer($src))->addReferences($this->tei);
         $after = $this->tei->document()->saveXML();
         $this->assertEquals($before, $after);
         $this->assertEquals($num2, 0);

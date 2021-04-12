@@ -4,3 +4,5 @@ spec
 vendor
 pkg
 node_modules
+*.phar
+test/.phpunit.result.cache
