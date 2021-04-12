@@ -18,13 +18,24 @@ require_once __DIR__ . '/TeiEditions_Helpers_Functions.php';
  */
 class TeiEditions_Helpers_DataFetcher
 {
-    private $dict;
+    private $dict = [];
     private $lang;
     private $opts;
-    
-    function __construct($dict, $lang, $opts = array())
+
+    /**
+     * TeiEditions_Helpers_DataFetcher constructor.
+     * @param string|null $dict_path a path to a TEI dictionary file
+     * @param string $lang the default extraction language
+     * @param array $opts options, such as 'geonames_user'
+     */
+    function __construct($dict_path = null, $lang = 'eng', $opts = array())
     {
-        $this->dict = $dict;
+        if ($dict_path) {
+            $doc = TeiEditions_Helpers_DocumentProxy::fromUriOrPath($dict_path);
+            foreach ($doc->entities() as $entity) {
+                $this->dict[$entity->ref()] = $entity;
+            }
+        }
         $this->lang = $lang;
         $this->opts = $opts;
     }

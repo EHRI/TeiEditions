@@ -16,13 +16,18 @@ class TeiEditions_Case_Default extends Omeka_Test_AppTestCase
         $this->user = $this->db->getTable('User')->find(1);
         $this->_authenticateUser($this->user);
 
-        // Install up TeiEditions.
+        // Install TeiEditions.
         $this->helper = new Omeka_Test_Helper_Plugin;
         $this->helper->setUp('TeiEditions');
+
+        // Add XML to allowed extensions and mime types
+        set_option('file_extension_whitelist', get_option('file_extension_whitelist') . ',xml,epub');
+        set_option('file_mime_type_whitelist', get_option('file_mime_type_whitelist') . ',text/xml');
 
         // Get tables.
         $this->fieldMappingTable       = $this->db->getTable('TeiEditionsFieldMapping');
         $this->elementSetTable  = $this->db->getTable('ElementSet');
+        $this->itemTable        = $this->db->getTable('Item');
         $this->elementTable     = $this->db->getTable('Element');
         $this->itemTypeTable    = $this->db->getTable('ItemType');
 
@@ -37,6 +42,11 @@ class TeiEditions_Case_Default extends Omeka_Test_AppTestCase
      */
     public function tearDownLegacy()
     {
+        if ($items = $this->itemTable->findAll()) {
+            foreach ($items as $item) {
+                $item->delete();
+            }
+        }
         parent::tearDownLegacy();
     }
 

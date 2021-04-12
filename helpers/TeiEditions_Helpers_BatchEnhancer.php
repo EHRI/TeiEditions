@@ -12,38 +12,34 @@ require_once __DIR__ . '/TeiEditions_Helpers_DataFetcher.php';
 */
 class TeiEditions_Helpers_BatchEnhancer
 {
+    private $_enhancer;
 
-    public function enhance($path, $mime, $dictPath, $lang, &$added): string
+    public function __construct(TeiEditions_TeiEnhancer $enhancer) {
+        $this->_enhancer = $enhancer;
+    }
+
+    public function enhance($path, $mime, &$added): string
     {
-        $dict = [];
-        if ($dictPath !== null) {
-            $doc = TeiEditions_Helpers_DocumentProxy::fromUriOrPath($dictPath);
-            foreach ($doc->entities() as $entity) {
-                $dict[$entity->ref()] = $entity;
-            }
-        }
-
-        $src = new TeiEditions_Helpers_DataFetcher($dict, $lang);
         switch ($mime) {
             case "text/xml":
             case "application/xml":
                 $temp = tempnam(sys_get_temp_dir(), '');
                 if (($fh = fopen($temp, 'w')) !== false) {
                     $doc = TeiEditions_Helpers_DocumentProxy::fromUriOrPath($path);
-                    fwrite($fh, $this->enhanceFile($doc, $src, $added));
+                    fwrite($fh, $this->enhanceFile($doc, $added));
                     fclose($fh);
                 } else {
                     throw new Exception("Unable to open temp file for writing: $temp");
                 }
                 return $temp;
             case "application/zip":
-                return $this->enhanceZip($path, $src, $added);
+                return $this->enhanceZip($path, $added);
             default:
                 throw new Exception("Unrecognised mimetype: $mime");
         }
     }
 
-    private function enhanceZip($path, TeiEditions_Helpers_DataFetcher $src, &$added): string
+    private function enhanceZip($path, &$added): string
     {
         $temp = tempnam(sys_get_temp_dir(), '');
         $out = new ZipArchive;
@@ -54,7 +50,7 @@ class TeiEditions_Helpers_BatchEnhancer
                     $name = $zip->getNameIndex($i);
                     $xml_str = $zip->getFromIndex($i);
                     $doc = TeiEditions_Helpers_DocumentProxy::fromString($xml_str);
-                    $out->addFromString($name, $this->enhanceFile($doc, $src, $added));
+                    $out->addFromString($name, $this->enhanceFile($doc, $added));
 
                     // In theory this should extend the default script timeout
                     // on every pass...
@@ -72,10 +68,9 @@ class TeiEditions_Helpers_BatchEnhancer
         return $temp;
     }
 
-    private function enhanceFile(TeiEditions_Helpers_DocumentProxy $doc, TeiEditions_Helpers_DataFetcher $src, &$added): string
+    private function enhanceFile(TeiEditions_Helpers_DocumentProxy $doc, &$added): string
     {
-        $tool = new TeiEditions_Helpers_TeiEnhancer($doc, $src);
-        $added += $tool->addReferences();
+        $added += $this->_enhancer->addReferences($doc);
         return $doc->document()->saveXML();
     }
 }

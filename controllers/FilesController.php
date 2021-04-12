@@ -10,7 +10,6 @@ require_once dirname(__DIR__) . '/forms/TeiEditions_Form_Update.php';
 require_once dirname(__DIR__) . '/forms/TeiEditions_Form_Associate.php';
 require_once dirname(__DIR__) . '/forms/TeiEditions_Form_Archive.php';
 require_once dirname(__DIR__) . '/forms/TeiEditions_Form_Enhance.php';
-require_once dirname(__DIR__) . '/jobs/TeiEditions_Job_DataImporter.php';
 
 
 /**
@@ -77,26 +76,19 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
             // just dies without apparently sending its output anywhere...
             // In any case, a long running job can't return output of any kind
             // so it's a bit fire and forget really.
-            //Zend_Registry::get('job_dispatcher')->sendLongRunning(
-            //    'TeiEditions_Job_DataImporter', [
-            //        "path" => $path,
-            //        "mime" => $mime,
-            //        "dict_path" => $dict_path,
-            //        "neatline" => $form->getElement('create_exhibit')->isChecked(),
-            //        "enhance" => $form->getElement('enhance')->isChecked(),
-            //        "lang" => $form->getValue('enhance_lang'),
-            //    ]
-            //);
-
             try {
-                $importer = new TeiEditions_Helpers_DataImporter(get_db());
+                $opts = [];
+                if ($geonames_user = get_option('tei_editions_geonames_user')) {
+                    $opts['geonames_user'] = $geonames_user;
+                }
+                $src = new TeiEditions_Helpers_DataFetcher($dict_path, $form->getValue('enhance_lang'), $opts);
+                $enhancer = new TeiEditions_Helpers_TeiEnhancer($src);
+                $importer = new TeiEditions_Helpers_DataImporter(get_db(), $enhancer);
                 $importer->importData(
                     $path,
                     $mime,
                     $form->getElement('create_exhibit')->isChecked(),
                     $form->getElement('enhance')->isChecked(),
-                    $dict_path,
-                    $form->getValue('enhance_lang'),
                     $created,
                     $updated,
                     function () {
@@ -107,7 +99,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
                 $time = time() - $start;
                 $this->_helper->flashMessenger(__("TEIs successfully created: $created, updated: $updated, time: ${time}s"), 'success');
             } catch (Exception $e) {
-                echo $e->getTraceAsString();
+                error_log($e->getTraceAsString());
                 $this->_helper->_flashMessenger(__('There was an error on the form: %s', $e->getMessage()), 'error');
             } finally {
                 $this->_deleteDir($temp);
@@ -138,7 +130,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
             $updated = 0;
             try {
                 $neatline = $form->getElement('create_exhibit')->isChecked();
-                $importer = new TeiEditions_Helpers_DataImporter(get_db());
+                $importer = new TeiEditions_Helpers_DataImporter(get_db(), new TeiEditions_Helpers_TeiEnhancer());
                 $importer->updateItems($form->getSelectedItems(), $neatline, $updated);
                 $this->_helper->flashMessenger(__("TEI items updated: $updated"), 'success');
             } catch (Exception $e) {
@@ -162,7 +154,9 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
         if ($this->getRequest()->isPost()) {
             $done = 0;
             try {
-                $importer = new TeiEditions_Helpers_DataImporter(get_db());
+                $importer = new TeiEditions_Helpers_DataImporter(get_db(), new class implements TeiEditions_TeiEnhancer {
+                    public function addReferences(TeiEditions_Helpers_DocumentProxy $tei) {}
+                });
                 $importer->associateItems(
                     $_FILES["file"]["tmp_name"],
                     $_FILES["file"]["name"],
@@ -172,7 +166,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
                 $this->_helper->flashMessenger(
                     __("Files successfully imported: $done"), 'success');
             } catch (Exception $e) {
-                echo $e->getTraceAsString();
+                error_log($e->getTraceAsString());
                 $this->_helper->_flashMessenger(
                     __('There was an error on the form: %s', $e->getMessage()), 'error');
             }
@@ -257,8 +251,15 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
             $lang = $form->getValue("lang");
 
             $added = 0;
-            $enhancer = new TeiEditions_Helpers_BatchEnhancer();
-            $out_path = $enhancer->enhance($path, $mime, $dict_path, $lang, $added);
+
+            $opts = [];
+            if ($geonames_user = get_option('tei_editions_geonames_user')) {
+                $opts['geonames_user'] = $geonames_user;
+            }
+            $src = new TeiEditions_Helpers_DataFetcher($dict_path, $lang, $opts);
+            $enhancer = new TeiEditions_Helpers_TeiEnhancer($src);
+            $batchEnhancer = new TeiEditions_Helpers_BatchEnhancer($enhancer);
+            $out_path = $batchEnhancer->enhance($path, $mime, $added);
 
             header("Content-Type: $mime");
             header("Content-Disposition: attachment; filename=${base}-added-${added}.$ext");

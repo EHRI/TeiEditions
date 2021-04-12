@@ -5,16 +5,18 @@
  * @copyright Copyright 2021 King's College London Department of Digital Humanities
  */
 
+use PHPUnit\Framework\TestCase;
+
 require_once TEI_EDITIONS_DIR . "/models/TeiEditionsEntity.php";
 require_once TEI_EDITIONS_DIR . "/helpers/TeiEditions_Helpers_DocumentProxy.php";
 
 
-class TeiEditionsDocumentProxyTest extends PHPUnit_Framework_Testcase
+class TeiEditionsDocumentProxyTest extends TestCase
 {
 
     private $file;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->file = TEI_EDITIONS_TEST_DIR . "/resources/testing.xml";
     }

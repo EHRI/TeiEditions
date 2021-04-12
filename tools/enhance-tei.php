@@ -13,8 +13,9 @@ require_once __DIR__ . "/../helpers/TeiEditions_Helpers_TeiEnhancer.php";
 if (!count(debug_backtrace())) {
 
     $name = array_shift($argv);
+    $dict_file = null;
     $lang = "eng";
-    $dict = [];
+    $geonames_user = null;
     $posargs = [];
     while ($arg = array_shift($argv)) {
         switch ($arg) {
@@ -25,14 +26,14 @@ if (!count(debug_backtrace())) {
             case "-d":
             case "--dict":
                 $dict_file = array_shift($argv);
-                $doc = TeiEditions_Helpers_DocumentProxy::fromUriOrPath($dict_file);
-                foreach ($doc->entities() as $entity) {
-                    $dict[$entity->ref()] = $entity;
-                }
+                break;
+            case "-g":
+            case "--geonames-user":
+                $geonames_user = array_shift($argv);
                 break;
             case "-h":
             case "--help":
-                print("usage: $name [-l|--lang [LANG]] input [output]\n");
+                print("usage: $name [-d|--dict [DICT]] [-l|--lang [LANG]] [-g|--geonames-user [USER]] input [output]\n");
                 exit(1);
             default:
                 array_push($posargs, $arg);
@@ -46,10 +47,11 @@ if (!count(debug_backtrace())) {
 
     // read TEI file
     $in_file = $posargs[0];
+    $opts = $geonames_user ? ['geonames_user' => $geonames_user] : [];
     $tei = TeiEditions_Helpers_DocumentProxy::fromUriOrPath($in_file);
-    $src = new TeiEditions_Helpers_DataFetcher($dict, $lang);
-    $enhancer = new TeiEditions_Helpers_TeiEnhancer($tei, $src);
-    $enhancer->addReferences();
+    $src = new TeiEditions_Helpers_DataFetcher($dict_file, $lang, $opts);
+    $enhancer = new TeiEditions_Helpers_TeiEnhancer($src);
+    $enhancer->addReferences($tei);
 
     // save the resulting TEI to output file or print
     // to stdout
