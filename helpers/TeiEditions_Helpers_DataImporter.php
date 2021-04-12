@@ -13,6 +13,9 @@ require_once __DIR__ . '/TeiEditions_Helpers_TeiEnhancer.php';
 class TeiEditions_Helpers_DataImporter
 {
     private $_db;
+    private $_geonamesUser;
+    private $_defaultItemType;
+    private $_templateNeatline = null;
 
     /**
      * @package TeiEditionsDataImporter constructor.
@@ -20,6 +23,11 @@ class TeiEditions_Helpers_DataImporter
     public function __construct(Omeka_Db $db)
     {
         $this->_db = $db;
+        $this->_geonamesUser = get_option("tei_editions_geonames_username");
+        $this->_defaultItemType = get_option('tei_editions_default_item_type');
+        if (($id = (int)get_option('tei_editions_template_neatline')) !== null) {
+            $this->_templateNeatline = $this->_db->getTable('NeatlineExhibit')->find($id);
+        }
     }
 
     /**
@@ -201,7 +209,7 @@ class TeiEditions_Helpers_DataImporter
             }
 
             $opts = [];
-            if ($geonamesUser = get_option("tei_editions_geonames_username")) {
+            if ($geonamesUser = $this->_geonamesUser) {
                 $opts['geonames_username'] = $geonamesUser;
             }
             $ePath = $eDir . DIRECTORY_SEPARATOR . basename($path);
@@ -209,14 +217,18 @@ class TeiEditions_Helpers_DataImporter
             $src = new TeiEditions_Helpers_DataFetcher($dict, $lang, $opts);
             $enhancer = new TeiEditions_Helpers_TeiEnhancer($tei, $src);
             $enhancer->addReferences();
-            $f = fopen($ePath, "w");
-            fwrite($f, $tei->document()->saveXML());
-            register_shutdown_function(function () use ($ePath) {
-                if (file_exists($ePath)) {
-                    unlink($ePath);
-                }
-            });
-            $path = $ePath;
+
+            if ($f = fopen($ePath, "w")) {
+                fwrite($f, $tei->document()->saveXML());
+                register_shutdown_function(function () use ($ePath) {
+                    if (file_exists($ePath)) {
+                        unlink($ePath);
+                    }
+                });
+                $path = $ePath;
+            } else {
+                _log("Unable to open temp file for writing: $ePath");
+            }
         }
 
         $doc = $this->getDoc($path, $name);
@@ -277,7 +289,7 @@ class TeiEditions_Helpers_DataImporter
      */
     private function updateItemFromTEI(Item $item, TeiEditions_Helpers_DocumentProxy $doc, $neatline)
     {
-        $item->item_type_id = get_option('tei_editions_default_item_type');
+        $item->item_type_id = $this->_defaultItemType;
         $data = $doc->metadata(TeiEditionsFieldMapping::fieldMappings());
         $item->deleteElementTexts();
         $item->addElementTextsByArray($data);
@@ -301,17 +313,27 @@ class TeiEditions_Helpers_DataImporter
     private function addOrUpdateItemFile(Item $item, $path, $name, $is_primary = false)
     {
         $primaryXml = $is_primary ? $name : null;
+        $md5 = md5_file($path);
+        $refresh = true;
         foreach ($item->getFiles() as $file) {
             if (is_null($primaryXml) && tei_editions_is_xml_file($file)) {
                 $primaryXml = $file->original_filename;
             }
             if ($file->original_filename == $name) {
-                $file->unlinkFile();
-                $file->delete();
+                if ($file->authentication == $md5) {
+                    // We've already got the same md5 with the same
+                    // name so no need to update it.
+                    error_log("Not refreshing $name, file exists with the same md5");
+                    $refresh = false;
+                } else {
+                    $file->unlinkFile();
+                    $file->delete();
+                }
             }
         }
-        @insert_files_for_item($item, "Filesystem",
-            ['source' => $path, 'name' => $name]);
+        if ($refresh) {
+            @insert_files_for_item($item, "Filesystem", ['source' => $path, 'name' => $name]);
+        }
 
         $images = [];
         $others = [];
@@ -334,24 +356,6 @@ class TeiEditions_Helpers_DataImporter
             $file->order = $order++;
             $file->save();
         }
-    }
-
-
-    /**
-     * Fetch the Neatline record that provides a template for
-     * item-based ones.
-     *
-     * @return NeatlineExhibit|null
-     */
-    private function getTemplateNeatline()
-    {
-        $id = get_option('tei_editions_template_neatline');
-        if ($id) {
-            if ($t = $this->_db->getTable('NeatlineExhibit')->findBy($id)) {
-                return $t[0];
-            }
-        }
-        return null;
     }
 
     /**
@@ -394,7 +398,7 @@ class TeiEditions_Helpers_DataImporter
         }
 
         // copy settings from template exhibit
-        if ($template = $this->getTemplateNeatline()) {
+        if ($template = $this->_templateNeatline) {
             $exhibit->styles = $template->styles;
             $exhibit->spatial_layer = $template->spatial_layer;
             $exhibit->spatial_layers = $template->spatial_layers;
@@ -406,8 +410,8 @@ class TeiEditions_Helpers_DataImporter
         $exhibit->save($throwIfInvalid = true);
 
         // copy records from the template...
-        if ($id = get_option('tei_editions_template_neatline')) {
-            foreach ($this->_db->getTable('NeatlineRecord')->findBy(['exhibit_id' => $id]) as $t) {
+        if ($template = $this->_templateNeatline) {
+            foreach ($this->_db->getTable('NeatlineRecord')->findBy(['exhibit_id' => $template->id]) as $t) {
                 $record = clone $t;
                 $record->id = null;
                 $record->exhibit_id = $exhibit->id;

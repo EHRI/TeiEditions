@@ -44,7 +44,7 @@ class TeiEditions_Helpers_DocumentProxy
     public static function fromUriOrPath($uriOrPath)
     {
         $doc = new DOMDocument;
-        $doc->load($uriOrPath);
+        @$doc->load($uriOrPath);
         return new TeiEditions_Helpers_DocumentProxy($doc, $uriOrPath);
     }
 
@@ -366,7 +366,9 @@ class TeiEditions_Helpers_DocumentProxy
     public function asHtml()
     {
         if (is_null($this->htmlCache)) {
-            $this->htmlCache = tei_editions_tei_to_html($this->uriOrPath, [], null, true, true);
+            // NB: suppressing errors here since they are seemingly all
+            // not things to worry about. This might bite us ;)
+            $this->htmlCache = @tei_editions_tei_to_html($this->uriOrPath, [], null, true, true);
         }
         return $this->htmlCache;
     }
