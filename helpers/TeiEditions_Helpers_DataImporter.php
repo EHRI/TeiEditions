@@ -18,12 +18,19 @@ class TeiEditions_Helpers_DataImporter
     private $_templateNeatline = null;
 
     /**
+     * @param Omeka_Db db the database
+     * @param TeiEditions_TeiEnhancerInterface $enhancer an optional enhancer
      * @package TeiEditionsDataImporter constructor.
+     *
      */
-    public function __construct(Omeka_Db $db, TeiEditions_TeiEnhancer $enhancer)
+    public function __construct(Omeka_Db $db, TeiEditions_TeiEnhancerInterface $enhancer = null)
     {
         $this->_db = $db;
-        $this->_enhancer = $enhancer;
+        $this->_enhancer = $enhancer !== null ? $enhancer : new class implements TeiEditions_TeiEnhancerInterface {
+            public function addReferences(TeiEditions_Helpers_DocumentProxy $tei)
+            {
+            }
+        };
         $this->_defaultItemType = get_option('tei_editions_default_item_type');
         if (plugin_is_active('Neatline') && ($id = (int)get_option('tei_editions_template_neatline')) !== null) {
             $this->_templateNeatline = $this->_db->getTable('NeatlineExhibit')->find($id);
