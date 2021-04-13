@@ -14,7 +14,7 @@ class TeiEditions_Helpers_BatchEnhancer
 {
     private $_enhancer;
 
-    public function __construct(TeiEditions_TeiEnhancer $enhancer) {
+    public function __construct(TeiEditions_TeiEnhancerInterface $enhancer) {
         $this->_enhancer = $enhancer;
     }
 

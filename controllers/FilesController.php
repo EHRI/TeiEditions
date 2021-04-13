@@ -130,7 +130,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
             $updated = 0;
             try {
                 $neatline = $form->getElement('create_exhibit')->isChecked();
-                $importer = new TeiEditions_Helpers_DataImporter(get_db(), new TeiEditions_Helpers_TeiEnhancer());
+                $importer = new TeiEditions_Helpers_DataImporter(get_db());
                 $importer->updateItems($form->getSelectedItems(), $neatline, $updated);
                 $this->_helper->flashMessenger(__("TEI items updated: $updated"), 'success');
             } catch (Exception $e) {
@@ -154,9 +154,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
         if ($this->getRequest()->isPost()) {
             $done = 0;
             try {
-                $importer = new TeiEditions_Helpers_DataImporter(get_db(), new class implements TeiEditions_TeiEnhancer {
-                    public function addReferences(TeiEditions_Helpers_DocumentProxy $tei) {}
-                });
+                $importer = new TeiEditions_Helpers_DataImporter(get_db());
                 $importer->associateItems(
                     $_FILES["file"]["tmp_name"],
                     $_FILES["file"]["name"],

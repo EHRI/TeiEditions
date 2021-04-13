@@ -8,7 +8,7 @@
 require_once __DIR__ . '/TeiEditions_Helpers_DataFetcher.php';
 
 
-interface TeiEditions_TeiEnhancer {
+interface TeiEditions_TeiEnhancerInterface {
     public function addReferences(TeiEditions_Helpers_DocumentProxy $tei);
 }
 
@@ -39,7 +39,7 @@ TEI elements and services handled:
 - EHRI terms: DONE
  *
 */
-class TeiEditions_Helpers_TeiEnhancer implements TeiEditions_TeiEnhancer
+class TeiEditions_Helpers_TeiEnhancer implements TeiEditions_TeiEnhancerInterface
 {
 
     private $dataSrc;

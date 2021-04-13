@@ -14,7 +14,7 @@ class TeiEditions_Helpers_DataImporterTest extends TeiEditions_Case_Default
     public function setUpLegacy()
     {
         parent::setUpLegacy();
-        $this->_mockEnhancer = new class implements TeiEditions_TeiEnhancer {
+        $this->_mockEnhancer = new class implements TeiEditions_TeiEnhancerInterface {
             public $refs = 0;
             public function addReferences(TeiEditions_Helpers_DocumentProxy $tei) {
                 $this->refs++;
