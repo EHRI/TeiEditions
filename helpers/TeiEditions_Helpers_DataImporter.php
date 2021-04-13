@@ -115,7 +115,7 @@ class TeiEditions_Helpers_DataImporter
                     $currentItem->id, metadata($currentItem, "display_title"), $e->getMessage());
                 throw new TeiEditions_Helpers_ImportError($msg, 0, $e);
             } else {
-                throw $e;
+                throw new TeiEditions_Helpers_ImportError("Error running update", 0, $e);
             }
         }
     }
