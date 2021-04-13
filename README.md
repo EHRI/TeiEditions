@@ -1,3 +1,5 @@
+[![Run Tests](https://github.com/EHRI/TeiEditions/actions/workflows/ci.yml/badge.svg)](https://github.com/EHRI/TeiEditions/actions/workflows/ci.yml)
+
 TeiEditions
 ===========
 
