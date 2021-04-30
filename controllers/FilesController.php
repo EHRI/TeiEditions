@@ -63,7 +63,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
             move_uploaded_file($_FILES["file"]["tmp_name"], $path);
 
             $dict_path = null;
-            if ($form->getElement("enhance") && isset($_FILES["enhance_dict"])) {
+            if ($form->getElement("enhance")->isChecked() && isset($_FILES["enhance_dict"]["tmp_name"])) {
                 $dict_path = $temp . DIRECTORY_SEPARATOR . $_FILES['enhance_dict']['name'];
                 move_uploaded_file($_FILES["enhance_dict"]["tmp_name"], $dict_path);
             }
