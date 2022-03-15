@@ -31,6 +31,7 @@ class TeiEditions_Helpers_DataFetcher
     function __construct($dict_path = null, $lang = 'eng', $opts = array())
     {
         if ($dict_path) {
+            error_log("Loading dictionary path: $dict_path");
             $doc = TeiEditions_Helpers_DocumentProxy::fromUriOrPath($dict_path);
             foreach ($doc->entities() as $entity) {
                 $this->dict[$entity->ref()] = $entity;

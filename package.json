@@ -1,7 +1,7 @@
 {
   "name": "tei-editions",
   "description": "An Omeka plugin for importing and rendering structured TEI files for EHRI digital editions.",
-  "version": "1.0.0-pre4",
+  "version": "1.0.0-pre5",
   "devDependencies": {
     "grunt": "^1.3.0",
     "grunt-cli": "^1.3.2",
