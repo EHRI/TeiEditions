@@ -75,7 +75,7 @@ class TeiEditions_Helpers_DataImporter
             $tx->commit();
         } catch (Exception $e) {
             $tx->rollBack();
-            throw new TeiEditions_Helpers_ImportError("Error importing file: $name", 0, $e);
+            throw new TeiEditions_Helpers_ImportError("Error importing file: $name: " . $e->getMessage(), 0, $e);
         } finally {
             $onDone();
         }
