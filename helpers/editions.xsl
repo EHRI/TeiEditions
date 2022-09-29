@@ -392,7 +392,7 @@
     </xsl:template>
 
     <xsl:template match="tei:note" name="notes">
-        <xsl:variable name="num" select="count(../preceding-sibling::*/tei:note) + 1"/>
+        <xsl:variable name="num" select="count(..//preceding-sibling::*/tei:note) + count(preceding-sibling::tei:note) + 1"/>
         <span class="tei-note-ref">
             <xsl:value-of select="$num"/>
         </span>
