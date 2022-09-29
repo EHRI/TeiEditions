@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<TEI xmlns="http://www.tei-c.org/ns/1.0" xml:id="testing">
+    <teiHeader>
+        <fileDesc>
+            <titleStmt>
+                <title>This is a test TEI</title>
+                <author>Mike B.</author>
+            </titleStmt>
+            <editionStmt>
+                <edition><date/></edition>
+            </editionStmt>
+            <publicationStmt>
+                <publisher><ref target="https://www.ehri-project.eu/">European Holocaust Research
+                        Infrastructure</ref></publisher>
+                <date>2017-04-27</date>
+            </publicationStmt>
+            <sourceDesc>
+                <bibl>King's College London</bibl>
+            </sourceDesc>
+        </fileDesc>
+        <encodingDesc>
+            <projectDesc>
+                <p>EHRI Project</p>
+            </projectDesc>
+        </encodingDesc>
+        <profileDesc>
+            <creation>
+                <idno>test</idno>
+                <date when="2017-04-29">29th April 2017</date>,
+                <placeName ref="http://www.geonames.org/2643743/">London</placeName></creation>
+        </profileDesc>
+        <revisionDesc>
+            <listChange>
+                <change><name/><date/></change>
+            </listChange>
+        </revisionDesc>
+    </teiHeader>
+    <text>
+        <body>
+            <p>This is a test TEI file.</p>
+            <p>It contains two references to places: <placeName ref="https://www.geonames.org/2643743/">London</placeName> and
+                <placeName ref="http://www.geonames.org/6559171/">Munich</placeName>
+                <note type="gloss">Munchen</note>
+                and one without a reference: <placeName>Tartu</placeName>.</p>
+
+            <p>This is an organisation: <orgName ref="https://portal.ehri-project.eu/authorities/ehri_cb-001408">Czechoslovak Government-in-Exile</orgName></p>
+            <pb n="1" facs="EHRI-DC-044_03.png"/>
+
+            <p>It contains a reference to an image of the Memorial of the Murdered Jews of Europe, Berlin. <figure><graphic url="memorial.jpg" /><head>Figure 1: Memorial to the Murdered Jews of Europe.</head>
+                <figDesc>Image of the Memorial to the Murdered Jews of Europe, Berlin by Flickr user Tomasz Przechlewski under the Creative Commons license.</figDesc></figure></p>
+            <p>It also contains a reference to the Slovak Nationalist politician <persName ref="https://portal.ehri-project.eu/authorities/ehri_pers-000261">Mach Alexander</persName> and the subject term
+            <term type="subject" ref="https://portal.ehri-project.eu/keywords/ehri_terms-585">Confiscation of Property</term>.</p>
+            <p>Also an invalid URL: <placeName ref="http://www.geonames.org/INVALID">Invalid</placeName>
+                <note type="gloss">Not valid</note>
+                <persName>Test</persName>
+                <note type="gloss">Another name</note>
+
+            </p>
+        </body>
+    </text>
+</TEI>

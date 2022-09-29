@@ -104,6 +104,14 @@ class TeiEditionsDocumentProxyTest extends TestCase
             'does not contain geonames slug'));
     }
 
+    public function testAsHtmlWithNotes()
+    {
+        $doc = TeiEditions_Helpers_DocumentProxy::fromUriOrPath(TEI_EDITIONS_TEST_DIR . "/resources/test-notes.xml");
+        $html = $doc->asHtml();
+        $this->assertThat($html["html"], self::stringContains('Note 3',
+            'does not contain correct number of notes'));
+    }
+
     public function testAsSimpleHtml()
     {
         $doc = TeiEditions_Helpers_DocumentProxy::fromUriOrPath($this->file);
