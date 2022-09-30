@@ -108,8 +108,10 @@ class TeiEditionsDocumentProxyTest extends TestCase
     {
         $doc = TeiEditions_Helpers_DocumentProxy::fromUriOrPath(TEI_EDITIONS_TEST_DIR . "/resources/test-notes.xml");
         $html = $doc->asHtml();
-        $this->assertThat($html["html"], self::stringContains('Note 3',
-            'does not contain correct number of notes'));
+        for ($i = 1; $i <= 6; $i++) {
+            $this->assertThat($html["html"], self::stringContains("Note $i",
+                'does not contain correct number of notes'));
+        }
     }
 
     public function testAsSimpleHtml()
