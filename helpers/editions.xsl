@@ -144,7 +144,6 @@
         </func:result>
     </func:function>
 
-
     <!-- template 'join' accepts valueList and separator -->
     <xsl:template name="join-meta">
         <xsl:param name="valueList" select="/.."/>
@@ -331,6 +330,7 @@
             </div>
         </xsl:if>
     </xsl:template>
+
     <xsl:template match="tei:q" name="quote">
         <q>
             <xsl:apply-templates/>
@@ -392,12 +392,11 @@
     </xsl:template>
 
     <xsl:template match="tei:note" name="notes">
-        <xsl:variable name="num" select="count(..//preceding-sibling::*/tei:note) + count(preceding-sibling::tei:note) + 1"/>
         <span class="tei-note-ref">
-            <xsl:value-of select="$num"/>
+            <xsl:number level="any" count="tei:body//tei:note" />
         </span>
         <span class="tei-note">
-            <span class="tei-note-num">Note <xsl:value-of select="$num"/>:
+            <span class="tei-note-num">Note <xsl:number level="any" count="tei:body//tei:note" /> :
             </span>
             <xsl:value-of select="."/>
         </span>
