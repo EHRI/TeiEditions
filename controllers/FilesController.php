@@ -11,6 +11,7 @@ require_once dirname(__DIR__) . '/forms/TeiEditions_Form_Associate.php';
 require_once dirname(__DIR__) . '/forms/TeiEditions_Form_Archive.php';
 require_once dirname(__DIR__) . '/forms/TeiEditions_Form_Enhance.php';
 
+require dirname(__DIR__) . '/vendor/autoload.php';
 
 /**
  * The TeiEditions TEI file upload controller.
@@ -197,13 +198,18 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
 
         if ($this->getRequest()->isPost() and $form->isValid($_POST)) {
             $associated = $form->getElement('type')->getValue() === 'associated';
-            $tmp = tempnam(sys_get_temp_dir(), '');
-            $archive = new ZipArchive();
-            $archive->open($tmp, ZipArchive::CREATE);
 
             $name = $associated ? 'associated' : 'tei';
             $date = date('c');
-            $filename = "${name}-${date}.zip";
+            $filename = "$name-$date.zip";
+
+            # enable output of HTTP headers
+            $options = new ZipStream\Option\Archive();
+            $options->setFlushOutput(true);
+            $options->setSendHttpHeaders(true);
+
+            # create a new zipstream object
+            $zip = new ZipStream\ZipStream($filename, $options);
 
             foreach (get_db()->getTable('Item')->findAll() as $item) {
                 $files = $associated
@@ -214,23 +220,19 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
                     );
 
                 foreach ($files as $file) {
-                    // TODO: use a better way of retrieving this data:
-                    if (($xml = file_get_contents($file->getWebPath())) !== false) {
-                        $archive->addFromString($file->original_filename, $xml);
+                    // FIXME: add directly from stream?
+                    if (($data = file_get_contents($file->getWebPath())) !== false) {
+                        _log("Adding to zip: " . $file->getWebPath());
+                        $zip->addFile($file->original_filename, $data);
                     } else {
                         // Should we throw an exception here???
                         _log("Unable to read URL: " . $file->getWebPath(), Zend_Log::ERR);
                     }
                 }
             }
-            $archive->close();
-            header("Content-Type: application/zip");
-            header("Content-Disposition: attachment; filename=$filename");
-            header("Content-Length: " . filesize($tmp));
-            ob_end_flush();
-            readfile($tmp);
-            unlink($tmp);
-            exit();
+
+            # finish the zip stream
+            $zip->finish();
         }
     }
 
@@ -262,7 +264,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
             $out_path = $batchEnhancer->enhance($path, $mime, $added);
 
             header("Content-Type: $mime");
-            header("Content-Disposition: attachment; filename=${base}-added-${added}.$ext");
+            header("Content-Disposition: attachment; filename=$base-added-$added.$ext");
             header("Content-Length: " . filesize($out_path));
             ob_end_flush();
             readfile($out_path);
