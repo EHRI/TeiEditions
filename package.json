@@ -3,8 +3,8 @@
   "description": "An Omeka plugin for importing and rendering structured TEI files for EHRI digital editions.",
   "version": "1.0.0-pre8",
   "devDependencies": {
-    "grunt": "^1.3.0",
-    "grunt-cli": "^1.3.2",
+    "grunt": "^1.5.3",
+    "grunt-cli": "^1.4.3",
     "grunt-contrib-compress": "^2.0.0"
   },
   "main": "plugin.php",
