@@ -9,14 +9,14 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
 
     steps:
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '7.2'
+          php-version: '7.4'
           extensions: mbstring, xml, xsl, mysql, gd
           ini-values: post_max_size=256M, max_execution_time=180
 
