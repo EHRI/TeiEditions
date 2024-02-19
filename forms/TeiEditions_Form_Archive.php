@@ -21,7 +21,7 @@ class TeiEditions_Form_Archive extends Omeka_Form
             'multiple' => 'multiple',
             'label' => __('Type'),
             'description' => __('Choose the type of data to download'),
-            'multiOptions' => ['tei' => 'Primary TEIs', 'associated' => 'Associated Files'],
+            'multiOptions' => ['tei' => 'Primary TEIs', 'tei-all' => 'All TEIs', 'associated' => 'Associated Files'],
             'size' => 10,
         ]);
         $this->addElement($select);

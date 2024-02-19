@@ -197,9 +197,10 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
         $this->view->form = $form;
 
         if ($this->getRequest()->isPost() and $form->isValid($_POST)) {
-            $associated = $form->getElement('type')->getValue() === 'associated';
+            $name = $form->getElement('type')->getValue()
+                ? $form->getElement('type')->getValue()
+                : 'tei';
 
-            $name = $associated ? 'associated' : 'tei';
             $date = date('c');
             $filename = "$name-$date.zip";
 
@@ -218,6 +219,21 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
                         ? [tei_editions_get_main_tei($item)]
                         : []
                     );
+
+                $files = [];
+                switch ($name) {
+                    case 'tei':
+                        $files = tei_editions_get_main_tei($item)
+                            ? [tei_editions_get_main_tei($item)]
+                            : [];
+                        break;
+                    case 'associated':
+                        $files = tei_editions_get_associated_files($item);
+                        break;
+                    case 'tei-all':
+                        $files = tei_editions_get_all_xml_files($item);
+                        break;
+                }
 
                 foreach ($files as $file) {
                     // FIXME: add directly from stream?
