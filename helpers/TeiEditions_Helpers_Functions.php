@@ -275,6 +275,23 @@ function tei_editions_get_associated_files(Item $item)
 }
 
 /**
+ * Get all XML files for the item, including the main TEI.
+ *
+ * @param Item $item
+ * @return array an array of File items
+ */
+function tei_editions_get_all_xml_files(Item $item)
+{
+    $files = [];
+    foreach ($item->getFiles() as $file) {
+        if (tei_editions_is_xml_file($file)) {
+            $files[] = $file;
+        }
+    }
+    return $files;
+}
+
+/**
  * Render the first XML file associated with the item as TEI.
  *
  * @param Item $item an Omeka item
