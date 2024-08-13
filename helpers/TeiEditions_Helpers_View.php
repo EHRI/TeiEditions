@@ -155,13 +155,7 @@ function tei_editions_render_document_images($item)
     $images = [];
     foreach ($item->getFiles() as $file) {
         if (preg_match('/.+\.(png|jpg|tif)$/', $file->original_filename)) {
-            $res = '';
-            if ($file->metadata != '') {
-                $info = json_decode($file->metadata, true);
-                if (isset($info["video"]) and isset($info["video"]["resolution_x"])) {
-                    $res = $info["video"]["resolution_x"] . 'x' . $info["video"]["resolution_y"];
-                }
-            }
+            $res = tei_editions_get_image_sizes($file);
             $images[] = [
                 "path" => $file->getWebPath(),
                 "thumb" => $file->getWebPath("thumbnail"),
@@ -348,4 +342,20 @@ function tei_editions_render_map($data, $width = 425, $height = 350)
         // TODO
     }
     return "";
+}
+
+function tei_editions_get_image_sizes($file)
+{
+    if ($file->metadata != '') {
+        $info = json_decode($file->metadata, true);
+        if (isset($info["video"]) and isset($info["video"]["resolution_x"])) {
+            return $info["video"]["resolution_x"] . 'x' . $info["video"]["resolution_y"];
+        }
+    }
+
+    // Log an error here because metadata has not been correctly
+    // set for this file.
+    error_log("No metadata for file: " . $file->original_filename);
+    $size = getimagesize($file->getWebPath());
+    return $size[0] . 'x' . $size[1];
 }
