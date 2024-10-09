@@ -201,7 +201,20 @@ class TeiEditions_Helpers_DataFetcher
 
         $lat = @(float)$xpath->query("/rdf:RDF/gn:Feature/wgs84_pos:lat")->item(0)->textContent;
         $lon = @(float)$xpath->query("/rdf:RDF/gn:Feature/wgs84_pos:long")->item(0)->textContent;
-        $wiki = @$xpath->query("/rdf:RDF/gn:Feature/gn:wikipediaArticle/@rdf:resource")->item(0)->textContent;
+        $wikis = $xpath->query("/rdf:RDF/gn:Feature/gn:wikipediaArticle/@rdf:resource");
+        // Sigh: try and prefer the English Wikipedia article if one exists, otherwise take the first:
+        $wiki = null;
+        if ($wikis->length) {
+            foreach ($wikis as $w) {
+                if (preg_match('/en.wikipedia.org\/wiki/', $w->textContent)) {
+                    $wiki = $w->textContent;
+                    break;
+                }
+            }
+            if (!$wiki) {
+                $wiki = $wikis->item(0)->textContent;
+            }
+        }
 
         $entity = TeiEditionsEntity::create(
            $this->_parseGeonamesPlaceName($xpath, $lang),
