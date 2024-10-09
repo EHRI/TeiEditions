@@ -24,7 +24,8 @@ class TeiEditionsEnhanceTeiTest extends TestCase
         $this->xpath->registerNamespace("t", TeiEditions_Helpers_DocumentProxy::TEI_NS);
     }
 
-    private function valueOf($path) {
+    private function valueOf($path)
+    {
         $n = $this->xpath->query($path);
         return $n->length ? $n->item(0)->textContent : "";
     }
@@ -56,13 +57,22 @@ class TeiEditionsEnhanceTeiTest extends TestCase
             $this->valueOf("//t:fileDesc/t:sourceDesc/t:listPerson/t:person[1]/t:persName")
         );
         $this->assertRegExp(
-          "/11\/10\/1902\s+15\/10\/1980/",
+            "/11\/10\/1902\s+15\/10\/1980/",
             $this->valueOf("//t:fileDesc/t:sourceDesc/t:listPerson/t:person[1]/t:note/t:p[1]")
         );
         $this->assertEquals(
             "Československá vláda v exilu",
             $this->valueOf("//t:fileDesc/t:sourceDesc/t:listOrg/t:org[1]/t:orgName")
         );
+    }
+
+    public function test_addCorrectWikipediaRefs()
+    {
+        $testdata = TeiEditions_Helpers_DocumentProxy::fromUriOrPath(
+            TEI_EDITIONS_TEST_DIR . "/resources/enhance-tei-2.xml");
+        $src = new TeiEditions_Helpers_DataFetcher([], "eng");
+        $num = (new TeiEditions_Helpers_TeiEnhancer($src))->addReferences($testdata);
+        $this->assertEquals(13, $num);
     }
 
     public function test_addRefsWithLang()
