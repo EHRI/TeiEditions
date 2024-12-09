@@ -44,17 +44,19 @@ class TeiEditions_Helpers_DataImporter
      * @param string $mime the mime type of the import file. Either text/xml or application/zip are supported
      * @param boolean $neatline whether or not to create a Neatline item from the TEI data
      * @param boolean $enhance whether or not to run enhancement on the input file by looking up entity metadata
+     * @param boolean $force whether or not to force the import, refreshing existing items
      * @param int $created out-param for number of items created
      * @param int $updated out-param for number of items updated
      * @param callable $onDone function to call on completion
      * @throws Omeka_Record_Exception
      */
-    public function importData($path, $mime, $neatline, $enhance, &$created, &$updated, $onDone)
+    public function importData($path, $mime, $neatline, $enhance, $force, &$created, &$updated, $onDone)
     {
         _log("Performing data import: " . json_encode([
                 "path" => $path,
                 "neatline" => $neatline,
                 "enhance" => $enhance,
+                "force" => $force,
                 "mime" => $mime
             ]));
 
@@ -64,10 +66,10 @@ class TeiEditions_Helpers_DataImporter
             switch ($mime) {
                 case "text/xml":
                 case "application/xml":
-                    $this->updateItem($path, $name, $neatline, $enhance, $created, $updated);
+                    $this->updateItem($path, $name, $neatline, $enhance, $force, $created, $updated);
                     break;
                 case "application/zip":
-                    $this->readImportZip($path, $neatline, $enhance, $created, $updated);
+                    $this->readImportZip($path, $neatline, $enhance, $force, $created, $updated);
                     break;
                 default:
                     throw new Exception("Unhandled file extension: $mime");
@@ -186,13 +188,14 @@ class TeiEditions_Helpers_DataImporter
      *
      * @param string $path the path to the XML file
      * @param string $name the item name
-     * @param $neatline
-     * @param $enhance
+     * @param $neatline boolean whether or not to create a Neatline exhibit
+     * @param $enhance boolean whether or not to enhance the TEI
+     * @param $force boolean whether or not to force the update
      * @param int $created out-param for the number of created items
      * @param int $updated out-param for the number of updated items
      * @throws Omeka_Record_Exception
      */
-    private function updateItem($path, $name, $neatline, $enhance, &$created, &$updated)
+    private function updateItem($path, $name, $neatline, $enhance, $force, &$created, &$updated)
     {
         _log("Importing file: $path");
         $create = false;
@@ -224,7 +227,7 @@ class TeiEditions_Helpers_DataImporter
         $item = $this->getOrCreateItem($doc, $create);
         $this->updateItemFromTEI($item, $doc, $neatline);
 
-        $this->addOrUpdateItemFile($item, $path, $name, true);
+        $this->addOrUpdateItemFile($item, $path, $name, true, $force);
         if ($create) {
             $created++;
         } else {
@@ -301,8 +304,9 @@ class TeiEditions_Helpers_DataImporter
      * @param string $path the file path
      * @param string $name the file name
      * @param bool $is_primary if this file is the primary TEI
+     * @param bool $force whether or not to force the update
      */
-    private function addOrUpdateItemFile(Item $item, $path, $name, $is_primary = false)
+    private function addOrUpdateItemFile(Item $item, $path, $name, $is_primary = false, $force = false)
     {
         $primaryXml = $is_primary ? $name : null;
         $md5 = md5_file($path);
@@ -312,7 +316,7 @@ class TeiEditions_Helpers_DataImporter
                 $primaryXml = $file->original_filename;
             }
             if ($file->original_filename == $name) {
-                if ($file->authentication == $md5) {
+                if ($force === false && $file->authentication == $md5) {
                     // We've already got the same md5 with the same
                     // name so no need to update it.
                     error_log("Not refreshing $name, file exists with the same md5");
