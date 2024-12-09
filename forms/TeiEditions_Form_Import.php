@@ -45,6 +45,13 @@ class TeiEditions_Form_Import extends Omeka_Form
     if they contain \'ref\' attributes that point to the Geonames or EHRI data sources.')
         ]);
 
+        $this->addElement('checkbox', 'force_refresh', [
+            'id' => 'tei-editions-upload-force-refresh',
+            'label' => __('Force Metadata Refresh'),
+            'class' => 'checkbox',
+            'description' => __('Force the importer to update existing items, even if they have already been imported.')
+        ]);
+
         $this->addElement('file', 'enhance_dict', [
             'id' => 'tei-editions-enhance-dict',
             'required' => false,
@@ -69,7 +76,7 @@ class TeiEditions_Form_Import extends Omeka_Form
             'id' => 'tei-editions-submit'
         ]);
 
-        $this->addDisplayGroup(['file', 'create_exhibit', 'enhance'], 'tei-editions-ingest-opts');
+        $this->addDisplayGroup(['file', 'create_exhibit', 'enhance', 'force_refresh'], 'tei-editions-ingest-opts');
         $this->addDisplayGroup(['enhance_dict', 'enhance_lang'], 'tei-editions-enhance-opts');
         $this->addDisplayGroup(['submit'], 'tei-editions_submit');
     }

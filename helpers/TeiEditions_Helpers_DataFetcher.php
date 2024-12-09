@@ -44,12 +44,12 @@ class TeiEditions_Helpers_DataFetcher
     /**
      * Fetch info about places given an array of URL references.
      *
-     * @param array $nametourl an array mapping place names to URLs
+     * @param array $names_to_urls an array mapping place names to URLs
      */
-    public function fetchPlaces($nametourl)
+    public function fetchPlaces($names_to_urls)
     {
         $entities = [];
-        foreach ($nametourl as $name => $url) {
+        foreach ($names_to_urls as $name => $url) {
             // HACK! if we can't get a place, try to look up the
             // item as a concept
             if (!($e = $this->_getPlace($url, $this->lang))
@@ -65,12 +65,12 @@ class TeiEditions_Helpers_DataFetcher
      * Fetch info about people, corporate bodies, and families
      * given an array of URL references.
      *
-     * @param array $nametourl an array mapping agent names to URLs
+     * @param array $names_to_urls an array mapping agent names to URLs
      */
-    public function fetchHistoricalAgents($nametourl)
+    public function fetchHistoricalAgents($names_to_urls)
     {
         $entities = [];
-        foreach ($nametourl as $name => $url) {
+        foreach ($names_to_urls as $name => $url) {
             if (!($e = $this->_getHistoricalAgent($url, $this->lang))) {
                 $e = TeiEditionsEntity::create($name, $url);
             }
@@ -82,12 +82,12 @@ class TeiEditions_Helpers_DataFetcher
     /**
      * Fetch info about keywords/concepts given an array of URL references.
      *
-     * @param array $nametourl an array mapping concept names to URLs
+     * @param array $names_to_urls an array mapping concept names to URLs
      */
-    public function fetchConcepts($nametourl)
+    public function fetchConcepts($names_to_urls)
     {
         $entities = [];
-        foreach ($nametourl as $name => $url) {
+        foreach ($names_to_urls as $name => $url) {
             if (!($e = $this->_getConcept($url, $this->lang))) {
                 $e = TeiEditionsEntity::create($name, $url);
             }
@@ -306,7 +306,9 @@ class TeiEditions_Helpers_DataFetcher
         }';
 
         // execute query and extract JSON
-        $id = basename($url);
+        // get the last path component, minus the trailing slash and any query string
+        $url_parts = parse_url($url);
+        $id = isset($url_parts['path']) ? basename($url_parts['path']) : $url;
         $result = $this->_makeGraphQLRequest($req, array("id" => $id, "lang" => $lang));
         if (!isset($result['data']['CvocConcept']['description'])) {
             // if $lang is set, try with default language

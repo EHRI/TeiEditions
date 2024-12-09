@@ -78,15 +78,15 @@ class TeiEditions_Helpers_TeiEnhancer implements TeiEditions_TeiEnhancerInterfac
         foreach ($this::$TYPES as $typeSpec) {
             list($listTag, $itemTag, $nameTag, $srcTag, $fetcherFunc) = $typeSpec;
 
-            $existing = $tei->getEntities($listTag, $itemTag, $nameTag);
+            $existing_entities = $tei->getEntities($listTag, $itemTag, $nameTag);
             $refs = $tei->entityReferences($srcTag, $idx, $addRefs = true);
-            foreach ($this->dataSrc->{$fetcherFunc}($refs) as $ref) {
-                if (!in_array($ref, $existing)) {
-                    error_log("Found $srcTag " . $ref->name);
-                    $tei->addEntity($listTag, $itemTag, $nameTag, $ref);
+            foreach ($this->dataSrc->{$fetcherFunc}($refs) as $entity) {
+                if (!in_array($entity, $existing_entities)) {
+                    error_log("Found $srcTag " . $entity->name . "\n");
+                    $tei->addEntity($listTag, $itemTag, $nameTag, $entity);
                     $added++;
                 } else {
-                    error_log("Not updating existing $srcTag " . $ref->name);
+                    error_log("Not updating existing $srcTag " . $entity->name);
                 }
             }
         }

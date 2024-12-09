@@ -92,6 +92,7 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
                     $mime,
                     $form->getElement('create_exhibit')->isChecked(),
                     $form->getElement('enhance')->isChecked(),
+                    $form->getElement('force_refresh')->isChecked(),
                     $created,
                     $updated,
                     function () {
@@ -213,13 +214,6 @@ class TeiEditions_FilesController extends Omeka_Controller_AbstractActionControl
             $zip = new ZipStream\ZipStream($filename, $options);
 
             foreach (get_db()->getTable('Item')->findAll() as $item) {
-                $files = $associated
-                    ? tei_editions_get_associated_files($item)
-                    : (tei_editions_get_main_tei($item)
-                        ? [tei_editions_get_main_tei($item)]
-                        : []
-                    );
-
                 $files = [];
                 switch ($name) {
                     case 'tei':
