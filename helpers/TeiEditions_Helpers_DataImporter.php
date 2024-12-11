@@ -159,7 +159,7 @@ class TeiEditions_Helpers_DataImporter
      * @param int $updated out-param for the number of items updated
      * @throws Omeka_Record_Exception
      */
-    private function readImportZip($zipPath, $neatline, $enhance, &$created = 0, &$updated = 0)
+    private function readImportZip($zipPath, $neatline, $enhance, $force, &$created = 0, &$updated = 0)
     {
         $temp = $this->createTempDir();
 
@@ -170,7 +170,7 @@ class TeiEditions_Helpers_DataImporter
                 $zip->close();
 
                 foreach (glob($temp . '/*.xml') as $path) {
-                    $this->updateItem($path, basename($path), $neatline, $enhance, $created, $updated);
+                    $this->updateItem($path, basename($path), $neatline, $enhance, $force, $created, $updated);
                     // NB: If I'm reading the docs right this should prevent a timeout
                     // on large zips:
                     set_time_limit(10);
