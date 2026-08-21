@@ -156,6 +156,28 @@ class TeiEditionsPlugin extends Omeka_Plugin_AbstractPlugin
     }
 
     /**
+     * Get an existing "Item Type Metadata" element by name, or create it.
+     *
+     * Element names must be unique within an element set regardless of
+     * which item type(s) they're linked to, so this must check across the
+     * whole "Item Type Metadata" set, not just elements already linked to
+     * the item type being set up (@see createItemTypeMappings()) - another
+     * item type or plugin may already have registered the same name.
+     *
+     * @param string $name the element name
+     * @param string $description the element description
+     * @return Element
+     * @throws Omeka_Record_Exception
+     * @throws Omeka_Validate_Exception
+     */
+    private function getOrCreateElement($name, $description)
+    {
+        $element = get_db()->getTable('Element')
+            ->findByElementSetNameAndElementName("Item Type Metadata", $name);
+        return $element ?: $this->createElement($name, $description);
+    }
+
+    /**
      * Retrieve or create a new item type.
      *
      * @param string $name the item type name
@@ -224,7 +246,7 @@ class TeiEditionsPlugin extends Omeka_Plugin_AbstractPlugin
             $elements_to_add = [];
             foreach ($data["mappings"] as $name => $details) {
                 if (!isset($elements_to_ids[$name])) {
-                    $elem = $this->createElement($name, $details["description"]);
+                    $elem = $this->getOrCreateElement($name, $details["description"]);
                     $elements_to_ids[$name] = $elem->id;
                     $elements_to_add[] = $elem;
                 }
