@@ -21,6 +21,9 @@ class TeiEditions_Helpers_Cache
     /** @var DOMDocument[] parsed XSL stylesheets, keyed by file path */
     private $xslDocs = [];
 
+    /** @var array parsed TEI XML documents (or false on failure), keyed by file path */
+    private $xmlDocs = [];
+
     /** @var array element_texts values, keyed by element name */
     private $elementValues = [];
 
@@ -44,6 +47,7 @@ class TeiEditions_Helpers_Cache
     public function reset()
     {
         $this->xslDocs = [];
+        $this->xmlDocs = [];
         $this->elementValues = [];
         $this->identifierElementId = null;
     }
@@ -74,8 +78,10 @@ class TeiEditions_Helpers_Cache
         $xsldoc = $this->_cachedXsl($tohtml);
         $xsldoc->documentURI = $tohtml;
 
-        $xmldoc = new DOMDocument();
-        $xmldoc->load($path);
+        $xmldoc = $this->xmlDocument($path);
+        if ($xmldoc === false) {
+            $xmldoc = new DOMDocument();
+        }
         $xmldoc->documentURI = $path;
 
         // NB: Suppress annoying warnings here...
@@ -180,6 +186,22 @@ class TeiEditions_Helpers_Cache
         }
 
         return null;
+    }
+
+    /**
+     * @param string $path
+     * @return DOMDocument|false a clone of a cached parse of the TEI XML
+     * document at $path, or false if it could not be loaded. Cloned so
+     * that callers (e.g. teiToHtml() and DocumentProxy, which parse the
+     * same item's main TEI file) can't mutate each other's copy.
+     */
+    public function xmlDocument($path)
+    {
+        if (!array_key_exists($path, $this->xmlDocs)) {
+            $doc = new DOMDocument();
+            $this->xmlDocs[$path] = $doc->load($path) ? $doc : false;
+        }
+        return $this->xmlDocs[$path] === false ? false : clone $this->xmlDocs[$path];
     }
 
     /**

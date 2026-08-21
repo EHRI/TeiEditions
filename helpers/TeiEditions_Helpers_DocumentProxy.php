@@ -6,6 +6,7 @@
  */
 
 require_once __DIR__ . '/../helpers/TeiEditions_Helpers_Functions.php';
+require_once __DIR__ . '/TeiEditions_Helpers_Cache.php';
 
 /**
  * Convenience class for accessing TEI information via
@@ -46,12 +47,12 @@ class TeiEditions_Helpers_DocumentProxy
 
     public static function fromUriOrPath($uriOrPath)
     {
-        $doc = new DOMDocument;
-        if ($doc->load($uriOrPath)) {
-            return new TeiEditions_Helpers_DocumentProxy($doc, $uriOrPath);
+        $doc = TeiEditions_Helpers_Cache::instance()->xmlDocument($uriOrPath);
+        if ($doc === false) {
+            return false;
         }
 
-        return false;
+        return new TeiEditions_Helpers_DocumentProxy($doc, $uriOrPath);
     }
 
     public static function fromDocument(DOMDocument $elem, $uriOrPath)
